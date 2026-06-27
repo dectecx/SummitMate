@@ -219,6 +219,9 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
 
   /// 建立確認階段 UI
   Widget _buildConfirmationStage(bool isSelf, bool isAlreadyMember, bool canAdd) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -226,9 +229,9 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            color: colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Row(
             children: [
@@ -249,11 +252,20 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_searchResult!.displayName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(
+                      _searchResult!.displayName,
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 2),
-                    Text(_searchResult!.email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text(
+                      _searchResult!.email,
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
                     const SizedBox(height: 2),
-                    Text('ID: ${_searchResult!.id}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    Text(
+                      'ID: ${_searchResult!.id}',
+                      style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
                   ],
                 ),
               ),
@@ -266,16 +278,16 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         if (isSelf)
           _buildWarningBox(
             icon: Icons.warning_amber,
-            color: Colors.amber,
             text: '這是你自己，已在行程中。',
-            backgroundColor: Colors.amber[50]!,
+            backgroundColor: colorScheme.tertiaryContainer,
+            foregroundColor: colorScheme.onTertiaryContainer,
           )
         else if (isAlreadyMember)
           _buildWarningBox(
             icon: Icons.info_outline,
-            color: Colors.blue,
             text: '此使用者已經是成員。',
-            backgroundColor: Colors.blue[50]!,
+            backgroundColor: colorScheme.secondaryContainer,
+            foregroundColor: colorScheme.onSecondaryContainer,
           )
         else ...[
           const Text('初始權限', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -302,7 +314,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
                 value: RoleConstants.guide,
                 child: Row(
                   children: [
-                    const Icon(Icons.hiking, size: 18, color: Colors.green),
+                    Icon(Icons.hiking, size: 18, color: colorScheme.tertiary),
                     const SizedBox(width: 8),
                     Text(_getRoleName(RoleConstants.guide)),
                   ],
@@ -326,7 +338,10 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         if (_errorMsg != null)
           Padding(
             padding: const EdgeInsets.only(top: 10),
-            child: Text(_errorMsg!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+            child: Text(
+              _errorMsg!,
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
+            ),
           ),
       ],
     );
@@ -335,19 +350,19 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
   /// 建立警告提示框
   Widget _buildWarningBox({
     required IconData icon,
-    required Color color,
     required String text,
     required Color backgroundColor,
+    required Color foregroundColor,
   }) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(8)),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 20),
+          Icon(icon, color: foregroundColor, size: 20),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: TextStyle(color: Colors.brown)),
+            child: Text(text, style: TextStyle(color: foregroundColor)),
           ),
         ],
       ),
