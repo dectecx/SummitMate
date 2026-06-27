@@ -58,6 +58,10 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
   @override
   Widget build(BuildContext context) {
     final totalWeight = items.fold<double>(0, (sum, item) => sum + item.totalWeight);
+    final grouped = groupedItems;
+    final sortedCats = sortedCategories;
+    final gearRows = _buildGearRows(grouped, sortedCats);
+    final mealRows = _buildMealRows(widget.gearSet.meals ?? const []);
 
     return DefaultTabController(
       length: 2,
@@ -134,14 +138,15 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                         Expanded(
                           child: items.isEmpty
                               ? const Center(child: Text('此組合沒有裝備項目'))
-                              : ListView(
-                                  children: [
-                                    for (final category in sortedCategories) ...[
-                                      _buildCategoryHeader(category),
-                                      if (_expandedCategories.contains(category))
-                                        ...groupedItems[category]!.map((item) => _GearItemTile(item: item)),
-                                    ],
-                                  ],
+                              : ListView.builder(
+                                  itemCount: gearRows.length,
+                                  itemBuilder: (context, index) {
+                                    final row = gearRows[index];
+                                    return switch (row) {
+                                      _GearCategoryRow(:final category) => _buildCategoryHeader(category, grouped),
+                                      _GearEntryRow(:final item) => _GearItemTile(item: item),
+                                    };
+                                  },
                                 ),
                         ),
                       ],
@@ -172,16 +177,17 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                         ),
                         const Divider(height: 1),
                         Expanded(
-                          child: widget.gearSet.meals == null || widget.gearSet.meals!.isEmpty
+                          child: mealRows.isEmpty
                               ? const Center(child: Text('此組合沒有糧食計畫'))
-                              : ListView(
-                                  children: [
-                                    for (final plan in widget.gearSet.meals!) ...[
-                                      _buildMealPlanHeader(plan),
-                                      for (final entry in plan.meals.entries)
-                                        for (final meal in entry.value) _MealItemTile(meal: meal, type: entry.key),
-                                    ],
-                                  ],
+                              : ListView.builder(
+                                  itemCount: mealRows.length,
+                                  itemBuilder: (context, index) {
+                                    final row = mealRows[index];
+                                    return switch (row) {
+                                      _MealDayRow(:final plan) => _buildMealPlanHeader(plan),
+                                      _MealEntryRow(:final meal, :final type) => _MealItemTile(meal: meal, type: type),
+                                    };
+                                  },
                                 ),
                         ),
                       ],
@@ -248,9 +254,35 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
     );
   }
 
-  Widget _buildCategoryHeader(String category) {
+  /// 將分類/項目扁平化為單一列表，供 [ListView.builder] lazy 建構。
+  List<_GearRow> _buildGearRows(Map<String, List<GearItem>> grouped, List<String> sortedCats) {
+    final rows = <_GearRow>[];
+    for (final category in sortedCats) {
+      rows.add(_GearCategoryRow(category));
+      if (_expandedCategories.contains(category)) {
+        rows.addAll(grouped[category]!.map(_GearEntryRow.new));
+      }
+    }
+    return rows;
+  }
+
+  /// 將糧食計畫/餐點扁平化為單一列表，供 [ListView.builder] lazy 建構。
+  List<_MealRow> _buildMealRows(List<DailyMealPlan> plans) {
+    final rows = <_MealRow>[];
+    for (final plan in plans) {
+      rows.add(_MealDayRow(plan));
+      for (final entry in plan.meals.entries) {
+        for (final meal in entry.value) {
+          rows.add(_MealEntryRow(meal, entry.key));
+        }
+      }
+    }
+    return rows;
+  }
+
+  Widget _buildCategoryHeader(String category, Map<String, List<GearItem>> grouped) {
     final isExpanded = _expandedCategories.contains(category);
-    final itemsInCategory = groupedItems[category] ?? [];
+    final itemsInCategory = grouped[category] ?? [];
     final categoryWeight = itemsInCategory.fold<double>(0, (sum, item) => sum + item.totalWeight);
 
     return InkWell(
@@ -303,6 +335,37 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
       ),
     );
   }
+}
+
+/// 裝備 Tab 扁平化列項目（分類標頭 / 單一裝備）。
+sealed class _GearRow {
+  const _GearRow();
+}
+
+class _GearCategoryRow extends _GearRow {
+  final String category;
+  const _GearCategoryRow(this.category);
+}
+
+class _GearEntryRow extends _GearRow {
+  final GearItem item;
+  const _GearEntryRow(this.item);
+}
+
+/// 糧食 Tab 扁平化列項目（日期標頭 / 單一餐點）。
+sealed class _MealRow {
+  const _MealRow();
+}
+
+class _MealDayRow extends _MealRow {
+  final DailyMealPlan plan;
+  const _MealDayRow(this.plan);
+}
+
+class _MealEntryRow extends _MealRow {
+  final MealItem meal;
+  final MealType type;
+  const _MealEntryRow(this.meal, this.type);
 }
 
 class _MealItemTile extends StatelessWidget {
