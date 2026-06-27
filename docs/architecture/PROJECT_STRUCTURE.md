@@ -88,19 +88,32 @@ backend/
 │   └── gen.go                         # oapi-codegen 產生
 │
 ├── internal/                          # 內部套件 (不可外部引用)
-│   ├── auth/                          # 認證領域 (JWT + bcrypt)
-│   ├── trip/                          # 行程領域 (含 Gear/Meals/Members/Itinerary)
-│   ├── library/                       # 模板庫 (Gear/Meal Libraries)
+│   ├── auth/                          # 認證領域 (bcrypt + verification)
+│   │   ├── tokens/                    # JWT 簽發與驗證 (TokenManager)
+│   │   └── mocks/                     # 測試 Mock
+│   ├── trip/                          # 行程領域 (含 Gear/Meals/MealPlanDays/Members/Itinerary)
+│   │   └── mocks/
+│   ├── library/                       # 個人裝備庫 / 食物庫 (Gear/Meal Libraries)
+│   ├── gearset/                       # 雲端裝備組合 (Gear Cloud)
 │   ├── interaction/                   # 互動領域 (Polls, Messages)
-│   ├── favorite/                      # 最愛領域
+│   ├── favorite/                      # 收藏領域
 │   ├── groupevent/                    # 揪團領域
-│   ├── weather/                       # 天氣領域
+│   ├── weather/                       # 天氣領域 (CWA ETL 查詢)
+│   ├── flag/                          # 系統旗標 (Feature Flags)
 │   ├── log/                           # 系統日誌領域
 │   ├── heartbeat/                     # 系統監控領域
-│   ├── common/                        # 共享層 (apiutil, middleware, logger)
+│   ├── common/                        # 共享工具 (apiutil, ptrutil)
+│   ├── middleware/                    # Chi 中介層 (JWT, CORS, RequestLogger)
+│   ├── logger/                        # slog 日誌初始化
+│   ├── config/                        # 環境變數設定
+│   ├── database/                      # 連線池與 Migration 執行
 │   ├── app/                           # 應用層 (啟動與路由分配)
-│   │   └── api/                       # API 轉接層 (Adapters)
+│   │   └── api/                       # API 轉接層 (Adapters, Server 聚合)
 │   └── apperror/                      # 錯誤碼定義
+│
+├── pkg/                               # 可重用套件 (可外部引用)
+│   ├── cache/                         # 快取抽象 (Memory / Redis)
+│   └── email/                         # SMTP 寄信服務
 │
 ├── migrations/                        # SQL Migration 檔案
 ├── tests/                             # E2E 測試
@@ -131,6 +144,8 @@ backend/
 | **Handler**    | 領域 Request/Response   | `backend/internal/<domain>/` |
 | **Service**    | 商業邏輯                | `backend/internal/<domain>/` |
 | **Repository** | 資料存取 (PostgreSQL)   | `backend/internal/<domain>/` |
-| **Domain**     | 業務實體與規則          | `backend/internal/<domain>/` |
-| **Common**     | 共享工具 (API, MW, Log) | `backend/internal/common/`   |
-| **App**        | 應用程序啟動與 DI       | `backend/internal/app/`      |
+| **Domain**     | 業務實體與規則          | `backend/internal/<domain>/`                       |
+| **Common**     | 共享工具 (apiutil, ptrutil) | `backend/internal/common/`                     |
+| **Middleware** | JWT / CORS / 日誌中介層 | `backend/internal/middleware/`                     |
+| **Pkg**        | 可重用套件 (cache, email) | `backend/pkg/`                                   |
+| **App**        | 應用程序啟動與路由聚合  | `backend/internal/app/`                            |

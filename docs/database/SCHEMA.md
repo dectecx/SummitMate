@@ -937,6 +937,107 @@ CREATE INDEX IF NOT EXISTS idx_gear_set_meals_set_id ON gear_set_meals(gear_set_
 
 ---
 
+### 3.11 天氣模組 (Weather)
+
+由 `weatherjob` ETL 從中央氣象署 (CWA) API 拉取後寫入，供 App 與 Web 直接查詢，不參與 Offline 雙向同步。
+
+#### Table: `weather_data`
+
+| Column      | Type        | Constraints | Description                |
+| :---------- | :---------- | :---------- | :------------------------- |
+| **id**      | UUID        | **PK**      | `uuidv7()`                 |
+| location    | TEXT        | NN          | 地點名稱                   |
+| start_time  | TIMESTAMPTZ | NN          | 預報區間起                 |
+| end_time    | TIMESTAMPTZ | NN          | 預報區間迄                 |
+| wx          | TEXT        | Default     | 天氣現象描述               |
+| temp        | REAL        | Default     | 溫度 (°C)                  |
+| pop         | INT         | Default     | 降雨機率 (%)               |
+| min_temp    | REAL        | Default     | 最低溫                     |
+| max_temp    | REAL        | Default     | 最高溫                     |
+| humidity    | REAL        | Default     | 相對濕度                   |
+| wind_speed  | REAL        | Default     | 風速                       |
+| min_at      | REAL        | Default     | 最低體感                   |
+| max_at      | REAL        | Default     | 最高體感                   |
+| issue_time  | TIMESTAMPTZ |             | 發布時間                   |
+| fetched_at  | TIMESTAMPTZ | NN, Default | ETL 抓取時間               |
+
+> [!NOTE]
+> `UNIQUE (location, start_time, end_time)` 確保同地點同區間僅保留一筆，ETL 以 Upsert 更新。
+
+```sql
+CREATE TABLE IF NOT EXISTS weather_data (
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
+    location    TEXT NOT NULL,
+    start_time  TIMESTAMPTZ NOT NULL,
+    end_time    TIMESTAMPTZ NOT NULL,
+    wx          TEXT DEFAULT '',
+    temp        REAL DEFAULT 0,
+    pop         INT  DEFAULT 0,
+    min_temp    REAL DEFAULT 0,
+    max_temp    REAL DEFAULT 0,
+    humidity    REAL DEFAULT 0,
+    wind_speed  REAL DEFAULT 0,
+    min_at      REAL DEFAULT 0,
+    max_at      REAL DEFAULT 0,
+    issue_time  TIMESTAMPTZ,
+    fetched_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (location, start_time, end_time)
+);
+CREATE INDEX idx_weather_location   ON weather_data (location);
+CREATE INDEX idx_weather_start_time ON weather_data (start_time);
+```
+
+---
+
+### 3.12 系統旗標 (System Flags)
+
+提供後端功能開關 (Feature Flags)，由 `flag` 領域管理 (`GET /system/flags`, `POST /system/flags`)。所有變更皆會透過 Trigger 寫入歷史表稽核。
+
+#### Table: `system_flags`
+
+| Column      | Type        | Constraints | Description                  |
+| :---------- | :---------- | :---------- | :--------------------------- |
+| **key**     | TEXT        | **PK**      | 旗標鍵                       |
+| value       | BOOLEAN     | NN, Default | 開關值                       |
+| description | TEXT        |             | 說明                         |
+| updated_at  | TIMESTAMPTZ | Default     | 更新時間                     |
+
+預設種子資料：
+
+| Key                       | 預設值  | 說明                         |
+| :------------------------ | :------ | :--------------------------- |
+| `skip_verification_code`  | `FALSE` | 是否放行任意 Email 驗證碼    |
+| `enable_email_sending`    | `TRUE`  | 是否實際寄送驗證信           |
+
+```sql
+CREATE TABLE IF NOT EXISTS system_flags (
+    key         TEXT PRIMARY KEY,
+    value       BOOLEAN NOT NULL DEFAULT FALSE,
+    description TEXT,
+    updated_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Table: `system_flags_history`
+
+記錄每次旗標 INSERT / UPDATE / DELETE 的前後值，由 Trigger `trg_system_flags_changes` 自動寫入。
+
+```sql
+CREATE TABLE IF NOT EXISTS system_flags_history (
+    id          BIGSERIAL PRIMARY KEY,
+    key         TEXT NOT NULL,
+    old_value   BOOLEAN,
+    new_value   BOOLEAN,
+    changed_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    changed_by  TEXT
+);
+```
+
+> [!NOTE]
+> Trigger 會從 `current_setting('app.current_user_id')` 取得操作者 ID，若無則退回 `SESSION_USER`。
+
+---
+
 ## 4. GAS → PostgreSQL 遷移對照
 
 | GAS Sheet 名稱         | PostgreSQL Table           | 變更重點                                     |
@@ -962,6 +1063,9 @@ CREATE INDEX IF NOT EXISTS idx_gear_set_meals_set_id ON gear_set_meals(gear_set_
 | RolePermissions        | `role_permissions`         | 複合主鍵                                     |
 | Logs                   | `logs`                     | 新增 UUID PK                                 |
 | Heartbeat              | `heartbeats`               | 移除 `user_name`/`avatar` 快照               |
+| (新增)                 | `weather_data`             | Go 時期新增，CWA 天氣 ETL 快取               |
+| (新增)                 | `system_flags`             | Go 時期新增，後端功能開關                    |
+| (新增)                 | `system_flags_history`     | Go 時期新增，旗標變更稽核 (Trigger 維護)     |
 
 ---
 

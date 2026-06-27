@@ -5,9 +5,9 @@
 ```mermaid
 graph TB
     subgraph Presentation["表現層 (Presentation)"]
-        Screens["Screens (28)"]
+        Screens["Screens (~29)"]
         Widgets["Widgets"]
-        Cubits["Cubits (13)"]
+        Cubits["Cubits (~20)"]
         Providers["Providers"]
     end
 
@@ -101,44 +101,52 @@ graph TB
     Repos --> PG
 ```
 
-### Backend Service 清單
+### Backend Service / Handler 清單
 
-| Service              | 職責                        | Handler              |
-| :------------------- | :-------------------------- | :------------------- |
-| `AuthService`        | 註冊/登入/JWT/帳號管理      | `AuthHandler`        |
-| `TripService`        | 行程 CRUD + 成員 + 行程節點 | `TripHandler`        |
-| `GearLibraryService` | 個人裝備庫                  | `GearLibraryHandler` |
-| `MealLibraryService` | 個人食物庫                  | `MealLibraryHandler` |
-| `TripGearService`    | 行程裝備                    | `TripGearHandler`    |
-| `TripMealService`    | 行程食物                    | `TripMealHandler`    |
-| `MessageService`     | 行程留言板                  | `MessageHandler`     |
-| `PollService`        | 投票機制                    | `PollHandler`        |
-| `FavoriteService`    | 收藏                        | `FavoriteHandler`    |
-| `GroupEventService`  | 揪團活動                    | `GroupEventHandler`  |
-| `WeatherService`     | 氣象 ETL + 查詢             | `WeatherHandler`     |
-| `LogService`         | App 日誌上傳                | `LogHandler`         |
-| `HeartbeatService`   | 心跳追蹤                    | `HeartbeatHandler`   |
+> Handler 為各領域的 HTTP 層；`internal/app/api/Server` 聚合所有 Handler 以實作 OpenAPI 產生的 `ServerInterface`。
+
+| 領域 (package) | Service                              | 職責                            | Handler              |
+| :------------- | :----------------------------------- | :------------------------------ | :------------------- |
+| `auth`         | `AuthService`                        | 註冊/登入/刷新/驗證/帳號管理    | `AuthHandler`        |
+| `trip`         | `TripService`                        | 行程 CRUD + 成員 + 節點 + 移交  | `TripHandler`        |
+| `trip`         | `TripGearService`                    | 行程裝備                        | `TripGearHandler`    |
+| `trip`         | `TripMealService`                    | 行程食物 + 糧食計畫天數         | `TripMealHandler`    |
+| `library`      | `LibraryService`                     | 個人裝備庫 / 食物庫             | `LibraryHandler`     |
+| `gearset`      | `GearSetService`                     | 雲端裝備組合 (Gear Cloud)       | `GearSetHandler`     |
+| `interaction`  | `PollService` + `MessageService`     | 投票機制 / 行程留言板           | `InteractionHandler` |
+| `favorite`     | `FavoriteService`                    | 收藏                            | `FavoriteHandler`    |
+| `groupevent`   | `GroupEventService`                  | 揪團活動 + 報名 + 留言 + 按讚   | `GroupEventHandler`  |
+| `weather`      | `WeatherService`                     | 氣象 ETL + 查詢                 | `WeatherHandler`     |
+| `flag`         | `FlagService`                        | 系統旗標 (Feature Flags)        | `FlagHandler`        |
+| `log`          | `LogService`                         | App 日誌上傳                    | `LogHandler`         |
+| `heartbeat`    | `HeartbeatService`                   | 心跳追蹤                        | `HeartbeatHandler`   |
 
 ---
 
 ## Cubit 模組清單
 
-| Cubit              | 職責      | 依賴                  |
-| :----------------- | :-------- | :-------------------- |
-| `AuthCubit`        | 認證狀態  | IAuthService          |
-| `SyncCubit`        | 同步狀態  | ISyncService          |
-| `TripCubit`        | 行程 CRUD | TripRepository        |
-| `ItineraryCubit`   | 行程節點  | ItineraryRepository   |
-| `GearCubit`        | 個人裝備  | GearRepository        |
-| `GearLibraryCubit` | 裝備庫    | GearLibraryRepository |
-| `MessageCubit`     | 留言板    | MessageRepository     |
-| `PollCubit`        | 投票      | PollRepository        |
-| `MealCubit`        | 餐點規劃  | 記憶體                |
-| `GroupEventCubit`  | 揪團      | GroupEventRepository  |
-| `FavoritesCubit`   | 最愛      | FavoritesRepository   |
-| `SettingsCubit`    | 設定      | SettingsRepository    |
-| `MapCubit`         | 地圖      | GeolocatorService     |
-| `TutorialCubit`    | 教學流程  | 記憶體                |
+| Cubit                      | 職責             | 依賴                         |
+| :------------------------- | :--------------- | :--------------------------- |
+| `AuthCubit`                | 認證狀態         | IAuthService                 |
+| `SyncCubit`                | 同步狀態         | ISyncService                 |
+| `ConnectivityCubit`        | 離線狀態廣播     | ConnectivityService          |
+| `TripCubit`                | 行程 CRUD        | TripRepository               |
+| `ItineraryCubit`           | 行程節點         | ItineraryRepository          |
+| `GearCubit`                | 行程裝備         | GearRepository               |
+| `GearLibraryCubit`         | 個人裝備庫       | GearLibraryRepository        |
+| `MessageCubit`             | 留言板           | MessageRepository            |
+| `PollCubit`                | 投票             | PollRepository               |
+| `MealCubit`                | 餐點規劃         | MealRepository / 記憶體      |
+| `GroupEventCubit`          | 揪團             | GroupEventRepository         |
+| `GroupEventCommentCubit`   | 揪團留言         | GroupEventRepository         |
+| `GroupEventReviewCubit`    | 揪團報名審核     | GroupEventRepository         |
+| `MountainFavoritesCubit`   | 百岳收藏         | FavoritesRepository          |
+| `GroupEventFavoritesCubit` | 揪團收藏         | FavoritesRepository          |
+| `SettingsCubit`            | 設定             | SettingsRepository           |
+| `MapCubit`                 | 地圖             | GeolocatorService            |
+| `OfflineMapCubit`          | 離線圖資管理     | TileCaching                  |
+| `TutorialCubit`            | 教學流程 + Mock  | 記憶體                       |
+| `AppErrorCubit`            | 全域錯誤提示     | AppErrorHandler              |
 
 ---
 

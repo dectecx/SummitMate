@@ -71,16 +71,21 @@ sequenceDiagram
 | Token         | 有效期 | 用途                     | 儲存位置      |
 | :------------ | :----: | :----------------------- | :------------ |
 | Access Token  | 1 小時 | API 授權 (Bearer Header) | SecureStorage |
-| Refresh Token | 30 天  | 換取新 Access Token      | SecureStorage |
+| Refresh Token | 14 天  | 換取新 Access Token      | SecureStorage |
 | 離線寬限      |  7 天  | 離線模式存取             | App 快取判斷  |
+
+> [!NOTE]
+> 登出 (`/auth/logout`) 與修改密碼 (`/auth/change-password`) 會將當前 Token 加入黑名單 (Token Blacklist)，
+> 黑名單透過可抽換的 `pkg/cache` (Memory / Redis) 儲存，於 JWT 中介層驗證時比對。
 
 ### JWT 結構
 
 ```go
-// backend/internal/auth/jwt.go
+// backend/internal/auth/tokens/jwt.go
 type Claims struct {
-    UserID string `json:"user_id"`
-    Email  string `json:"email"`
+    UserID    string `json:"user_id"`
+    Email     string `json:"email"`
+    TokenType string `json:"token_type,omitempty"` // "access" or "refresh"
     jwt.RegisteredClaims
 }
 ```
@@ -151,13 +156,14 @@ flowchart TD
 
 ## 後端實作對照
 
-| Go Backend 元件      | 檔案                             | 職責                         |
-| :------------------- | :------------------------------- | :--------------------------- |
-| `TokenManager`       | `internal/auth/jwt.go`           | JWT 簽發與驗證               |
-| `Password`           | `internal/auth/password.go`      | bcrypt 雜湊與比對            |
-| `AuthService`        | `internal/auth/service.go`       | 註冊/登入/刷新/驗證/帳號管理 |
-| `AuthHandler`        | `internal/auth/handler.go`       | HTTP 請求處理                |
-| `JWTAuth Middleware` | `internal/common/middleware/...` | 請求級 JWT 驗證              |
+| Go Backend 元件      | 檔案                                | 職責                         |
+| :------------------- | :---------------------------------- | :--------------------------- |
+| `TokenManager`       | `internal/auth/tokens/jwt.go`       | JWT 簽發與驗證               |
+| `Password`           | `internal/auth/password.go`         | bcrypt 雜湊與比對            |
+| `Verification`       | `internal/auth/verification.go`     | Email 驗證碼產生與比對       |
+| `AuthService`        | `internal/auth/service.go`          | 註冊/登入/刷新/驗證/帳號管理 |
+| `AuthHandler`        | `internal/auth/handler.go`          | HTTP 請求處理                |
+| `JWTAuth Middleware` | `internal/middleware/jwt_auth.go`   | 請求級 JWT 驗證 + 黑名單比對 |
 
 ---
 
