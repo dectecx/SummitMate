@@ -24,13 +24,10 @@ func NewGearSetHandler(svc GearSetService) *GearSetHandler {
 // ListGearSets 取得裝備組合列表
 // (GET /gear-sets)
 func (h *GearSetHandler) ListGearSets(w http.ResponseWriter, r *http.Request, params api.ListGearSetsParams) {
-	page := 1
-	if params.Page != nil && *params.Page > 0 {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil && *params.Limit > 0 && *params.Limit <= 100 {
-		limit = *params.Limit
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 	search := ""
 	if params.Search != nil {

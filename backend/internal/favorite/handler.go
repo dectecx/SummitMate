@@ -26,13 +26,10 @@ func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	page := 1
-	if params.Page != nil {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil {
-		limit = *params.Limit
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 
 	favs, total, hasMore, err := h.service.ListFavorites(r.Context(), userID, page, limit)

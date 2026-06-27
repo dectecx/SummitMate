@@ -35,13 +35,10 @@ func (h *LibraryHandler) ListGearLibrary(w http.ResponseWriter, r *http.Request,
 	if params.IncludeArchived != nil {
 		includeArchived = *params.IncludeArchived
 	}
-	page := 1
-	if params.Page != nil {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil {
-		limit = *params.Limit
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 	search := ""
 	if params.Search != nil {
@@ -190,13 +187,10 @@ func (h *LibraryHandler) ListMealLibrary(w http.ResponseWriter, r *http.Request,
 	if params.IncludeArchived != nil {
 		includeArchived = *params.IncludeArchived
 	}
-	page := 1
-	if params.Page != nil {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil {
-		limit = *params.Limit
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 	search := ""
 	if params.Search != nil {

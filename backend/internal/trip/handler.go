@@ -27,16 +27,10 @@ func (h *TripHandler) ListTrips(w http.ResponseWriter, r *http.Request, params a
 		return
 	}
 
-	page := 1
-	if params.Page != nil && *params.Page > 0 {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil && *params.Limit > 0 {
-		limit = *params.Limit
-		if limit > 100 {
-			limit = 100
-		}
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 	search := ""
 	if params.Search != nil {

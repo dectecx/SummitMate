@@ -31,10 +31,10 @@ var (
 
 // GroupEvent 相關
 var (
-	ErrEventNotFound     = New(http.StatusNotFound, TypeInvalidReq, "event_not_found", "找不到該活動")
-	ErrEventAccessDenied     = New(http.StatusForbidden, TypeAuth, "event_permission_denied", "無權限操作此活動")
-	ErrAlreadyApplied       = New(http.StatusConflict, TypeBusinessLogic, "already_applied", "您已經報名過此活動")
-	ErrApplicationNotFound   = New(http.StatusNotFound, TypeInvalidReq, "application_not_found", "找不到報名紀錄")
+	ErrEventNotFound       = New(http.StatusNotFound, TypeInvalidReq, "event_not_found", "找不到該活動")
+	ErrEventAccessDenied   = New(http.StatusForbidden, TypeAuth, "event_permission_denied", "無權限操作此活動")
+	ErrAlreadyApplied      = New(http.StatusConflict, TypeBusinessLogic, "already_applied", "您已經報名過此活動")
+	ErrApplicationNotFound = New(http.StatusNotFound, TypeInvalidReq, "application_not_found", "找不到報名紀錄")
 )
 
 // Validation 相關
@@ -42,4 +42,10 @@ var (
 	ErrPasswordTooShort = New(http.StatusBadRequest, TypeValidation, "password_too_short", "密碼長度至少需要 8 個字元")
 	ErrPasswordTooWeak  = New(http.StatusBadRequest, TypeValidation, "password_too_weak", "密碼強度不足，請包含字母與數字")
 	ErrInvalidEmail     = New(http.StatusBadRequest, TypeValidation, "invalid_email", "Email 格式不正確")
+)
+
+// 分頁相關
+var (
+	ErrInvalidPage  = New(http.StatusBadRequest, TypeValidation, "invalid_page", "page 參數必須為大於 0 的整數").WithParam("page")
+	ErrInvalidLimit = New(http.StatusBadRequest, TypeValidation, "invalid_limit", "limit 參數必須介於 1 到 200 之間").WithParam("limit")
 )

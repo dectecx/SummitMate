@@ -32,13 +32,10 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 		hostIDPtr = &c
 	}
 
-	page := 1
-	if params.Page != nil {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil {
-		limit = *params.Limit
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 	search := ""
 	if params.Search != nil {
@@ -448,16 +445,12 @@ func (h *GroupEventHandler) GetGroupEventsMy(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	page := 1
-	if params.Page != nil {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil {
-		limit = *params.Limit
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 	listType := string(params.Type)
-
 
 	events, total, hasMore, err := h.service.ListMyEvents(r.Context(), userID, listType, page, limit)
 	if err != nil {
