@@ -106,6 +106,69 @@ func (r *pollRepository) loadPollOptions(ctx context.Context, pollID string) ([]
 	return options, nil
 }
 
+// batchLoadPollOptions loads options and votes for multiple polls in two bulk queries
+// instead of calling loadPollOptions per poll, reducing N+1 to 2 fixed queries.
+func (r *pollRepository) batchLoadPollOptions(ctx context.Context, pollIDs []string) (map[string][]*PollOption, error) {
+	result := make(map[string][]*PollOption, len(pollIDs))
+	for _, id := range pollIDs {
+		result[id] = []*PollOption{}
+	}
+	if len(pollIDs) == 0 {
+		return result, nil
+	}
+
+	db := database.GetQuerier(ctx, r.db)
+
+	optQuery := `
+		SELECT id, poll_id, text, created_at, created_by, updated_at, updated_by
+		FROM poll_options
+		WHERE poll_id = ANY($1)
+		ORDER BY poll_id, created_at ASC
+	`
+	optRows, err := db.Query(ctx, optQuery, pollIDs)
+	if err != nil {
+		return nil, fmt.Errorf("batch query poll options: %w", err)
+	}
+	defer optRows.Close()
+
+	optMap := make(map[string]*PollOption)
+	for optRows.Next() {
+		var opt PollOption
+		if err := optRows.Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatedAt, &opt.CreatedBy, &opt.UpdatedAt, &opt.UpdatedBy); err != nil {
+			return nil, fmt.Errorf("scan poll option row: %w", err)
+		}
+		opt.Voters = []string{}
+		result[opt.PollID] = append(result[opt.PollID], &opt)
+		optMap[opt.ID] = result[opt.PollID][len(result[opt.PollID])-1]
+	}
+	if err := optRows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate poll option rows: %w", err)
+	}
+
+	voteQuery := `SELECT option_id, user_id FROM poll_votes WHERE poll_id = ANY($1)`
+	vRows, err := db.Query(ctx, voteQuery, pollIDs)
+	if err != nil {
+		return nil, fmt.Errorf("batch query poll votes: %w", err)
+	}
+	defer vRows.Close()
+
+	for vRows.Next() {
+		var optID, userID string
+		if err := vRows.Scan(&optID, &userID); err != nil {
+			return nil, fmt.Errorf("scan poll vote row: %w", err)
+		}
+		if opt, ok := optMap[optID]; ok {
+			opt.Voters = append(opt.Voters, userID)
+			opt.VoteCount++
+		}
+	}
+	if err := vRows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate poll vote rows: %w", err)
+	}
+
+	return result, nil
+}
+
 func (r *pollRepository) GetPollByID(ctx context.Context, pollID string) (*Poll, error) {
 	query := `
 		SELECT id, trip_id, title, description, deadline,
@@ -181,13 +244,16 @@ func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string, page 
 		return nil, 0, false, fmt.Errorf("iterate poll rows: %w", err)
 	}
 
+	pollIDs := make([]string, len(polls))
+	for i, p := range polls {
+		pollIDs[i] = p.ID
+	}
+	optsByPoll, err := r.batchLoadPollOptions(ctx, pollIDs)
+	if err != nil {
+		return nil, 0, false, fmt.Errorf("batch load poll options for trip %s: %w", tripID, err)
+	}
 	for _, p := range polls {
-		options, err := r.loadPollOptions(ctx, p.ID)
-		if err == nil {
-			p.Options = options
-		} else {
-			p.Options = []*PollOption{}
-		}
+		p.Options = optsByPoll[p.ID]
 	}
 
 	return polls, total, page*limit < total, nil

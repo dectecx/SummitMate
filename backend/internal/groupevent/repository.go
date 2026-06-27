@@ -77,10 +77,17 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, user
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
             (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
             EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $2) as is_liked,
-            (SELECT id FROM group_event_applications WHERE event_id = e.id AND user_id = $2 ORDER BY created_at DESC LIMIT 1) as my_application_id,
-            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $2 ORDER BY created_at DESC LIMIT 1) as my_application_status,
-            (SELECT rejection_reason FROM group_event_applications WHERE event_id = e.id AND user_id = $2 ORDER BY created_at DESC LIMIT 1) as my_application_reason
+            my_app.id              as my_application_id,
+            my_app.status          as my_application_status,
+            my_app.rejection_reason as my_application_reason
         FROM group_events e
+        LEFT JOIN LATERAL (
+            SELECT id, status, rejection_reason
+            FROM group_event_applications
+            WHERE event_id = e.id AND user_id = $2
+            ORDER BY created_at DESC
+            LIMIT 1
+        ) my_app ON true
         WHERE e.id = $1
     `
 	event := &GroupEvent{}
@@ -157,14 +164,21 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
             (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
             EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $%d) as is_liked,
-            (SELECT id FROM group_event_applications WHERE event_id = e.id AND user_id = $%d ORDER BY created_at DESC LIMIT 1) as my_application_id,
-            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $%d ORDER BY created_at DESC LIMIT 1) as my_application_status,
-            (SELECT rejection_reason FROM group_event_applications WHERE event_id = e.id AND user_id = $%d ORDER BY created_at DESC LIMIT 1) as my_application_reason
+            my_app.id              as my_application_id,
+            my_app.status          as my_application_status,
+            my_app.rejection_reason as my_application_reason
         FROM group_events e
+        LEFT JOIN LATERAL (
+            SELECT id, status, rejection_reason
+            FROM group_event_applications
+            WHERE event_id = e.id AND user_id = $%d
+            ORDER BY created_at DESC
+            LIMIT 1
+        ) my_app ON true
         %s
         ORDER BY e.created_at DESC, e.id DESC
         LIMIT $%d OFFSET $%d
-    `, len(args)+1, len(args)+1, len(args)+1, len(args)+1, whereClause, len(args)+2, len(args)+3)
+    `, len(args)+1, len(args)+1, whereClause, len(args)+2, len(args)+3)
 
 	rows, err := db.Query(ctx, mainQuery, dataArgs...)
 	if err != nil {
@@ -232,10 +246,17 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
             (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
             EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $1) as is_liked,
-            (SELECT id FROM group_event_applications WHERE event_id = e.id AND user_id = $1 ORDER BY created_at DESC LIMIT 1) as my_application_id,
-            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $1 ORDER BY created_at DESC LIMIT 1) as my_application_status,
-            (SELECT rejection_reason FROM group_event_applications WHERE event_id = e.id AND user_id = $1 ORDER BY created_at DESC LIMIT 1) as my_application_reason
+            my_app.id              as my_application_id,
+            my_app.status          as my_application_status,
+            my_app.rejection_reason as my_application_reason
         FROM group_events e
+        LEFT JOIN LATERAL (
+            SELECT id, status, rejection_reason
+            FROM group_event_applications
+            WHERE event_id = e.id AND user_id = $1
+            ORDER BY created_at DESC
+            LIMIT 1
+        ) my_app ON true
         %s
         ORDER BY e.created_at DESC, e.id DESC
         LIMIT $2 OFFSET $3
