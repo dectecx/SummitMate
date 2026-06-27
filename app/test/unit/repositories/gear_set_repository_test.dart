@@ -13,22 +13,27 @@ class MockGearKeyLocalDataSource extends Mock implements IGearKeyLocalDataSource
 
 class MockGearSetCacheDao extends Mock implements GearSetCacheDao {}
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
   late GearSetRepository repository;
   late MockGearCloudRemoteDataSource mockRemoteDataSource;
   late MockGearKeyLocalDataSource mockLocalDataSource;
   late MockGearSetCacheDao mockCacheDao;
+  late MockConnectivityService mockConnectivity;
 
   setUp(() {
     mockRemoteDataSource = MockGearCloudRemoteDataSource();
     mockLocalDataSource = MockGearKeyLocalDataSource();
     mockCacheDao = MockGearSetCacheDao();
+    mockConnectivity = MockConnectivityService();
 
     // Default mock behavior
     when(() => mockCacheDao.getAllGearSets()).thenAnswer((_) async => []);
     when(() => mockCacheDao.saveGearSets(any())).thenAnswer((_) async {});
+    when(() => mockConnectivity.isOffline).thenReturn(false);
 
-    repository = GearSetRepository(mockRemoteDataSource, mockLocalDataSource, mockCacheDao);
+    repository = GearSetRepository(mockRemoteDataSource, mockLocalDataSource, mockCacheDao, mockConnectivity);
   });
 
   group('GearSetRepository', () {

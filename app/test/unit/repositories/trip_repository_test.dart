@@ -128,7 +128,7 @@ void main() {
           expect(result, isA<Failure>());
           final exception = (result as Failure).exception;
           expect(exception, isA<OfflineException>());
-          expect((exception as OfflineException).message, '此功能在離線時不可用');
+          expect((exception as OfflineException).message, '離線模式無法執行此操作');
         },
       );
 

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Favorite {
 
- String get id; String get targetId; FavoriteType get type; DateTime get createdAt; String get createdBy; DateTime? get updatedAt; String get updatedBy;
+ String get id; String get targetId; FavoriteType get type; SyncStatus get syncStatus; DateTime get createdAt; String get createdBy; DateTime? get updatedAt; String get updatedBy;
 /// Create a copy of Favorite
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $FavoriteCopyWith<Favorite> get copyWith => _$FavoriteCopyWithImpl<Favorite>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Favorite&&(identical(other.id, id) || other.id == id)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.type, type) || other.type == type)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Favorite&&(identical(other.id, id) || other.id == id)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.type, type) || other.type == type)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,targetId,type,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,targetId,type,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'Favorite(id: $id, targetId: $targetId, type: $type, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'Favorite(id: $id, targetId: $targetId, type: $type, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $FavoriteCopyWith<$Res>  {
   factory $FavoriteCopyWith(Favorite value, $Res Function(Favorite) _then) = _$FavoriteCopyWithImpl;
 @useResult
 $Res call({
- String id, String targetId, FavoriteType type, DateTime createdAt, String createdBy, DateTime? updatedAt, String updatedBy
+ String id, String targetId, FavoriteType type, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime? updatedAt, String updatedBy
 });
 
 
@@ -65,12 +65,13 @@ class _$FavoriteCopyWithImpl<$Res>
 
 /// Create a copy of Favorite
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? targetId = null,Object? type = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = freezed,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? targetId = null,Object? type = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = freezed,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,targetId: null == targetId ? _self.targetId : targetId // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as FavoriteType,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as FavoriteType,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -159,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String targetId,  FavoriteType type,  DateTime createdAt,  String createdBy,  DateTime? updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String targetId,  FavoriteType type,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime? updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Favorite() when $default != null:
-return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.targetId,_that.type,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -180,10 +181,10 @@ return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String targetId,  FavoriteType type,  DateTime createdAt,  String createdBy,  DateTime? updatedAt,  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String targetId,  FavoriteType type,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime? updatedAt,  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _Favorite():
-return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.targetId,_that.type,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +201,10 @@ return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String targetId,  FavoriteType type,  DateTime createdAt,  String createdBy,  DateTime? updatedAt,  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String targetId,  FavoriteType type,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime? updatedAt,  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _Favorite() when $default != null:
-return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.targetId,_that.type,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -215,12 +216,13 @@ return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.created
 @JsonSerializable()
 
 class _Favorite extends Favorite {
-  const _Favorite({required this.id, required this.targetId, required this.type, required this.createdAt, this.createdBy = '', this.updatedAt, this.updatedBy = ''}): super._();
+  const _Favorite({required this.id, required this.targetId, required this.type, this.syncStatus = SyncStatus.synced, required this.createdAt, this.createdBy = '', this.updatedAt, this.updatedBy = ''}): super._();
   factory _Favorite.fromJson(Map<String, dynamic> json) => _$FavoriteFromJson(json);
 
 @override final  String id;
 @override final  String targetId;
 @override final  FavoriteType type;
+@override@JsonKey() final  SyncStatus syncStatus;
 @override final  DateTime createdAt;
 @override@JsonKey() final  String createdBy;
 @override final  DateTime? updatedAt;
@@ -239,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Favorite&&(identical(other.id, id) || other.id == id)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.type, type) || other.type == type)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Favorite&&(identical(other.id, id) || other.id == id)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.type, type) || other.type == type)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,targetId,type,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,targetId,type,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'Favorite(id: $id, targetId: $targetId, type: $type, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'Favorite(id: $id, targetId: $targetId, type: $type, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -259,7 +261,7 @@ abstract mixin class _$FavoriteCopyWith<$Res> implements $FavoriteCopyWith<$Res>
   factory _$FavoriteCopyWith(_Favorite value, $Res Function(_Favorite) _then) = __$FavoriteCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String targetId, FavoriteType type, DateTime createdAt, String createdBy, DateTime? updatedAt, String updatedBy
+ String id, String targetId, FavoriteType type, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime? updatedAt, String updatedBy
 });
 
 
@@ -276,12 +278,13 @@ class __$FavoriteCopyWithImpl<$Res>
 
 /// Create a copy of Favorite
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? targetId = null,Object? type = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = freezed,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? targetId = null,Object? type = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = freezed,Object? updatedBy = null,}) {
   return _then(_Favorite(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,targetId: null == targetId ? _self.targetId : targetId // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as FavoriteType,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as FavoriteType,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

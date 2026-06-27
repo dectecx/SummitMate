@@ -92,6 +92,28 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
+  Future<Result<GroupEvent, Exception>> updateEvent(GroupEvent event) async {
+    try {
+      final request = GroupEventUpdateRequest(
+        title: event.title,
+        description: event.description,
+        category: event.category,
+        location: event.location,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        maxMembers: event.maxMembers,
+        approvalRequired: event.approvalRequired,
+        privateMessage: event.privateMessage,
+        linkedTripId: event.linkedTripId,
+      );
+      final response = await _groupEventApi.updateEvent(event.id, request);
+      return Success(GroupEventApiMapper.fromResponse(response));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
   Future<Result<void, Exception>> deleteEvent(String eventId) async {
     try {
       await _groupEventApi.deleteEvent(eventId);

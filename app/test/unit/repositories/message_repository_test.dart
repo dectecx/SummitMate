@@ -86,8 +86,7 @@ void main() {
     });
 
     group('addMessage', () {
-      test('Given addMessage, When executing, Then adds to remote and triggers sync', () async {
-        // Arrange
+      test('Given online, When addMessage, Then it posts to remote', () async {
         when(
           () => mockRemoteDataSource.addMessage(
             tripId: any(named: 'tripId'),
@@ -96,20 +95,8 @@ void main() {
           ),
         ).thenAnswer((_) async => const Success('msg_1'));
 
-        // Mock the sync call that happens inside addMessage
-        when(
-          () => mockRemoteDataSource.getMessages(
-            any(),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          ),
-        ).thenAnswer((_) async => Success(PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false)));
-        when(() => mockLocalDataSource.add(any())).thenAnswer((_) async {});
-
-        // Act
         final result = await repository.addMessage(tripId: 'trip_1', content: 'Hello');
 
-        // Assert
         expect(result, isA<Success>());
         verify(
           () => mockRemoteDataSource.addMessage(
@@ -118,22 +105,43 @@ void main() {
             replyToId: any(named: 'replyToId'),
           ),
         ).called(1);
-        verify(() => mockLocalDataSource.add(any())).called(greaterThanOrEqualTo(1));
+      });
+
+      test('Given offline, When addMessage, Then it returns failure without hitting remote', () async {
+        when(() => mockConnectivity.isOffline).thenReturn(true);
+
+        final result = await repository.addMessage(tripId: 'trip_1', content: 'Hello');
+
+        expect(result, isA<Failure>());
+        verifyNever(
+          () => mockRemoteDataSource.addMessage(
+            tripId: any(named: 'tripId'),
+            content: any(named: 'content'),
+            replyToId: any(named: 'replyToId'),
+          ),
+        );
       });
     });
 
     group('deleteById', () {
-      test('Given deleteById, When executing, Then deletes from local and remote', () async {
-        // Arrange
+      test('Given online, When deleteById, Then deletes remote then local', () async {
         when(() => mockLocalDataSource.deleteById(any())).thenAnswer((_) async {});
         when(() => mockRemoteDataSource.deleteMessage(any(), any())).thenAnswer((_) async => const Success(null));
 
-        // Act
         await repository.deleteById('trip_1', 'msg_1');
 
-        // Assert
-        verify(() => mockLocalDataSource.deleteById('msg_1')).called(1);
         verify(() => mockRemoteDataSource.deleteMessage('trip_1', 'msg_1')).called(1);
+        verify(() => mockLocalDataSource.deleteById('msg_1')).called(1);
+      });
+
+      test('Given offline, When deleteById, Then it returns failure without deleting', () async {
+        when(() => mockConnectivity.isOffline).thenReturn(true);
+
+        final result = await repository.deleteById('trip_1', 'msg_1');
+
+        expect(result, isA<Failure>());
+        verifyNever(() => mockRemoteDataSource.deleteMessage(any(), any()));
+        verifyNever(() => mockLocalDataSource.deleteById(any()));
       });
     });
   });

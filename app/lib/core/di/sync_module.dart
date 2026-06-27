@@ -3,6 +3,7 @@ import '../../domain/interfaces/i_sync_adapter.dart';
 import '../../infrastructure/services/adapters/trip_sync_adapter.dart';
 import '../../infrastructure/services/adapters/itinerary_sync_adapter.dart';
 import '../../infrastructure/services/adapters/gear_sync_adapter.dart';
+import '../../infrastructure/services/adapters/favorites_sync_adapter.dart';
 
 /// 同步適配器註冊模組。
 ///
@@ -16,5 +17,6 @@ abstract class SyncModule {
     TripSyncAdapter trip,
     ItinerarySyncAdapter itinerary,
     GearSyncAdapter gear,
-  ) => [trip, itinerary, gear];
+    FavoritesSyncAdapter favorites,
+  ) => [trip, itinerary, gear, favorites];
 }
