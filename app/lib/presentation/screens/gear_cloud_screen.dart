@@ -39,7 +39,6 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   bool _isLoading = false;
   bool _hasFetched = false;
   String? _busyGearSetId; // 防止連續點擊的狀態
-  Timer? _refreshTimer;
   final TextEditingController _searchController = TextEditingController();
 
   List<GearSet> get _filteredGearSets {
@@ -56,16 +55,10 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   void initState() {
     super.initState();
     _fetchGearSets();
-    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (_repository.lastFetchedAt != null && mounted) {
-        setState(() {});
-      }
-    });
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -532,38 +525,10 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                 ),
               ],
             ),
-            if (_repository.lastFetchedAt != null) ...[const SizedBox(height: 12), _buildLastFetchedInfo()],
+            if (_repository.lastFetchedAt != null) ...[const SizedBox(height: 12), _LastFetchedInfo(repository: _repository)],
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildLastFetchedInfo() {
-    final now = DateTime.now();
-    final diff = now.difference(_repository.lastFetchedAt!);
-    final isStale = diff.inHours >= 1;
-
-    String timeStr;
-    if (diff.inMinutes < 1) {
-      timeStr = '剛剛';
-    } else if (diff.inMinutes < 60) {
-      timeStr = '${diff.inMinutes} 分鐘前';
-    } else {
-      timeStr = '${diff.inHours} 小時前';
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.access_time, size: 14, color: isStale ? Colors.orange : Colors.grey),
-        const SizedBox(width: 4),
-        Text('最後更新: $timeStr', style: TextStyle(fontSize: 12, color: isStale ? Colors.orange : Colors.grey)),
-        if (isStale) ...[
-          const SizedBox(width: 8),
-          const Text('(建議重新抓取)', style: TextStyle(fontSize: 12, color: Colors.orange)),
-        ],
-      ],
     );
   }
 
@@ -706,6 +671,65 @@ class _InfoChip extends StatelessWidget {
         Icon(icon, size: 14, color: Colors.grey.shade600),
         const SizedBox(width: 4),
         Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+      ],
+    );
+  }
+}
+
+/// 最後更新時間顯示，自帶每分鐘局部刷新，避免觸發整頁 rebuild。
+class _LastFetchedInfo extends StatefulWidget {
+  final IGearSetRepository repository;
+
+  const _LastFetchedInfo({required this.repository});
+
+  @override
+  State<_LastFetchedInfo> createState() => _LastFetchedInfoState();
+}
+
+class _LastFetchedInfoState extends State<_LastFetchedInfo> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lastFetchedAt = widget.repository.lastFetchedAt;
+    if (lastFetchedAt == null) return const SizedBox.shrink();
+
+    final diff = DateTime.now().difference(lastFetchedAt);
+    final isStale = diff.inHours >= 1;
+
+    final String timeStr;
+    if (diff.inMinutes < 1) {
+      timeStr = '剛剛';
+    } else if (diff.inMinutes < 60) {
+      timeStr = '${diff.inMinutes} 分鐘前';
+    } else {
+      timeStr = '${diff.inHours} 小時前';
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.access_time, size: 14, color: isStale ? Colors.orange : Colors.grey),
+        const SizedBox(width: 4),
+        Text('最後更新: $timeStr', style: TextStyle(fontSize: 12, color: isStale ? Colors.orange : Colors.grey)),
+        if (isStale) ...[
+          const SizedBox(width: 8),
+          const Text('(建議重新抓取)', style: TextStyle(fontSize: 12, color: Colors.orange)),
+        ],
       ],
     );
   }
