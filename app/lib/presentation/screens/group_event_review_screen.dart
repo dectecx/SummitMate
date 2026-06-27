@@ -5,6 +5,7 @@ import 'package:summitmate/domain/domain.dart';
 import '../cubits/group_event/review/group_event_review_cubit.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
 import '../widgets/common/offline_gate.dart';
+import '../widgets/buttons/summit_destructive_button.dart';
 
 
 class GroupEventReviewScreen extends StatelessWidget {
@@ -235,9 +236,8 @@ class GroupEventReviewScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
+          SummitDestructiveButton(
             onPressed: () => Navigator.pop(context, reason),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('確認拒絕'),
           ),
         ],

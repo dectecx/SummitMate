@@ -5,6 +5,7 @@ import '../../cubits/meal/meal_cubit.dart';
 import '../../cubits/meal/meal_state.dart';
 import '../../cubits/trip/trip_cubit.dart';
 import '../../cubits/trip/trip_state.dart';
+import '../buttons/summit_destructive_button.dart';
 
 class MealDayManagementDialog extends StatelessWidget {
   const MealDayManagementDialog({super.key});
@@ -335,8 +336,7 @@ class _DayItemCard extends StatelessWidget {
         content: Text('確定要刪除「${dayInfo.name}」嗎？這將會一併移除該天數內的所有糧食紀錄且無法復原。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          SummitDestructiveButton(
             onPressed: () {
               mealCubit.deleteMealPlanDay(dayInfo.id);
               Navigator.pop(context);

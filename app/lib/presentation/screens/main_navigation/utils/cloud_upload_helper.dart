@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
+import 'package:summitmate/presentation/widgets/buttons/summit_destructive_button.dart';
 
 class CloudUploadHelper {
   static Future<void> handleCloudUpload(BuildContext context) async {
@@ -34,12 +35,11 @@ class CloudUploadHelper {
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-            FilledButton(
+            SummitDestructiveButton(
               onPressed: () {
                 Navigator.pop(context); // 關閉 Dialog
                 context.read<SyncCubit>().uploadItinerary(); // 執行上傳
               },
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('強制覆蓋'),
             ),
           ],

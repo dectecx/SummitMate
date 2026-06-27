@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/itinerary_item.dart';
+import 'buttons/summit_destructive_button.dart';
 
 class ItineraryEditDialog extends StatefulWidget {
   final ItineraryItem? item; // Null for Add, non-null for Edit
@@ -156,8 +157,7 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
         content: const Text('您有未儲存的內容，確定要離開嗎？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('繼續編輯')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          SummitDestructiveButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('捨棄'),
           ),

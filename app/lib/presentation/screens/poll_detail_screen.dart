@@ -7,6 +7,7 @@ import '../cubits/poll/poll_state.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/common/summit_app_bar.dart';
+import '../widgets/buttons/summit_destructive_button.dart';
 
 /// 投票詳情畫面
 ///
@@ -489,8 +490,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         content: const Text('確定要刪除此投票嗎？此動作無法復原。'),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                          FilledButton(
-                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                          SummitDestructiveButton(
                             onPressed: () => Navigator.pop(c, true),
                             child: const Text('刪除'),
                           ),
