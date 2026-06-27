@@ -9,6 +9,7 @@ import (
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/auth"
+	"summitmate/internal/auth/authkeys"
 	authmocks "summitmate/internal/auth/mocks"
 	"summitmate/internal/auth/tokens"
 	flagmocks "summitmate/internal/flag/mocks"
@@ -181,8 +182,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		assert.NotEqual(t, oldToken, newRefreshToken)
 
 		// 舊 refresh token 應已加入黑名單
-		blacklistKey := cache.Key{Module: cache.ModuleAuth, Domain: "blacklist", ID: oldToken}
-		val, cacheErr := mockCache.Get(context.Background(), blacklistKey)
+		val, cacheErr := mockCache.Get(context.Background(), authkeys.BlacklistKey(oldToken))
 		assert.NoError(t, cacheErr)
 		assert.Equal(t, "1", val)
 	})
@@ -228,12 +228,7 @@ func TestAuthService_Logout(t *testing.T) {
 		err := svc.Logout(context.Background(), tokenStr)
 		assert.NoError(t, err)
 
-		blacklistKey := cache.Key{
-			Module: cache.ModuleAuth,
-			Domain: "blacklist",
-			ID:     tokenStr,
-		}
-		val, err := mockCache.Get(context.Background(), blacklistKey)
+		val, err := mockCache.Get(context.Background(), authkeys.BlacklistKey(tokenStr))
 		assert.NoError(t, err)
 		assert.Equal(t, "1", val)
 	})
@@ -266,12 +261,7 @@ func TestAuthService_ChangePassword(t *testing.T) {
 		err := svc.ChangePassword(context.Background(), userID, oldPassword, newPassword, tokenStr)
 		assert.NoError(t, err)
 
-		blacklistKey := cache.Key{
-			Module: cache.ModuleAuth,
-			Domain: "blacklist",
-			ID:     tokenStr,
-		}
-		val, err := mockCache.Get(context.Background(), blacklistKey)
+		val, err := mockCache.Get(context.Background(), authkeys.BlacklistKey(tokenStr))
 		assert.NoError(t, err)
 		assert.Equal(t, "1", val)
 
