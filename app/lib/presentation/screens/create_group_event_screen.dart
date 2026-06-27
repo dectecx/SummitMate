@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../cubits/group_event/group_event_cubit.dart';
+import '../cubits/group_event/group_event_state.dart';
+import '../cubits/base/toast_notification.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -109,9 +111,22 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('建立揪團'),
+    return BlocListener<GroupEventCubit, GroupEventState>(
+      listenWhen: (_, s) => s.notification != null,
+      listener: (ctx, s) {
+        final n = s.notification;
+        if (n == null) return;
+        switch (n.type) {
+          case ToastType.success: ToastService.success(n.message);
+          case ToastType.warning: ToastService.warning(n.message);
+          case ToastType.error: ToastService.error(n.message);
+          case ToastType.info: ToastService.info(n.message);
+        }
+        ctx.read<GroupEventCubit>().clearNotification();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('建立揪團'),
         actions: [
           TextButton(
             onPressed: _isSubmitting ? null : _submit,
@@ -356,6 +371,7 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

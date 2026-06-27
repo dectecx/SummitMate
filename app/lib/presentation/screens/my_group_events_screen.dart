@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/group_event/group_event_state.dart';
+import '../cubits/base/toast_notification.dart';
 import '../widgets/common/summit_app_bar.dart';
 import 'group_event_detail_screen.dart';
 
@@ -52,18 +54,32 @@ class _MyGroupEventsScreenState extends State<MyGroupEventsScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: SummitAppBar(
-        title: const Text('我的揪團'),
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: _tabs.map((t) => Tab(icon: Icon(t.$2), text: t.$3)).toList(),
+    return BlocListener<GroupEventCubit, GroupEventState>(
+      listenWhen: (_, s) => s.notification != null,
+      listener: (ctx, s) {
+        final n = s.notification;
+        if (n == null) return;
+        switch (n.type) {
+          case ToastType.success: ToastService.success(n.message);
+          case ToastType.warning: ToastService.warning(n.message);
+          case ToastType.error: ToastService.error(n.message);
+          case ToastType.info: ToastService.info(n.message);
+        }
+        ctx.read<GroupEventCubit>().clearNotification();
+      },
+      child: Scaffold(
+        appBar: SummitAppBar(
+          title: const Text('我的揪團'),
+          centerTitle: true,
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: _tabs.map((t) => Tab(icon: Icon(t.$2), text: t.$3)).toList(),
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: _tabs.map((t) => _MyEventsTabBody(type: t.$1)).toList(),
+        body: TabBarView(
+          controller: _tabController,
+          children: _tabs.map((t) => _MyEventsTabBody(type: t.$1)).toList(),
+        ),
       ),
     );
   }

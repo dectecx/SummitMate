@@ -7,6 +7,7 @@ import '../cubits/connectivity/connectivity_cubit.dart';
 import '../cubits/connectivity/connectivity_state.dart';
 import '../widgets/common/offline_gate.dart';
 import '../cubits/group_event/group_event_cubit.dart';
+import '../cubits/base/toast_notification.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
 import '../cubits/favorites/group_event/group_event_favorites_state.dart';
@@ -120,7 +121,20 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
 
     final isHost = _event.isHost(cubitState is GroupEventLoaded ? cubitState.currentUserId : '');
 
-    return Scaffold(
+    return BlocListener<GroupEventCubit, GroupEventState>(
+      listenWhen: (_, s) => s.notification != null,
+      listener: (ctx, s) {
+        final n = s.notification;
+        if (n == null) return;
+        switch (n.type) {
+          case ToastType.success: ToastService.success(n.message);
+          case ToastType.warning: ToastService.warning(n.message);
+          case ToastType.error: ToastService.error(n.message);
+          case ToastType.info: ToastService.info(n.message);
+        }
+        ctx.read<GroupEventCubit>().clearNotification();
+      },
+      child: Scaffold(
       backgroundColor: colorScheme.surface,
       body: RefreshIndicator(
         onRefresh: () => context.read<GroupEventCubit>().refreshEvent(_event.id),
@@ -338,6 +352,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           );
         },
       ),
+    ),
     );
   }
 

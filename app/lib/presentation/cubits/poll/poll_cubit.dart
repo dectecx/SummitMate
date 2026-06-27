@@ -1,15 +1,16 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
+import 'package:summitmate/presentation/cubits/base/remote_sync_mixin.dart';
+import 'package:summitmate/presentation/cubits/base/toast_notification.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 
 import '../../../infrastructure/tools/log_service.dart';
-import '../../../infrastructure/tools/toast_service.dart';
 import 'poll_state.dart';
 
 @injectable
-class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
+class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState>, RemoteSyncMixin<PollState> {
   final IPollRepository _pollRepository;
   final ITripRepository _tripRepository;
   final IConnectivityService _connectivity;
@@ -20,11 +21,33 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
   PollCubit(this._pollRepository, this._tripRepository, this._connectivity, this._authService)
     : super(const PollInitial());
 
-  String get _currentUserId {
-    return _authService.currentUserId ?? 'guest';
+  // ──────────────────────────────────────────
+  // RemoteSyncMixin overrides
+  // ──────────────────────────────────────────
+
+  @override
+  IConnectivityService get connectivity => _connectivity;
+
+  @override
+  PollState withSyncing(PollState current, bool isSyncing) {
+    if (current is PollLoaded) return current.copyWith(isSyncing: isSyncing);
+    return current;
   }
 
-  bool get _isOffline => _connectivity.isOffline;
+  @override
+  PollState withNotification(PollState current, ToastNotification notification) {
+    if (current is PollLoaded) return current.copyWith(notification: notification);
+    if (current is PollInitial) return PollInitial(notification: notification);
+    if (current is PollLoading) return PollLoading(notification: notification);
+    if (current is PollError) return PollError(current.message, notification: notification);
+    return current;
+  }
+
+  // ──────────────────────────────────────────
+  // Internal helpers
+  // ──────────────────────────────────────────
+
+  String get _currentUserId => _authService.currentUserId ?? 'guest';
 
   Future<String?> get _currentTripId async {
     final result = await _tripRepository.getActiveTrip(_currentUserId);
@@ -33,6 +56,16 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
       Failure() => null,
     };
   }
+
+  /// 清除目前 State 的一次性 Toast 通知。由 UI [BlocListener] 在呈現 Toast 後呼叫。
+  void clearNotification() {
+    final s = state;
+    if (s is PollLoaded) safeEmit(s.copyWith(clearNotification: true));
+  }
+
+  // ──────────────────────────────────────────
+  // Load / Fetch
+  // ──────────────────────────────────────────
 
   Future<void> loadPolls() async {
     safeEmit(const PollLoading());
@@ -43,24 +76,17 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
       return;
     }
 
-    // 從本地 Repo 載入
     final polls = await _pollRepository.getByTripId(tripId);
-
-    // 初始載入
     safeEmit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null));
   }
 
   /// 透過 API 更新投票列表
   Future<void> fetchPolls({bool isAuto = false}) async {
-    if (_isOffline) {
-      if (!isAuto) ToastService.warning('離線模式無法同步');
-      return;
-    }
+    if (guardOffline('離線模式無法同步', isAuto: isAuto)) return;
 
     final tripId = await _currentTripId;
     if (tripId == null) return;
 
-    // 設定同步中狀態
     if (state is PollLoaded) {
       safeEmit((state as PollLoaded).copyWith(isSyncing: true));
     } else {
@@ -77,17 +103,24 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
       final fetchedPolls = paginatedList.items;
       final now = DateTime.now();
 
-      safeEmit(PollLoaded(polls: fetchedPolls, currentUserId: _currentUserId, lastSyncTime: now, isSyncing: false));
-
-      if (!isAuto) ToastService.success('投票同步成功');
+      safeEmit(PollLoaded(
+        polls: fetchedPolls,
+        currentUserId: _currentUserId,
+        lastSyncTime: now,
+        isSyncing: false,
+        notification: isAuto ? null : const ToastNotification.success('投票同步成功'),
+      ));
     } catch (e) {
       LogService.error('Fetch polls failed: $e', source: _source);
       if (!isAuto) {
-        safeEmit(PollError(AppErrorHandler.getUserMessage(e)));
-        // 若失敗，恢復為舊資料的 Loaded 狀態
         final polls = await _pollRepository.getByTripId(tripId);
-        safeEmit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null, isSyncing: false));
-        ToastService.error(AppErrorHandler.getUserMessage(e));
+        safeEmit(PollLoaded(
+          polls: polls,
+          currentUserId: _currentUserId,
+          lastSyncTime: null,
+          isSyncing: false,
+          notification: ToastNotification.error(AppErrorHandler.getUserMessage(e)),
+        ));
       } else {
         if (state is PollLoaded) {
           safeEmit((state as PollLoaded).copyWith(isSyncing: false));
@@ -99,27 +132,23 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
     }
   }
 
-  /// Action Helper
-  Future<bool> _performAction(Future<Result<void, Exception>> Function() action, String offlineMessage) async {
-    if (_isOffline) {
-      ToastService.error(offlineMessage);
-      return false;
-    }
+  // ──────────────────────────────────────────
+  // Remote actions（透過 RemoteSyncMixin.runWithSyncGuard）
+  // ──────────────────────────────────────────
 
-    if (state is PollLoaded) safeEmit((state as PollLoaded).copyWith(isSyncing: true));
-
-    try {
-      final result = await action();
-      if (result is Failure) throw result.exception;
-      // Refetch to get updated state
-      await fetchPolls(isAuto: true);
-      return true;
-    } catch (e) {
-      LogService.error('Action failed: $e', source: _source);
-      ToastService.error(AppErrorHandler.getUserMessage(e));
-      if (state is PollLoaded) safeEmit((state as PollLoaded).copyWith(isSyncing: false));
-      return false;
-    }
+  Future<bool> _performAction(
+    Future<Result<void, Exception>> Function() action,
+    String offlineMessage,
+  ) async {
+    return await runWithSyncGuard(
+      offlineMessage: offlineMessage,
+      action: () async {
+        final result = await action();
+        if (result is Failure) throw result.exception;
+        await fetchPolls(isAuto: true);
+      },
+      logSource: _source,
+    );
   }
 
   /// 建立投票
@@ -173,19 +202,33 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
     final tripId = await _currentTripId;
     if (tripId == null) return false;
 
-    return await _performAction(() => _pollRepository.delete(tripId, pollId), '離線模式無法刪除投票');
+    return await _performAction(
+      () => _pollRepository.delete(tripId, pollId),
+      '離線模式無法刪除投票',
+    );
   }
 
-  /// 關閉投票 (Mock / Not fully implemented in backend yet, using delete or skipping)
+  /// 關閉投票（TODO: 功能尚未支援）
   Future<bool> closePoll({required String pollId}) async {
-    // If backend supports close, call it here. For now, show info or throw unimp
-    ToastService.info('關閉投票功能尚未支援');
+    final s = state;
+    final notification = const ToastNotification.info('關閉投票功能尚未支援');
+    if (s is PollLoaded) {
+      safeEmit(s.copyWith(notification: notification));
+    } else {
+      safeEmit(PollInitial(notification: notification));
+    }
     return false;
   }
 
-  /// 刪除選項 (Mock / Not fully implemented in backend yet)
+  /// 刪除選項（TODO: 功能尚未支援）
   Future<bool> deleteOption({required String pollId, required String optionId}) async {
-    ToastService.info('刪除選項功能尚未支援');
+    final s = state;
+    final notification = const ToastNotification.info('刪除選項功能尚未支援');
+    if (s is PollLoaded) {
+      safeEmit(s.copyWith(notification: notification));
+    } else {
+      safeEmit(PollInitial(notification: notification));
+    }
     return false;
   }
 

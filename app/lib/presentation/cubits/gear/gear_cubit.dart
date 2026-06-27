@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
+import 'package:summitmate/presentation/cubits/base/trip_dirty_marker_mixin.dart';
 import 'package:flutter/services.dart';
 import '../../../domain/entities/gear_item.dart';
 import '../../../domain/repositories/i_gear_repository.dart';
@@ -20,7 +21,7 @@ import '../../cubits/gear/gear_state.dart';
 /// - 勾選/取消勾選裝備 (透過 [IGearRepository])
 /// - 從個人庫匯入裝備
 @injectable
-class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
+class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState>, TripDirtyMarkerMixin<GearState> {
   final IGearRepository _repository;
   final ITripRepository _tripRepository;
   String? _currentTripId;
@@ -28,6 +29,10 @@ class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
 
   GearCubit(this._repository, this._tripRepository) : super(const GearInitial());
 
+  @override
+  ITripRepository get tripRepository => _tripRepository;
+
+  @override
   String? get currentTripId => _currentTripId;
 
   /// 載入指定行程的裝備
@@ -61,12 +66,6 @@ class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
       } else {
         safeEmit(GearLoaded(items: tripItems));
       }
-    }
-  }
-
-  Future<void> _markCurrentTripDirty() async {
-    if (_currentTripId != null) {
-      await _tripRepository.markTripAsPendingUpdate(_currentTripId!);
     }
   }
 
@@ -131,7 +130,7 @@ class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
 
       final result = await _repository.addItem(item);
       if (result is Failure) throw result.exception;
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await reload();
     } catch (e) {
       LogService.error('Failed to add item: $e', source: _source);
@@ -144,7 +143,7 @@ class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
     try {
       final result = await _repository.updateItem(item);
       if (result is Failure) throw result.exception;
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await reload();
     } catch (e) {
       LogService.error('Failed to update item: $e', source: _source);
@@ -173,7 +172,7 @@ class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
     try {
       final result = await _repository.deleteItem(id);
       if (result is Failure) throw result.exception;
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await reload();
     } catch (e) {
       LogService.error('Failed to delete item: $e', source: _source);
@@ -246,7 +245,7 @@ class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
         final itemToAdd = item.copyWith(tripId: _currentTripId!, isChecked: false, createdAt: DateTime.now());
         await _repository.addItem(itemToAdd);
       }
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await loadGear(_currentTripId!);
     } catch (e) {
       LogService.error('Failed to replace items: $e', source: _source);

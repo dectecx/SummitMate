@@ -1,13 +1,16 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
+import 'package:summitmate/presentation/cubits/base/remote_sync_mixin.dart';
+import 'package:summitmate/presentation/cubits/base/toast_notification.dart';
 import '../../../core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_state.dart';
 
 @injectable
-class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEventState> {
+class GroupEventCubit extends Cubit<GroupEventState>
+    with SafeEmitMixin<GroupEventState>, RemoteSyncMixin<GroupEventState> {
   final IGroupEventRepository _groupEventRepository;
   final IConnectivityService _connectivity;
   final IAuthService _authService;
@@ -18,11 +21,58 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
 
   final Map<String, DateTime> _likeDebounceMap = {};
 
-  GroupEventCubit(this._groupEventRepository, this._connectivity, this._authService) : super(const GroupEventInitial());
+  GroupEventCubit(this._groupEventRepository, this._connectivity, this._authService)
+    : super(const GroupEventInitial());
+
+  // ──────────────────────────────────────────
+  // RemoteSyncMixin overrides
+  // ──────────────────────────────────────────
+
+  @override
+  IConnectivityService get connectivity => _connectivity;
+
+  @override
+  bool get isGuest => _currentUserId == _guestUserId || _currentUserId.isEmpty;
+
+  @override
+  Duration get syncCooldown => _syncCooldown;
+
+  @override
+  DateTime? get syncLastTime => state is GroupEventLoaded ? (state as GroupEventLoaded).lastSyncTime : null;
+
+  @override
+  GroupEventState withSyncing(GroupEventState current, bool isSyncing) {
+    if (current is GroupEventLoaded) return current.copyWith(isSyncing: isSyncing);
+    return current;
+  }
+
+  @override
+  GroupEventState withNotification(GroupEventState current, ToastNotification notification) {
+    if (current is GroupEventLoaded) return current.copyWith(notification: notification);
+    if (current is GroupEventInitial) return GroupEventInitial(notification: notification);
+    if (current is GroupEventLoading) return GroupEventLoading(notification: notification);
+    if (current is MyEventsLoaded) return current.copyWith(notification: notification);
+    if (current is MyEventsLoading) return MyEventsLoading(notification: notification);
+    if (current is MyEventsError) return MyEventsError(message: current.message, type: current.type, notification: notification);
+    return current;
+  }
+
+  // ──────────────────────────────────────────
+  // Internal helpers
+  // ──────────────────────────────────────────
 
   String get _currentUserId => _authService.currentUserId ?? _guestUserId;
-  bool get _isGuest => _currentUserId == _guestUserId || _currentUserId.isEmpty;
-  bool get _isOffline => _connectivity.isOffline;
+
+  /// 清除目前 State 的一次性 Toast 通知。由 UI [BlocListener] 在呈現 Toast 後呼叫。
+  void clearNotification() {
+    final s = state;
+    if (s is GroupEventLoaded) safeEmit(s.copyWith(clearNotification: true));
+    if (s is MyEventsLoaded) safeEmit(s.copyWith(clearNotification: true));
+  }
+
+  // ──────────────────────────────────────────
+  // Load / Fetch
+  // ──────────────────────────────────────────
 
   /// Load events from local repository
   Future<void> loadEvents() async {
@@ -31,17 +81,13 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
     final events = await _groupEventRepository.getAll();
     final lastSync = _groupEventRepository.getLastSyncTime();
 
-    safeEmit(GroupEventLoaded(events: events, currentUserId: _currentUserId, lastSyncTime: lastSync, isGuest: _isGuest));
+    safeEmit(GroupEventLoaded(events: events, currentUserId: _currentUserId, lastSyncTime: lastSync, isGuest: isGuest));
   }
 
   /// Fetch events from API
   Future<void> fetchEvents({bool isAuto = false, GroupEventCategory? category}) async {
-    if (_isOffline) {
-      if (!isAuto) ToastService.warning('離線模式無法使用揪團功能');
-      return;
-    }
+    if (guardOffline('離線模式無法使用揪團功能', isAuto: isAuto)) return;
 
-    // Cooldown check for auto sync
     if (isAuto && state is GroupEventLoaded) {
       final lastSync = (state as GroupEventLoaded).lastSyncTime;
       if (lastSync != null && DateTime.now().difference(lastSync) < _syncCooldown) {
@@ -50,7 +96,6 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
       }
     }
 
-    // Show syncing state
     if (state is GroupEventLoaded) {
       safeEmit((state as GroupEventLoaded).copyWith(isSyncing: true));
     } else {
@@ -72,11 +117,10 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
           currentUserId: _currentUserId,
           lastSyncTime: now,
           isSyncing: false,
-          isGuest: _isGuest,
+          isGuest: isGuest,
+          notification: isAuto ? null : const ToastNotification.success('揪團同步成功'),
         ),
       );
-
-      if (!isAuto) ToastService.success('揪團同步成功');
     } catch (e) {
       LogService.error('Fetch group events failed: $e', source: _source);
       if (!isAuto) {
@@ -88,15 +132,14 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
             currentUserId: _currentUserId,
             lastSyncTime: previousLastSync,
             isSyncing: false,
-            isGuest: _isGuest,
+            isGuest: isGuest,
+            notification: ToastNotification.error(AppErrorHandler.getUserMessage(e)),
           ),
         );
-        ToastService.error(AppErrorHandler.getUserMessage(e));
       } else {
         if (state is GroupEventLoaded) {
           safeEmit((state as GroupEventLoaded).copyWith(isSyncing: false));
         } else if (state is GroupEventLoading) {
-          // 如果是第一次載入失敗，也要設法脫離 loading 狀態
           final events = await _groupEventRepository.getAll();
           safeEmit(
             GroupEventLoaded(
@@ -104,7 +147,7 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
               currentUserId: _currentUserId,
               lastSyncTime: _groupEventRepository.getLastSyncTime(),
               isSyncing: false,
-              isGuest: _isGuest,
+              isGuest: isGuest,
             ),
           );
         }
@@ -114,11 +157,10 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
 
   /// Get a single event by ID (local or remote)
   Future<GroupEvent?> getEventById(String eventId) async {
-    // Try local cache first
     final localEvent = await _groupEventRepository.getById(eventId);
     if (localEvent != null) return localEvent;
 
-    if (_isOffline) return null;
+    if (isOffline) return null;
 
     try {
       final result = await _groupEventRepository.syncEventById(eventId);
@@ -134,7 +176,7 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
 
   /// 重新整理特定揪團資料
   Future<void> refreshEvent(String eventId) async {
-    if (_isOffline) return;
+    if (isOffline) return;
 
     try {
       final result = await _groupEventRepository.syncEventById(eventId);
@@ -149,38 +191,26 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
     }
   }
 
-  /// 執行需要認證的遠端操作
+  // ──────────────────────────────────────────
+  // Remote actions（透過 RemoteSyncMixin.runWithSyncGuard）
+  // ──────────────────────────────────────────
+
   Future<bool> _executeRemoteAction(
     Future<Result<dynamic, Exception>> Function() action,
     String offlineMessage,
     String guestMessage,
   ) async {
-    if (_isGuest) {
-      ToastService.warning(guestMessage);
-      return false;
-    }
-    if (_isOffline) {
-      ToastService.error(offlineMessage);
-      return false;
-    }
-
-    if (state is GroupEventLoaded) {
-      safeEmit((state as GroupEventLoaded).copyWith(isSyncing: true));
-    }
-
-    try {
-      final result = await action();
-      if (result is Failure) throw result.exception;
-      await fetchEvents(isAuto: false, category: null);
-      return true;
-    } catch (e) {
-      LogService.error('Action failed: $e', source: _source);
-      ToastService.error(AppErrorHandler.getUserMessage(e));
-      if (state is GroupEventLoaded) {
-        safeEmit((state as GroupEventLoaded).copyWith(isSyncing: false));
-      }
-      return false;
-    }
+    final success = await runWithSyncGuard(
+      guestMessage: guestMessage,
+      offlineMessage: offlineMessage,
+      action: () async {
+        final result = await action();
+        if (result is Failure) throw result.exception;
+        await fetchEvents(isAuto: false, category: null);
+      },
+      logSource: _source,
+    );
+    return success;
   }
 
   /// 建立新揪團
@@ -275,14 +305,8 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
 
   /// 喜歡/取消喜歡揪團
   Future<bool> likeEvent({required String eventId}) async {
-    if (_isGuest) {
-      ToastService.warning('請登入以收藏揪團');
-      return false;
-    }
-    if (_isOffline) {
-      ToastService.error('離線模式無法操作');
-      return false;
-    }
+    if (guardGuest('請登入以收藏揪團')) return false;
+    if (guardOffline('離線模式無法操作')) return false;
 
     final now = DateTime.now();
     if (_likeDebounceMap.containsKey(eventId)) {
@@ -317,27 +341,24 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
 
     if (result is Failure) {
       LogService.error('Like event failed: ${result.exception}', source: _source);
-      ToastService.error('操作失敗');
-
       final freshEvents = await _groupEventRepository.getAll();
-      safeEmit(currentState.copyWith(events: freshEvents));
+      safeEmit(currentState.copyWith(
+        events: freshEvents,
+        notification: const ToastNotification.error('操作失敗'),
+      ));
       return false;
     }
 
     return true;
   }
 
-  /// ── 我的揪團 ──────────────────────────────────
-  /// type: 'host' | 'apply' | 'like'
+  // ──────────────────────────────────────────
+  // 我的揪團
+  // ──────────────────────────────────────────
+
   Future<void> fetchMyEvents({required String type}) async {
-    if (_isGuest) {
-      ToastService.warning('請登入以查看我的揪團');
-      return;
-    }
-    if (_isOffline) {
-      ToastService.warning('離線模式無法取得我的揪團');
-      return;
-    }
+    if (guardGuest('請登入以查看我的揪團')) return;
+    if (guardOffline('離線模式無法取得我的揪團')) return;
 
     safeEmit(const MyEventsLoading());
 
@@ -368,7 +389,7 @@ class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEve
     final current = state;
     if (current is! MyEventsLoaded) return;
     if (!current.hasMore || current.isLoadingMore) return;
-    if (_isOffline) return;
+    if (isOffline) return;
 
     safeEmit(current.copyWith(isLoadingMore: true));
 
