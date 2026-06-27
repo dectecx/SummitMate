@@ -533,6 +533,21 @@ class AuthService implements IAuthService {
   }
 
   @override
+  Future<bool> clearRateLimit({required String email}) async {
+    try {
+      LogService.info('清除 Rate Limit: $email', source: _source);
+      final response = await _apiClient.delete('/auth/rate-limit/$email');
+      return response.statusCode == 204;
+    } on DioException catch (e) {
+      LogService.warning('清除 Rate Limit 失敗: $e', source: _source);
+      return false;
+    } catch (e) {
+      LogService.error('清除 Rate Limit 例外: $e', source: _source);
+      return false;
+    }
+  }
+
+  @override
   Future<bool> isLoggedIn() async {
     final hasSession = await _sessionRepo.hasSession();
     if (hasSession && (_currentUserEmail == null || _currentUserId == null)) {

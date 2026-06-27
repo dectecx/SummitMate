@@ -119,16 +119,20 @@ class DevPanelContent extends StatefulWidget {
 
 class _DevPanelContentState extends State<DevPanelContent> {
   late final TextEditingController _apiUrlController;
+  late final TextEditingController _rateLimitEmailController;
+  bool _clearingRateLimit = false;
 
   @override
   void initState() {
     super.initState();
     _apiUrlController = TextEditingController(text: EnvConfig.apiBaseUrl);
+    _rateLimitEmailController = TextEditingController();
   }
 
   @override
   void dispose() {
     _apiUrlController.dispose();
+    _rateLimitEmailController.dispose();
     super.dispose();
   }
 
@@ -278,6 +282,60 @@ class _DevPanelContentState extends State<DevPanelContent> {
                   ),
                   const SizedBox(height: 16),
                   const Divider(),
+                  const Text('Rate Limit 工具', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 4),
+                  const Text(
+                    '清除指定 Email 的登入/重發驗證碼頻率限制（僅限開發環境）',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildRateLimitChip('dev1@test.com', 'Dev 1'),
+                      _buildRateLimitChip('dev2@test.com', 'Dev 2'),
+                      _buildRateLimitChip('dev3@test.com', 'Dev 3'),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _rateLimitEmailController,
+                          decoration: const InputDecoration(
+                            labelText: '自訂 Email',
+                            hintText: 'user@example.com',
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            isDense: true,
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _clearingRateLimit
+                          ? const SizedBox(
+                              width: 36,
+                              height: 36,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange[700],
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              ),
+                              onPressed: () => _doClearRateLimit(_rateLimitEmailController.text.trim()),
+                              child: const Text('清除'),
+                            ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(),
                   const Text('快速新增假資料', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
@@ -315,6 +373,38 @@ class _DevPanelContentState extends State<DevPanelContent> {
         ),
       ),
     );
+  }
+
+  Widget _buildRateLimitChip(String email, String label) {
+    return ActionChip(
+      avatar: const Icon(Icons.timer_off, size: 16),
+      label: Text(label),
+      backgroundColor: Colors.orange[50],
+      side: BorderSide(color: Colors.orange[300]!),
+      onPressed: _clearingRateLimit ? null : () => _doClearRateLimit(email),
+    );
+  }
+
+  Future<void> _doClearRateLimit(String email) async {
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('請輸入 Email')));
+      return;
+    }
+    setState(() => _clearingRateLimit = true);
+    try {
+      final authService = getIt<IAuthService>();
+      final success = await authService.clearRateLimit(email: email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? '已清除 $email 的 Rate Limit' : '清除失敗，請確認伺服器連線'),
+            backgroundColor: success ? Colors.green[700] : Colors.red[700],
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _clearingRateLimit = false);
+    }
   }
 
   Widget _buildAccountButton(BuildContext context, String email, String name) {

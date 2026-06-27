@@ -155,4 +155,8 @@ abstract class IAuthService {
 
   /// 監聽認證狀態變更 (登入/登出/資料更新)
   Stream<UserProfile?> get onAuthStateChanged;
+
+  /// 清除指定 Email 的 Rate Limit 計數器。
+  /// 僅供開發/測試環境使用，回傳 true 表示成功。
+  Future<bool> clearRateLimit({required String email});
 }
