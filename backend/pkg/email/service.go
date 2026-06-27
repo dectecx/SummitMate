@@ -3,19 +3,45 @@ package email
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"time"
 )
 
 // EmailService provides high-level methods for sending common emails.
+// Use NewEmailService for synchronous-only usage and
+// NewEmailServiceWithPool when background delivery is required.
 type EmailService struct {
 	mailer  Mailer
 	tmplMgr TemplateManager
+	pool    *WorkerPool
+	logger  *slog.Logger
 }
 
-// NewEmailService creates a new EmailService.
+// NewEmailService creates a new EmailService without background delivery.
 func NewEmailService(mailer Mailer, tmplMgr TemplateManager) *EmailService {
-	return &EmailService{
-		mailer:  mailer,
-		tmplMgr: tmplMgr,
+	return &EmailService{mailer: mailer, tmplMgr: tmplMgr}
+}
+
+// NewEmailServiceWithPool creates an EmailService backed by a bounded worker
+// pool for non-blocking background delivery.  Call Shutdown before process exit.
+func NewEmailServiceWithPool(mailer Mailer, tmplMgr TemplateManager, pool *WorkerPool, logger *slog.Logger) *EmailService {
+	return &EmailService{mailer: mailer, tmplMgr: tmplMgr, pool: pool, logger: logger}
+}
+
+// SubmitAsync enqueues fn for background delivery via the worker pool.
+// Returns false when the pool is nil or its queue is full; the caller should
+// log a warning in that case.
+func (s *EmailService) SubmitAsync(timeout time.Duration, fn func(ctx context.Context) error) bool {
+	if s.pool == nil {
+		return false
+	}
+	return s.pool.Submit(timeout, fn)
+}
+
+// Shutdown drains the internal worker pool.  Safe to call when pool is nil.
+func (s *EmailService) Shutdown() {
+	if s.pool != nil {
+		s.pool.Shutdown()
 	}
 }
 
