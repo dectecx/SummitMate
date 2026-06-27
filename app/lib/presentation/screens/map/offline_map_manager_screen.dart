@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubits/map/offline_map_cubit.dart';
 import '../../cubits/map/offline_map_state.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
 import 'package:summitmate/domain/domain.dart';
 
 class OfflineMapManagerScreen extends StatefulWidget {
@@ -241,8 +242,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
         content: const Text('此操作將會刪除裝置上所有已下載的離線圖資。\n\n(注意: 下次瀏覽時需要重新下載)'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+          SummitDestructiveButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await context.read<OfflineMapCubit>().clearStore();

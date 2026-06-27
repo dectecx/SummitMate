@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/di/injection.dart';
 import '../../infrastructure/database/app_database.dart';
+import 'buttons/summit_destructive_button.dart';
 
 /// 顯示清除資料對話框
 ///
@@ -91,7 +92,7 @@ void showClearDataDialog(BuildContext context) {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
-          FilledButton(
+          SummitDestructiveButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
 
@@ -133,7 +134,6 @@ void showClearDataDialog(BuildContext context) {
                 );
               }
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('確定清除'),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/entities/gear_item.dart';
 import '../../../cubits/gear/gear_cubit.dart';
+import '../../buttons/summit_destructive_button.dart';
 
 /// 刪除裝備確認對話框
 ///
@@ -30,12 +31,11 @@ class DeleteGearDialog extends StatelessWidget {
       content: Text('確定要刪除「${item.name}」嗎？'),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-        FilledButton(
+        SummitDestructiveButton(
           onPressed: () {
             Navigator.pop(context);
             context.read<GearCubit>().deleteItem(item.id);
           },
-          style: FilledButton.styleFrom(backgroundColor: Colors.red),
           child: const Text('刪除'),
         ),
       ],

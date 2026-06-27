@@ -9,6 +9,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../cubits/gear/gear_cubit.dart';
 import '../../../cubits/gear_library/gear_library_cubit.dart';
 import '../../../cubits/gear_library/gear_library_state.dart';
+import '../../buttons/summit_destructive_button.dart';
 
 /// 新增裝備對話框
 ///
@@ -65,8 +66,7 @@ class _AddGearDialogState extends State<AddGearDialog> {
         content: const Text('您有未儲存的內容，確定要離開嗎？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          SummitDestructiveButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('捨棄'),
           ),

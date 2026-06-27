@@ -8,6 +8,7 @@ import 'package:summitmate/domain/domain.dart';
 import '../cubits/gear_library/gear_library_cubit.dart';
 import '../cubits/gear_library/gear_library_state.dart';
 import '../widgets/ads/banner_ad_widget.dart';
+import '../widgets/buttons/summit_destructive_button.dart';
 import '../widgets/common/summit_app_bar.dart';
 import '../widgets/responsive_layout.dart';
 import '../widgets/gear/dialogs/gear_library_item_dialog.dart';
@@ -387,12 +388,11 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(
+          SummitDestructiveButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await cubit.deleteItem(item.id);
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('刪除並解除連結'),
           ),
         ],
@@ -408,12 +408,11 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
         content: Text('確定要刪除「${item.name}」嗎？\n(此項目目前未被任何行程連結)'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
+          SummitDestructiveButton(
             onPressed: () async {
               await context.read<GearLibraryCubit>().deleteItem(item.id);
               if (context.mounted) Navigator.pop(context);
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('刪除'),
           ),
         ],

@@ -13,6 +13,7 @@ import 'package:summitmate/domain/domain.dart';
 import '../../core/services/permission_service.dart';
 import '../../core/di/injection.dart';
 import '../widgets/common/offline_gate.dart';
+import '../widgets/buttons/summit_destructive_button.dart';
 
 /// 留言板畫面 (Tab 3 - 協作)
 ///
@@ -358,8 +359,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                 content: const Text('您有未發送的內容，確定要離開嗎？'),
                 actions: [
                   TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
-                  FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                  SummitDestructiveButton(
                     onPressed: () => Navigator.pop(ctx, true),
                     child: const Text('捨棄'),
                   ),

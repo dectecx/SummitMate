@@ -3,6 +3,7 @@ import '../../core/error/result.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'package:summitmate/presentation/widgets/gear_preview_dialog.dart';
+import 'package:summitmate/presentation/widgets/buttons/summit_destructive_button.dart';
 
 class GearCloudManagementDialog extends StatefulWidget {
   final IGearSetRepository repository;
@@ -174,9 +175,8 @@ class _GearCloudManagementDialogState extends State<GearCloudManagementDialog> {
         content: Text('確定要從雲端刪除「${gearSet.title}」嗎？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-          FilledButton(
+          SummitDestructiveButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('刪除'),
           ),
         ],

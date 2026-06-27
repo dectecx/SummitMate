@@ -12,6 +12,7 @@ import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../widgets/ads/banner_ad_widget.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/buttons/summit_destructive_button.dart';
 
 /// 雲端行程同步畫面
 class TripCloudScreen extends StatefulWidget {
@@ -141,8 +142,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
         content: Text('確定要從雲端刪除「${trip.name}」嗎？\n本地行程不會受影響。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          SummitDestructiveButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('刪除'),
           ),

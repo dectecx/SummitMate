@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../widgets/buttons/summit_destructive_button.dart';
 
 /// 應用程式錯誤畫面
 ///
@@ -169,13 +170,12 @@ class _ErrorScreenState extends State<ErrorScreen> {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(
+          SummitDestructiveButton(
             onPressed: () {
               Navigator.pop(ctx);
               setState(() => _isLoading = true);
               widget.onClearData?.call();
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('確定清除'),
           ),
         ],

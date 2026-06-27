@@ -11,6 +11,7 @@ import '../cubits/tutorial/tutorial_cubit.dart';
 import '../cubits/tutorial/tutorial_state.dart';
 import '../widgets/tutorial/tutorial_aware_builder.dart';
 import '../widgets/meal/add_meal_dialog.dart';
+import '../widgets/buttons/summit_destructive_button.dart';
 
 /// 糧食計畫畫面
 ///
@@ -298,12 +299,11 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
         content: Text('確定要刪除「$itemName」嗎？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
+          SummitDestructiveButton(
             onPressed: () {
               cubit.removeMealItem(dayId, type, itemId);
               Navigator.pop(context);
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('刪除'),
           ),
         ],
