@@ -17,7 +17,13 @@ func main() {
 	logger := appLogger.NewLogger(cfg.Env)
 	slog.SetDefault(logger)
 
-	// 3. Initialize and Run Application
+	// 3. Validate security-critical configuration (fail fast on misconfiguration)
+	if err := cfg.Validate(); err != nil {
+		slog.Error("Invalid configuration", "error", err)
+		os.Exit(1)
+	}
+
+	// 4. Initialize and Run Application
 	application, err := app.NewApp(cfg, logger)
 	if err != nil {
 		slog.Error("Failed to initialize application", "error", err)
