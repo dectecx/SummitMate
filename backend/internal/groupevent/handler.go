@@ -125,8 +125,6 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 		ApprovalRequired: approvalRequired,
 		PrivateMessage:   privateMessage,
 		LinkedTripID:     linkedTripID,
-		CreatedBy:        userID,
-		UpdatedBy:        userID,
 	}
 
 	if err := h.service.CreateEvent(r.Context(), event); err != nil {
@@ -204,7 +202,6 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 		ApprovalRequired: approvalRequired,
 		PrivateMessage:   privateMessage,
 		LinkedTripID:     linkedTripID,
-		UpdatedBy:        userID,
 	}
 
 	updated, err := h.service.UpdateEvent(r.Context(), event, userID)

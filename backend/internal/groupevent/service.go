@@ -57,6 +57,9 @@ func (s *groupEventService) CreateEvent(ctx context.Context, event *GroupEvent) 
 		return apperror.ErrBadRequest.WithMessage("活動標題為必填")
 	}
 
+	event.CreatedBy = event.HostID
+	event.UpdatedBy = event.HostID
+
 	// Fetch host details if not provided
 	if event.HostID != "" && (event.HostName == "" || event.HostAvatar == "") {
 		user, err := s.authServ.GetUserByID(ctx, event.HostID)
