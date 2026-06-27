@@ -63,7 +63,7 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
       child: AlertDialog(
         title: Text(isEdit ? '編輯行程' : '新增行程'),
         content: SizedBox(
-          width: 400, // Make dialog wider
+          width: (MediaQuery.sizeOf(context).width * 0.9).clamp(0.0, 400.0),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
