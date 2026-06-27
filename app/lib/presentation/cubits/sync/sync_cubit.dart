@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../../../core/error/app_error_handler.dart';
 import 'sync_state.dart';
 
 /// 管理資料同步狀態的 Cubit
@@ -177,7 +178,7 @@ class SyncCubit extends Cubit<SyncState> {
       LogService.error('Sync failed: $e', source: _source);
       emit(
         SyncFailure(
-          errorMessage: '同步發生錯誤',
+          errorMessage: AppErrorHandler.getUserMessage(e),
           lastSuccessTime: _lastSyncTime,
           pendingCount: state.pendingCount,
           isOnline: state.isOnline,
