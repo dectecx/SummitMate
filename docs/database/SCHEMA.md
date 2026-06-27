@@ -706,7 +706,7 @@ CREATE TABLE poll_votes (
 | start_date         | DATE         | NN          |                             |
 | end_date           | DATE         |             |                             |
 | status             | VARCHAR(20)  | NN, Default | `open`/`closed`/`cancelled` |
-| max_members        | INT          | NN, Default |                             |
+| max_members        | INT          | NN, Default | 預計招收人數，`0` 代表不限   |
 | approval_required  | BOOLEAN      | NN, Default |                             |
 | private_message    | TEXT         | NN, Default | 審核通過後顯示              |
 | **linked_trip_id** | UUID         | **FK**      | Ref: trips.id               |
@@ -736,7 +736,7 @@ CREATE TABLE group_events (
     start_date        DATE         NOT NULL,
     end_date          DATE,
     status            VARCHAR(20)  NOT NULL DEFAULT 'open',
-    max_members       INT          NOT NULL DEFAULT 10,
+    max_members       INT          NOT NULL DEFAULT 0,
     approval_required BOOLEAN      NOT NULL DEFAULT FALSE,
     private_message   TEXT         NOT NULL DEFAULT '',
     linked_trip_id    UUID         REFERENCES trips(id) ON DELETE SET NULL,

@@ -1,25 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/core/error/result.dart';
-import 'package:summitmate/data/datasources/interfaces/i_itinerary_local_data_source.dart';
-import 'package:summitmate/data/datasources/interfaces/i_gear_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
-import 'package:summitmate/infrastructure/services/adapters/trip_sync_adapter.dart';
-import 'package:summitmate/infrastructure/services/adapters/itinerary_sync_adapter.dart';
-import 'package:summitmate/infrastructure/services/adapters/gear_sync_adapter.dart';
 import 'package:summitmate/infrastructure/services/sync_engine.dart';
 
+class MockSyncAdapter extends Mock implements ISyncAdapter {}
+
 class MockTripRepository extends Mock implements ITripRepository {}
-
-class MockItineraryRepository extends Mock implements IItineraryRepository {}
-
-class MockGearRepository extends Mock implements IGearRepository {}
-
-class MockMessageRepository extends Mock implements IMessageRepository {}
-
-class MockGroupEventRepository extends Mock implements IGroupEventRepository {}
 
 class MockSettingsRepository extends Mock implements ISettingsRepository {}
 
@@ -29,37 +17,19 @@ class MockAuthService extends Mock implements IAuthService {}
 
 class MockAppDatabase extends Mock implements AppDatabase {}
 
-class MockItineraryLocalDataSource extends Mock implements IItineraryLocalDataSource {}
-
-class MockGearLocalDataSource extends Mock implements IGearLocalDataSource {}
-
 class MockTripRemoteDataSource extends Mock implements ITripRemoteDataSource {}
-
-class MockTripSyncAdapter extends Mock implements TripSyncAdapter {}
-
-class MockItinerarySyncAdapter extends Mock implements ItinerarySyncAdapter {}
-
-class MockGearSyncAdapter extends Mock implements GearSyncAdapter {}
 
 class MockSettings extends Mock implements Settings {}
 
 void main() {
   late SyncEngine engine;
+  late MockSyncAdapter mockAdapter;
   late MockTripRepository mockTripRepo;
-  late MockItineraryRepository mockItineraryRepo;
-  late MockGearRepository mockGearRepo;
-  late MockMessageRepository mockMessageRepo;
-  late MockGroupEventRepository mockEventRepo;
   late MockSettingsRepository mockSettingsRepo;
   late MockConnectivityService mockConnectivity;
   late MockAuthService mockAuthService;
   late MockAppDatabase mockDb;
-  late MockItineraryLocalDataSource mockItineraryLocal;
-  late MockGearLocalDataSource mockGearLocal;
   late MockTripRemoteDataSource mockTripRemote;
-  late MockTripSyncAdapter mockTripSync;
-  late MockItinerarySyncAdapter mockItinerarySync;
-  late MockGearSyncAdapter mockGearSync;
   late MockSettings mockSettings;
 
   setUpAll(() {
@@ -67,47 +37,29 @@ void main() {
   });
 
   setUp(() {
+    mockAdapter = MockSyncAdapter();
     mockTripRepo = MockTripRepository();
-    mockItineraryRepo = MockItineraryRepository();
-    mockGearRepo = MockGearRepository();
-    mockMessageRepo = MockMessageRepository();
-    mockEventRepo = MockGroupEventRepository();
     mockSettingsRepo = MockSettingsRepository();
     mockConnectivity = MockConnectivityService();
     mockAuthService = MockAuthService();
     mockDb = MockAppDatabase();
-    mockItineraryLocal = MockItineraryLocalDataSource();
-    mockGearLocal = MockGearLocalDataSource();
     mockTripRemote = MockTripRemoteDataSource();
-    mockTripSync = MockTripSyncAdapter();
-    mockItinerarySync = MockItinerarySyncAdapter();
-    mockGearSync = MockGearSyncAdapter();
     mockSettings = MockSettings();
 
-    // Stub watchSettings to allow construction
+    when(() => mockAdapter.tableName).thenReturn('mock_table');
     when(() => mockSettingsRepo.watchSettings()).thenAnswer((_) => const Stream.empty());
-    // Stub getSettings
     when(() => mockSettings.autoSyncIntervalMinutes).thenReturn(15);
     when(() => mockSettingsRepo.getSettings()).thenAnswer((_) async => mockSettings);
-    // Stub currentUserId default
     when(() => mockAuthService.currentUserId).thenReturn('user1');
 
     engine = SyncEngine(
-      tripRepo: mockTripRepo,
-      itineraryRepo: mockItineraryRepo,
-      gearRepo: mockGearRepo,
-      messageRepo: mockMessageRepo,
-      eventRepo: mockEventRepo,
+      adapters: [mockAdapter],
       settingsRepo: mockSettingsRepo,
       connectivity: mockConnectivity,
       authService: mockAuthService,
       db: mockDb,
-      itineraryLocalDataSource: mockItineraryLocal,
-      gearLocalDataSource: mockGearLocal,
+      tripRepo: mockTripRepo,
       tripRemoteDataSource: mockTripRemote,
-      tripSyncAdapter: mockTripSync,
-      itinerarySyncAdapter: mockItinerarySync,
-      gearSyncAdapter: mockGearSync,
     );
   });
 
@@ -131,34 +83,38 @@ void main() {
     });
 
     test(
-      'Given runSyncCycle, When triggered, Then it should call adapters and repos during normal sync cycle',
+      'Given runSyncCycle, When triggered, Then it should drive every registered adapter and persist sync time',
       () async {
         when(() => mockConnectivity.isOffline).thenReturn(false);
         when(() => mockAuthService.currentUserId).thenReturn('user1');
 
-        // Stub Push
-        when(() => mockTripRepo.getAllTrips(any())).thenAnswer((_) async => const Success([]));
-        when(() => mockItineraryLocal.getAll()).thenAnswer((_) async => []);
-        when(() => mockGearLocal.getAll()).thenAnswer((_) async => []);
-
-        // Stub Pull
-        when(() => mockTripSync.pullAndMerge(any())).thenAnswer(
-          (_) async =>
-              const Success(SyncMergeResult(pulledCount: 0, conflictCount: 0, localWinsCount: 0, remoteWinsCount: 0)),
-        );
-
-        // Stub T2 syncs
-        when(() => mockTripRepo.getActiveTrip(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockEventRepo.syncEvents()).thenAnswer((_) async => const Success([]));
-
-        // Stub settings update
+        when(() => mockAdapter.pushPending()).thenAnswer((_) async => const SyncPushResult());
+        when(() => mockAdapter.pullRemote()).thenAnswer((_) async => const SyncMergeResult());
         when(() => mockSettingsRepo.updateLastSyncTime(any())).thenAnswer((_) async {});
 
         final result = await engine.runSyncCycle();
 
         expect(result.isSuccess, isTrue);
-        verify(() => mockTripSync.pullAndMerge('user1')).called(1);
+        verify(() => mockAdapter.pushPending()).called(1);
+        verify(() => mockAdapter.pullRemote()).called(1);
         verify(() => mockSettingsRepo.updateLastSyncTime(any())).called(1);
+      },
+    );
+
+    test(
+      'Given an adapter reports errors, When running cycle, Then result is not successful and time is not persisted',
+      () async {
+        when(() => mockConnectivity.isOffline).thenReturn(false);
+        when(() => mockAuthService.currentUserId).thenReturn('user1');
+
+        when(() => mockAdapter.pushPending()).thenAnswer((_) async => const SyncPushResult(errors: ['boom']));
+        when(() => mockAdapter.pullRemote()).thenAnswer((_) async => const SyncMergeResult());
+
+        final result = await engine.runSyncCycle();
+
+        expect(result.isSuccess, isFalse);
+        expect(result.errors, contains('boom'));
+        verifyNever(() => mockSettingsRepo.updateLastSyncTime(any()));
       },
     );
   });

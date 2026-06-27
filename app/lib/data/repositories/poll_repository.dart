@@ -1,41 +1,41 @@
 import 'package:injectable/injectable.dart';
-import '../../../core/models/paginated_list.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../core/error/result.dart';
+import '../../core/models/paginated_list.dart';
 import '../datasources/interfaces/i_poll_local_data_source.dart';
 import '../datasources/interfaces/i_poll_remote_data_source.dart';
-import 'package:summitmate/domain/domain.dart';
+import 'base/repository_remote_access.dart';
 
-/// 投票 Repository 實作
+/// 投票 Repository 實作（B 模式：讀快取／寫線上）
+///
+/// 讀取回傳本地快取；[refresh] 與寫入操作經 [RepositoryRemoteAccess.online]
+/// 守門（離線→`OfflineException`），成功後更新本地快取。
 @LazySingleton(as: IPollRepository)
-class PollRepository implements IPollRepository {
-  final IPollLocalDataSource _localDataSource;
-  final IPollRemoteDataSource _remoteDataSource;
-
-  PollRepository(this._localDataSource, this._remoteDataSource);
+class PollRepository with RepositoryRemoteAccess implements IPollRepository {
+  final IPollLocalDataSource _local;
+  final IPollRemoteDataSource _remote;
 
   @override
-  Future<Result<void, Exception>> init() async {
-    return const Success(null);
-  }
+  final IConnectivityService connectivity;
+
+  PollRepository(this._local, this._remote, this.connectivity);
+
+  @override
+  Future<Result<void, Exception>> init() async => const Success(null);
 
   @override
   Future<List<Poll>> getByTripId(String tripId) async {
-    final polls = await _localDataSource.getAllPolls();
+    final polls = await _local.getAllPolls();
     return polls.where((p) => p.tripId == tripId).toList();
   }
 
   @override
-  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(String tripId, {int? page, int? limit}) async {
-    try {
-      final result = await _remoteDataSource.getPolls(tripId, page: page, limit: limit);
-      if (result is Success<PaginatedList<Poll>, Exception>) {
-        await _localDataSource.savePolls(result.value.items);
-        return Success(result.value);
-      }
-      return Failure((result as Failure).exception);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+  Future<Result<PaginatedList<Poll>, Exception>> refresh(String tripId, {int? page, int? limit}) {
+    return online(
+      'fetchPolls',
+      () => _remote.getPolls(tripId, page: page, limit: limit),
+      cache: (paginated) => _local.savePolls(paginated.items),
+    );
   }
 
   @override
@@ -44,21 +44,11 @@ class PollRepository implements IPollRepository {
     required String title,
     required List<String> options,
     bool allowMultiple = false,
-  }) async {
-    try {
-      final result = await _remoteDataSource.createPoll(
-        tripId: tripId,
-        title: title,
-        options: options,
-        allowMultiple: allowMultiple,
-      );
-      if (result is Success<String, Exception>) {
-        await syncPolls(tripId);
-      }
-      return result;
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+  }) {
+    return online(
+      'createPoll',
+      () => _remote.createPoll(tripId: tripId, title: title, options: options, allowMultiple: allowMultiple),
+    );
   }
 
   @override
@@ -66,16 +56,8 @@ class PollRepository implements IPollRepository {
     required String tripId,
     required String pollId,
     required List<String> optionIds,
-  }) async {
-    try {
-      final result = await _remoteDataSource.vote(tripId, pollId, optionIds);
-      if (result is Success) {
-        await syncPolls(tripId);
-      }
-      return result;
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+  }) {
+    return online('votePoll', () => _remote.vote(tripId, pollId, optionIds));
   }
 
   @override
@@ -83,28 +65,16 @@ class PollRepository implements IPollRepository {
     required String tripId,
     required String pollId,
     required String optionText,
-  }) async {
-    try {
-      final result = await _remoteDataSource.addOption(tripId, pollId, optionText);
-      if (result is Success) {
-        await syncPolls(tripId);
-      }
-      return result;
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+  }) {
+    return online('addOption', () => _remote.addOption(tripId, pollId, optionText));
   }
 
   @override
-  Future<Result<void, Exception>> delete(String tripId, String pollId) async {
-    try {
-      final result = await _remoteDataSource.deletePoll(tripId, pollId);
-      if (result is Success) {
-        await _localDataSource.deletePoll(pollId);
-      }
-      return result;
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+  Future<Result<void, Exception>> delete(String tripId, String pollId) {
+    return online(
+      'deletePoll',
+      () => _remote.deletePoll(tripId, pollId),
+      cache: (_) => _local.deletePoll(pollId),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../enums/sync_status.dart';
+import '../interfaces/i_syncable_entity.dart';
 
 import 'meal_plan_day.dart';
 
@@ -11,7 +12,7 @@ part 'trip.g.dart';
 /// 不可變物件，承載行程的業務規則
 /// 不依賴持久化框架（如 Drift）
 @freezed
-abstract class Trip with _$Trip {
+abstract class Trip with _$Trip implements SyncableEntity {
   const Trip._();
 
   const factory Trip({

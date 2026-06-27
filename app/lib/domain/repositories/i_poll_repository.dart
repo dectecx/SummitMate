@@ -2,29 +2,23 @@ import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
 import '../entities/poll.dart';
 
-/// 投票資料倉庫介面（支援 Offline-First）
+/// 投票資料倉庫介面（B 模式：讀快取／寫線上）
 ///
-/// 負責投票的本地快取與雲端操作。
+/// UI／Cubit 一律只透過本介面存取投票資料：
+/// - 讀取（[getByTripId]）回傳本地快取。
+/// - [refresh] 與所有寫入（[create]/[vote]/[addOption]/[delete]）為線上限定，
+///   離線時回傳 `OfflineException`；成功後同步更新本地快取。
 abstract interface class IPollRepository {
   /// 初始化本地資料庫
   Future<Result<void, Exception>> init();
 
-  /// 從本地取得行程投票
-  ///
-  /// [tripId] 行程 ID
+  /// 從本地快取取得行程投票
   Future<List<Poll>> getByTripId(String tripId);
 
-  /// 同步：從雲端拉取分頁資料並更新本地
-  ///
-  /// [tripId] 行程 ID
-  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(String tripId, {int? page, int? limit});
+  /// 線上拉取最新投票並更新本地快取
+  Future<Result<PaginatedList<Poll>, Exception>> refresh(String tripId, {int? page, int? limit});
 
-  /// 建立新投票（雲端）
-  ///
-  /// [tripId] 行程 ID
-  /// [title] 投票標題
-  /// [options] 初始選項列表
-  /// [allowMultiple] 是否允許複選
+  /// 建立投票（線上限定）。回傳新投票 ID。
   Future<Result<String, Exception>> create({
     required String tripId,
     required String title,
@@ -32,31 +26,20 @@ abstract interface class IPollRepository {
     bool allowMultiple = false,
   });
 
-  /// 投票（雲端）
-  ///
-  /// [tripId] 行程 ID
-  /// [pollId] 投票 ID
-  /// [optionIds] 選擇的選項 ID 列表
+  /// 投票（線上限定）
   Future<Result<void, Exception>> vote({
     required String tripId,
     required String pollId,
     required List<String> optionIds,
   });
 
-  /// 新增選項（雲端）
-  ///
-  /// [tripId] 行程 ID
-  /// [pollId] 投票 ID
-  /// [optionText] 新選項文字
+  /// 新增選項（線上限定）
   Future<Result<void, Exception>> addOption({
     required String tripId,
     required String pollId,
     required String optionText,
   });
 
-  /// 刪除投票（雲端 + 本地）
-  ///
-  /// [tripId] 行程 ID
-  /// [pollId] 投票 ID
+  /// 刪除投票（線上限定）
   Future<Result<void, Exception>> delete(String tripId, String pollId);
 }
