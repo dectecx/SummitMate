@@ -95,6 +95,29 @@ class PermissionService {
     return user.permissions.contains('member.manage');
   }
 
+  /// 是否可以管理行程成員（含行程內 TripMember 角色判斷）
+  ///
+  /// 相比 [canManageMembersSync]，此方法額外考量使用者在該行程中的
+  /// trip-level 角色（leader / admin），適用於已載入成員列表的場景。
+  ///
+  /// [currentUserId] 當前使用者 ID
+  /// [trip] 行程實體
+  /// [members] 該行程已載入的成員列表
+  bool canManageTripMembersWithTripRole({
+    required String currentUserId,
+    required Trip trip,
+    required List<TripMember> members,
+  }) {
+    // 行程擁有者 (Owner) 具有成員管理權限
+    if (trip.userId == currentUserId) return true;
+
+    // 查找當前使用者在此行程中的 trip-level 角色
+    final me = members.where((m) => m.userId == currentUserId).firstOrNull;
+    if (me == null) return false;
+
+    return me.role == RoleConstants.leader || me.role == RoleConstants.admin;
+  }
+
   /// 是否可以刪除留言 (Sync)
   bool canDeleteMessageSync(UserProfile? user, Message message) {
     if (user == null) return false;

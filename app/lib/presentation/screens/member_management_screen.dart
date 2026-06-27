@@ -11,6 +11,7 @@ import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
 import '../widgets/cloud_guard.dart';
+import '../../core/services/permission_service.dart';
 
 /// 成員管理畫面
 ///
@@ -27,6 +28,7 @@ class MemberManagementScreen extends StatefulWidget {
 
 class _MemberManagementScreenState extends State<MemberManagementScreen> {
   final _tripRepository = getIt<ITripRepository>();
+  final _permissionService = getIt<PermissionService>();
 
   bool _isLoading = true;
   List<TripMember> _members = [];
@@ -325,22 +327,13 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
       if (_currentUserId != authState.userId) _currentUserId = authState.userId;
     }
 
-    // Determine permissions based on Trip Data & Member List
-    final isOwner = widget.trip.userId == _currentUserId;
-
-    // Find my role in the loaded list
-    String myRole = RoleConstants.member;
-    if (_members.isNotEmpty && _currentUserId != null) {
-      try {
-        final me = _members.firstWhere((m) => m.userId == _currentUserId);
-        myRole = me.role;
-      } catch (_) {
-        // Not in list
-      }
-    }
-
-    // Permission Logic: Owner OR Leader
-    final canManage = isOwner || myRole == RoleConstants.leader || myRole == RoleConstants.admin;
+    // Delegate permission check to PermissionService
+    final canManage = _currentUserId != null &&
+        _permissionService.canManageTripMembersWithTripRole(
+          currentUserId: _currentUserId!,
+          trip: widget.trip,
+          members: _members,
+        );
 
     final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
 
