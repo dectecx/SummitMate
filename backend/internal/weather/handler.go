@@ -20,7 +20,7 @@ func (h *WeatherHandler) GetHikingWeather(w http.ResponseWriter, r *http.Request
 		apiutil.SendError(w, r, err)
 		return
 	}
-	apiutil.SendJSON(w, http.StatusOK, records)
+	apiutil.SendJSON(w, http.StatusOK, ToWeatherRecordResponseList(records))
 }
 
 // GetHikingWeatherByLocation 回傳特定地點的登山天氣
@@ -36,5 +36,5 @@ func (h *WeatherHandler) GetHikingWeatherByLocation(w http.ResponseWriter, r *ht
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, records)
+	apiutil.SendJSON(w, http.StatusOK, ToWeatherRecordResponseList(records))
 }
