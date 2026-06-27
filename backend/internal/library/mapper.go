@@ -53,16 +53,22 @@ func ToModelGearLibraryItemFromAPI(item api.GearLibraryItem) *GearLibraryItem {
 
 // ToMealLibraryItemResponse converts MealLibraryItem to api.MealLibraryItem
 func ToMealLibraryItemResponse(item *MealLibraryItem) api.MealLibraryItem {
+	ingredients := item.Ingredients
+	if ingredients == nil {
+		ingredients = []string{}
+	}
 	return api.MealLibraryItem{
-		Id:         uuid.MustParse(item.ID),
-		UserId:     uuid.MustParse(item.UserID),
-		Name:       item.Name,
-		Weight:     item.Weight,
-		Calories:   float64(item.Calories),
-		Notes:      item.Notes,
-		IsArchived: item.IsArchived,
-		CreatedAt:  item.CreatedAt,
-		UpdatedAt:  item.UpdatedAt,
+		Id:          uuid.MustParse(item.ID),
+		UserId:      uuid.MustParse(item.UserID),
+		Name:        item.Name,
+		Weight:      item.Weight,
+		Calories:    item.Calories,
+		Category:    item.Category,
+		Ingredients: ingredients,
+		Notes:       item.Notes,
+		IsArchived:  item.IsArchived,
+		CreatedAt:   item.CreatedAt,
+		UpdatedAt:   item.UpdatedAt,
 	}
 }
 
@@ -72,26 +78,42 @@ func ToModelMealLibraryItem(req api.MealLibraryItemRequest) MealLibraryItem {
 	if req.IsArchived != nil {
 		isArchived = *req.IsArchived
 	}
+	category := "Other"
+	if req.Category != nil && *req.Category != "" {
+		category = *req.Category
+	}
+	ingredients := req.Ingredients
+	if ingredients == nil {
+		ingredients = []string{}
+	}
 	return MealLibraryItem{
-		Name:       req.Name,
-		Weight:     req.Weight,
-		Calories:   int(req.Calories),
-		Notes:      req.Notes,
-		IsArchived: isArchived,
+		Name:        req.Name,
+		Weight:      req.Weight,
+		Calories:    req.Calories,
+		Category:    category,
+		Ingredients: ingredients,
+		Notes:       req.Notes,
+		IsArchived:  isArchived,
 	}
 }
 
 // ToModelMealLibraryItemFromAPI converts api.MealLibraryItem to MealLibraryItem for batch sync
 func ToModelMealLibraryItemFromAPI(item api.MealLibraryItem) *MealLibraryItem {
+	ingredients := item.Ingredients
+	if ingredients == nil {
+		ingredients = []string{}
+	}
 	return &MealLibraryItem{
-		ID:         item.Id.String(),
-		UserID:     item.UserId.String(),
-		Name:       item.Name,
-		Weight:     item.Weight,
-		Calories:   int(item.Calories),
-		Notes:      item.Notes,
-		IsArchived: item.IsArchived,
-		CreatedAt:  item.CreatedAt,
-		UpdatedAt:  item.UpdatedAt,
+		ID:          item.Id.String(),
+		UserID:      item.UserId.String(),
+		Name:        item.Name,
+		Weight:      item.Weight,
+		Calories:    item.Calories,
+		Category:    item.Category,
+		Ingredients: ingredients,
+		Notes:       item.Notes,
+		IsArchived:  item.IsArchived,
+		CreatedAt:   item.CreatedAt,
+		UpdatedAt:   item.UpdatedAt,
 	}
 }

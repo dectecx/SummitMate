@@ -662,24 +662,28 @@ type LoginRequest struct {
 
 // MealLibraryItem defines model for MealLibraryItem.
 type MealLibraryItem struct {
-	Calories   float64            `json:"calories"`
-	CreatedAt  time.Time          `json:"created_at"`
-	Id         openapi_types.UUID `json:"id"`
-	IsArchived bool               `json:"is_archived"`
-	Name       string             `json:"name"`
-	Notes      *string            `json:"notes,omitempty"`
-	UpdatedAt  time.Time          `json:"updated_at"`
-	UserId     openapi_types.UUID `json:"user_id"`
-	Weight     float64            `json:"weight"`
+	Calories    float64            `json:"calories"`
+	Category    string             `json:"category"`
+	CreatedAt   time.Time          `json:"created_at"`
+	Id          openapi_types.UUID `json:"id"`
+	Ingredients []string           `json:"ingredients"`
+	IsArchived  bool               `json:"is_archived"`
+	Name        string             `json:"name"`
+	Notes       *string            `json:"notes,omitempty"`
+	UpdatedAt   time.Time          `json:"updated_at"`
+	UserId      openapi_types.UUID `json:"user_id"`
+	Weight      float64            `json:"weight"`
 }
 
 // MealLibraryItemRequest defines model for MealLibraryItemRequest.
 type MealLibraryItemRequest struct {
-	Calories   float64 `json:"calories"`
-	IsArchived *bool   `json:"is_archived,omitempty"`
-	Name       string  `json:"name"`
-	Notes      *string `json:"notes,omitempty"`
-	Weight     float64 `json:"weight"`
+	Calories    float64  `json:"calories"`
+	Category    *string  `json:"category,omitempty"`
+	Ingredients []string `json:"ingredients,omitempty"`
+	IsArchived  *bool    `json:"is_archived,omitempty"`
+	Name        string   `json:"name"`
+	Notes       *string  `json:"notes,omitempty"`
+	Weight      float64  `json:"weight"`
 }
 
 // MealLibraryPaginationResponse defines model for MealLibraryPaginationResponse.

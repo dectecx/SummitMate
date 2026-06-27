@@ -3421,6 +3421,8 @@ components:
         - name
         - weight
         - calories
+        - category
+        - ingredients
         - is_archived
         - created_at
         - updated_at
@@ -3439,6 +3441,12 @@ components:
         calories:
           type: number
           format: double
+        category:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: string
         notes:
           type: string
           nullable: true
@@ -3470,6 +3478,13 @@ components:
           type: number
           format: double
           minimum: 0
+        category:
+          type: string
+          default: Other
+        ingredients:
+          type: array
+          items:
+            type: string
         notes:
           type: string
           nullable: true
