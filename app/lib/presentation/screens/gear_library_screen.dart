@@ -371,10 +371,10 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                         children: [
                           const Icon(Icons.terrain, size: 16, color: Colors.grey),
                           const SizedBox(width: 8),
-                          Text('${trip['tripName']}'),
+                          Text(trip.tripName),
                           const Spacer(),
                           Text(
-                            (trip['startDate'] as DateTime).toString().split(' ')[0],
+                            trip.startDate.toString().split(' ')[0],
                             style: const TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ],

@@ -11,10 +11,10 @@ import 'gear_library_state.dart';
 class GearLibraryCubit extends Cubit<GearLibraryState> with SafeEmitMixin<GearLibraryState> {
   final IGearLibraryRepository _repository;
   final IGearRepository _gearRepository;
-  final ITripRepository _tripRepository;
   final IAuthService _authService;
+  final IGearLibrarySyncService _syncService;
 
-  GearLibraryCubit(this._repository, this._gearRepository, this._tripRepository, this._authService)
+  GearLibraryCubit(this._repository, this._gearRepository, this._authService, this._syncService)
     : super(const GearLibraryInitial());
 
   Future<void> loadItems() async {
@@ -89,17 +89,25 @@ class GearLibraryCubit extends Cubit<GearLibraryState> with SafeEmitMixin<GearLi
     }
   }
 
-  /// 更新庫存項目
+  /// 更新庫存項目，並同步連結的行程裝備
   Future<void> updateItem(GearLibraryItem item) async {
+    final userId = _authService.currentUserId ?? 'guest';
+    final updatedItem = item.copyWith(updatedBy: userId, updatedAt: DateTime.now());
+
     try {
-      final userId = _authService.currentUserId ?? 'guest';
-      final updatedItem = item.copyWith(updatedBy: userId, updatedAt: DateTime.now());
       await _repository.update(updatedItem);
-      await _syncLinkedGear(updatedItem);
       await reload();
     } catch (e) {
       LogService.error('Failed to update library item: $e', source: 'GearLibraryCubit');
       safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      return;
+    }
+
+    // 同步連結行程裝備（非核心路徑，失敗記錄 warning 但不阻斷主流程）
+    try {
+      await _syncService.syncLinkedGear(updatedItem);
+    } catch (e) {
+      LogService.warning('Failed to sync linked gear after update: $e', source: 'GearLibraryCubit');
     }
   }
 
@@ -192,73 +200,12 @@ class GearLibraryCubit extends Cubit<GearLibraryState> with SafeEmitMixin<GearLi
     }
   }
 
-  Future<void> _syncLinkedGear(GearLibraryItem libItem) async {
-    try {
-      final allGear = await _gearRepository.getAllItems();
-      final linkedItems = allGear.where((g) => g.libraryItemId == libItem.id).toList();
-
-      if (linkedItems.isEmpty) return;
-
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-
-      for (final gear in linkedItems) {
-        final tripResult = await _tripRepository.getTripById(gear.tripId);
-        if (tripResult is Success) {
-          final trip = (tripResult as Success).value;
-          if (trip != null) {
-            final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
-            if (isArchived) continue;
-          }
-        }
-
-        bool changed = false;
-        GearItem updatedGear = gear;
-
-        if (gear.name != libItem.name) {
-          updatedGear = updatedGear.copyWith(name: libItem.name);
-          changed = true;
-        }
-        if (gear.weight != libItem.weight) {
-          updatedGear = updatedGear.copyWith(weight: libItem.weight);
-          changed = true;
-        }
-        if (gear.category != libItem.category) {
-          updatedGear = updatedGear.copyWith(category: libItem.category);
-          changed = true;
-        }
-
-        if (changed) {
-          await _gearRepository.updateItem(updatedGear);
-        }
-      }
-    } catch (e) {
-      LogService.error('Failed to sync linked gear: $e', source: 'GearLibraryCubit');
-    }
-  }
-
   // Helper getters
   Future<GearLibraryItem?> getById(String id) => _repository.getById(id);
 
   /// 取得連結此裝備的行程資訊
-  Future<List<Map<String, dynamic>>> getLinkedTrips(String libraryItemId) async {
-    final allGear = await _gearRepository.getAllItems();
-    final linkedGear = allGear.where((g) => g.libraryItemId == libraryItemId).toList();
-
-    final Set<String> tripIds = linkedGear.map((g) => g.tripId).whereType<String>().toSet();
-
-    final List<Map<String, dynamic>> result = [];
-    for (final tid in tripIds) {
-      final tripResult = await _tripRepository.getTripById(tid);
-      if (tripResult is Success) {
-        final trip = (tripResult as Success).value;
-        if (trip != null) {
-          result.add({'tripName': trip.name, 'startDate': trip.startDate, 'tripId': trip.id});
-        }
-      }
-    }
-    return result;
-  }
+  Future<List<LinkedTripInfo>> getLinkedTrips(String libraryItemId) =>
+      _syncService.getLinkedTrips(libraryItemId);
 
   void reset() {
     safeEmit(const GearLibraryInitial());

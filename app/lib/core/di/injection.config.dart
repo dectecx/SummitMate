@@ -154,6 +154,7 @@ import '../../infrastructure/services/adapters/trip_sync_adapter.dart' as _i148;
 import '../../infrastructure/services/auth_service.dart' as _i227;
 import '../../infrastructure/services/connectivity_service.dart' as _i315;
 import '../../infrastructure/services/dev_tools_service.dart' as _i537;
+import '../../infrastructure/services/gear_library_sync_service.dart' as _i733;
 import '../../infrastructure/services/geolocator_service.dart' as _i548;
 import '../../infrastructure/services/jwt_token_validator.dart' as _i1065;
 import '../../infrastructure/services/sync_engine.dart' as _i968;
@@ -514,6 +515,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IAuthService>(),
       ),
     );
+    gh.lazySingleton<_i614.IGearLibrarySyncService>(
+      () => _i733.GearLibrarySyncService(
+        gh<_i614.IGearRepository>(),
+        gh<_i614.ITripRepository>(),
+      ),
+    );
     gh.lazySingleton<_i614.IMessageRepository>(
       () => _i1040.MessageRepository(
         gh<_i21.IMessageLocalDataSource>(),
@@ -552,8 +559,8 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i757.GearLibraryCubit(
         gh<_i614.IGearLibraryRepository>(),
         gh<_i614.IGearRepository>(),
-        gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
+        gh<_i614.IGearLibrarySyncService>(),
       ),
     );
     gh.factory<_i882.GroupEventCubit>(

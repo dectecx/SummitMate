@@ -41,6 +41,7 @@ export 'entities/trip_member.dart';
 export 'entities/download_task.dart';
 export 'entities/meal_plan_day.dart';
 export 'entities/tutorial_step.dart';
+export 'entities/linked_trip_info.dart';
 
 // Repository Interfaces
 export 'repositories/i_gear_repository.dart';
@@ -69,3 +70,4 @@ export 'interfaces/i_syncable_entity.dart';
 export 'interfaces/i_sync_engine.dart';
 export 'interfaces/i_token_validator.dart';
 export 'interfaces/i_weather_service.dart';
+export 'interfaces/i_gear_library_sync_service.dart';
