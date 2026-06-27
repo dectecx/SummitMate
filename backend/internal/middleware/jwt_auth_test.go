@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,6 +14,32 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+// failingCache 模擬快取後端（如 Redis）發生非 ErrKeyNotFound 的故障，
+// 用於驗證黑名單檢查的 fail-closed 行為。
+type failingCache struct {
+	err error
+}
+
+func (f *failingCache) Set(context.Context, cache.Key, string, time.Duration) error {
+	return f.err
+}
+
+func (f *failingCache) Get(context.Context, cache.Key) (string, error) {
+	return "", f.err
+}
+
+func (f *failingCache) Delete(context.Context, cache.Key) error {
+	return f.err
+}
+
+func (f *failingCache) Increment(context.Context, cache.Key, time.Duration) (int64, error) {
+	return 0, f.err
+}
+
+func (f *failingCache) Close() error {
+	return nil
+}
 
 func TestJWTAuth_Middleware(t *testing.T) {
 	secret := "super_secret_test_key_12345"
@@ -154,5 +181,49 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.Contains(t, w.Body.String(), "Token 已被註銷")
+	})
+
+	t.Run("Given non-blacklisted token with cache, When executing middleware, Then it passes successfully", func(t *testing.T) {
+		memoryCache := cache.NewMemoryCache[string]()
+		middlewareWithCache := JWTAuth(tokenManager, memoryCache)
+		handlerToTestWithCache := middlewareWithCache(nextHandler)
+
+		userID := "user-12345-uuid"
+		email := "test@example.com"
+		tokenStr, err := tokenManager.GenerateToken(userID, email, "access", time.Hour)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/private", nil)
+		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
+		req = req.WithContext(ctx)
+		req.Header.Set("Authorization", "Bearer "+tokenStr)
+		w := httptest.NewRecorder()
+
+		handlerToTestWithCache.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, userID, w.Body.String())
+	})
+
+	t.Run("Given cache failure during blacklist check, When executing middleware, Then it fails closed with 503", func(t *testing.T) {
+		brokenCache := &failingCache{err: errors.New("redis connection refused")}
+		middlewareWithCache := JWTAuth(tokenManager, brokenCache)
+		handlerToTestWithCache := middlewareWithCache(nextHandler)
+
+		userID := "user-12345-uuid"
+		email := "test@example.com"
+		tokenStr, err := tokenManager.GenerateToken(userID, email, "access", time.Hour)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/private", nil)
+		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
+		req = req.WithContext(ctx)
+		req.Header.Set("Authorization", "Bearer "+tokenStr)
+		w := httptest.NewRecorder()
+
+		handlerToTestWithCache.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+		assert.Contains(t, w.Body.String(), "服務暫時無法使用")
 	})
 }

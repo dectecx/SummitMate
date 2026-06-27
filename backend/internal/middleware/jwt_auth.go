@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -91,9 +93,21 @@ func JWTAuth(tokenManager *tokens.TokenManager, authCache cache.Cache[string]) f
 			// 檢查 Token 是否在黑名單中
 			if authCache != nil {
 				_, err := authCache.Get(request.Context(), authBlacklistKey(tokenStr))
-				if err == nil {
+				switch {
+				case err == nil:
 					// 找到 Key 代表已被註銷/列入黑名單
 					http.Error(writer, `{"message":"Token 已被註銷"}`, http.StatusUnauthorized)
+					return
+				case errors.Is(err, cache.ErrKeyNotFound):
+					// 確定未命中黑名單，繼續後續驗證流程
+				default:
+					// 其他 cache 錯誤（如 Redis 故障）一律 fail-closed，
+					// 避免已登出／撤銷的 token 在快取異常時重新生效。
+					LoggerFromContext(request.Context()).Error(
+						"token 黑名單檢查失敗，fail-closed 拒絕請求",
+						slog.Any("error", err),
+					)
+					http.Error(writer, `{"message":"服務暫時無法使用，請稍後再試"}`, http.StatusServiceUnavailable)
 					return
 				}
 			}
