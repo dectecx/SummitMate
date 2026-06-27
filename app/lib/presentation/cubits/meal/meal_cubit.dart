@@ -19,14 +19,12 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState>, TripDirt
   @override
   String? get currentTripId => _currentTripId;
 
-  /// 載入行程的糧食計畫
+  /// 載入行程的糧食計畫（含各天的餐點項目）
   Future<void> loadMealPlans(String tripId) async {
     _currentTripId = tripId;
-    final result = await _tripRepository.getMealPlanDays(tripId);
-    if (result is Success<List<MealPlanDay>, Exception>) {
-      final days = result.value;
-      final dailyPlans = days.map((day) => DailyMealPlan(dayInfo: day)).toList();
-      safeEmit(MealLoaded(dailyPlans: dailyPlans));
+    final result = await _tripRepository.getDailyMealPlans(tripId);
+    if (result is Success<List<DailyMealPlan>, Exception>) {
+      safeEmit(MealLoaded(dailyPlans: result.value));
     } else {
       safeEmit(const MealError('載入糧食計畫失敗'));
     }
@@ -39,73 +37,92 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState>, TripDirt
   }
 
   /// 新增餐點項目
-  void addMealItem(String dayId, MealType type, String name, double weight, double calories) {
-    if (state is! MealLoaded) return;
+  Future<void> addMealItem(
+    String dayId,
+    MealType type,
+    String name,
+    double weight,
+    double calories, {
+    String? note,
+  }) async {
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
 
-    final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
-    final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
+    final result = await _tripRepository.addMealItem(dayId, type, name, weight, calories, note: note);
 
-    if (planIndex != -1) {
-      final oldPlan = currentPlans[planIndex];
-      final newItem = MealItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        weight: weight,
-        calories: calories,
-      );
+    if (result is Success<MealItem, Exception>) {
+      final newItem = result.value;
+      final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
+      final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
 
-      final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
-      final itemList = List<MealItem>.from(newMeals[type] ?? []);
-      itemList.add(newItem);
-      newMeals[type] = itemList;
-
-      currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
-      safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
+      if (planIndex != -1) {
+        final oldPlan = currentPlans[planIndex];
+        final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
+        newMeals[type] = [...(newMeals[type] ?? []), newItem];
+        currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
+        await markCurrentTripDirty();
+        safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
+      }
+    } else if (result is Failure<MealItem, Exception>) {
+      safeEmit(MealError('新增餐點失敗: ${result.exception}'));
+      safeEmit(loadedState);
     }
   }
 
   /// 移除餐點項目
-  void removeMealItem(String dayId, MealType type, String itemId) {
-    if (state is! MealLoaded) return;
+  Future<void> removeMealItem(String dayId, MealType type, String itemId) async {
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
 
-    final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
-    final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
+    final result = await _tripRepository.removeMealItem(itemId);
 
-    if (planIndex != -1) {
-      final oldPlan = currentPlans[planIndex];
-      final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
-      final itemList = List<MealItem>.from(newMeals[type] ?? []);
-      itemList.removeWhere((item) => item.id == itemId);
-      newMeals[type] = itemList;
+    if (result is Success<void, Exception>) {
+      final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
+      final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
 
-      currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
-      safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
+      if (planIndex != -1) {
+        final oldPlan = currentPlans[planIndex];
+        final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
+        newMeals[type] = (newMeals[type] ?? []).where((item) => item.id != itemId).toList();
+        currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
+        await markCurrentTripDirty();
+        safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
+      }
+    } else if (result is Failure<void, Exception>) {
+      safeEmit(MealError('刪除餐點失敗: ${result.exception}'));
+      safeEmit(loadedState);
     }
   }
 
   /// 更新餐點數量
-  void updateMealItemQuantity(String dayId, MealType type, String itemId, int quantity) {
-    if (state is! MealLoaded) return;
+  Future<void> updateMealItemQuantity(String dayId, MealType type, String itemId, int quantity) async {
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
     if (quantity < 1) quantity = 1;
 
-    final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
-    final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
+    final result = await _tripRepository.updateMealItemQuantity(itemId, quantity);
 
-    if (planIndex != -1) {
-      final oldPlan = currentPlans[planIndex];
-      final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
-      final itemList = List<MealItem>.from(newMeals[type] ?? []);
-      final itemIndex = itemList.indexWhere((item) => item.id == itemId);
+    if (result is Success<void, Exception>) {
+      final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
+      final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
 
-      if (itemIndex != -1) {
-        itemList[itemIndex] = itemList[itemIndex].copyWith(quantity: quantity);
-        newMeals[type] = itemList;
-        currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
-        safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
+      if (planIndex != -1) {
+        final oldPlan = currentPlans[planIndex];
+        final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
+        final itemList = List<MealItem>.from(newMeals[type] ?? []);
+        final itemIndex = itemList.indexWhere((item) => item.id == itemId);
+
+        if (itemIndex != -1) {
+          itemList[itemIndex] = itemList[itemIndex].copyWith(quantity: quantity);
+          newMeals[type] = itemList;
+          currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
+          await markCurrentTripDirty();
+          safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
+        }
       }
+    } else if (result is Failure<void, Exception>) {
+      safeEmit(MealError('更新餐點數量失敗: ${result.exception}'));
+      safeEmit(loadedState);
     }
   }
 

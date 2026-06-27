@@ -246,6 +246,66 @@ class TripRepository with RepositoryRemoteAccess implements ITripRepository {
   }
 
   @override
+  Future<Result<List<DailyMealPlan>, Exception>> getDailyMealPlans(String tripId) async {
+    try {
+      final days = await _localDataSource.getMealPlanDays(tripId);
+      final itemsByDay = await _localDataSource.getMealItemsForTrip(tripId);
+      final plans = days
+          .map((day) => DailyMealPlan(dayInfo: day, meals: itemsByDay[day.id] ?? {}))
+          .toList();
+      return Success(plans);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  // ========== Meal Item Operations ==========
+
+  @override
+  Future<Result<MealItem, Exception>> addMealItem(
+    String dayId,
+    MealType mealType,
+    String name,
+    double weight,
+    double calories, {
+    String? note,
+  }) async {
+    try {
+      final item = MealItem(
+        id: const Uuid().v7(),
+        name: name,
+        weight: weight,
+        calories: calories,
+        note: note,
+      );
+      await _localDataSource.saveMealItem(dayId, mealType, item);
+      return Success(item);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> removeMealItem(String itemId) async {
+    try {
+      await _localDataSource.deleteMealItem(itemId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> updateMealItemQuantity(String itemId, int quantity) async {
+    try {
+      await _localDataSource.updateMealItemQuantity(itemId, quantity);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
   Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId) async {
     try {
       await _localDataSource.migrateTripId(oldId, newId);
