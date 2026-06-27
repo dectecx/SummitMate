@@ -1,101 +1,89 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'cwa_response_models.freezed.dart';
+part 'cwa_response_models.g.dart';
+
+/// CWA 開放資料 API 同時可能回傳 PascalCase 或 camelCase key，
+/// 以 PascalCase 為主 key，找不到時退回首字小寫的 camelCase 變體。
+Object? _readCwaKey(Map<dynamic, dynamic> json, String key) {
+  final camelKey = '${key[0].toLowerCase()}${key.substring(1)}';
+  return json[key] ?? json[camelKey];
+}
+
+/// records 為頂層小寫 key，缺漏時退回空物件以維持容錯解析。
+Object? _readCwaRecords(Map<dynamic, dynamic> json, String key) {
+  return json[key] ?? json['Records'] ?? <String, dynamic>{};
+}
+
 /// Root Response
-class CwaApiResponse {
-  final String success;
-  final CwaRecords records;
+@freezed
+abstract class CwaApiResponse with _$CwaApiResponse {
+  const factory CwaApiResponse({
+    @JsonKey(defaultValue: 'false') required String success,
+    @JsonKey(name: 'records', readValue: _readCwaRecords) required CwaRecords records,
+  }) = _CwaApiResponse;
 
-  CwaApiResponse({required this.success, required this.records});
-
-  factory CwaApiResponse.fromJson(Map<String, dynamic> json) {
-    return CwaApiResponse(success: json['success'] ?? 'false', records: CwaRecords.fromJson(json['records'] ?? {}));
-  }
+  factory CwaApiResponse.fromJson(Map<String, dynamic> json) => _$CwaApiResponseFromJson(json);
 }
 
 /// Records Wrapper
-class CwaRecords {
-  final List<CwaLocations> locationsList;
+@freezed
+abstract class CwaRecords with _$CwaRecords {
+  const factory CwaRecords({
+    @JsonKey(name: 'Locations', readValue: _readCwaKey, defaultValue: []) required List<CwaLocations> locationsList,
+  }) = _CwaRecords;
 
-  CwaRecords({required this.locationsList});
-
-  factory CwaRecords.fromJson(Map<String, dynamic> json) {
-    // Handle "Locations" vs "locations"
-    final list = json['Locations'] ?? json['locations'] ?? [];
-    return CwaRecords(locationsList: (list as List).map((e) => CwaLocations.fromJson(e)).toList());
-  }
+  factory CwaRecords.fromJson(Map<String, dynamic> json) => _$CwaRecordsFromJson(json);
 }
 
 /// Locations Group (Usually contains DatasetDescription + List of Location)
-class CwaLocations {
-  final String datasetDescription;
-  final String locationsName;
-  final List<CwaLocation> location;
+@freezed
+abstract class CwaLocations with _$CwaLocations {
+  const factory CwaLocations({
+    @JsonKey(name: 'DatasetDescription', readValue: _readCwaKey, defaultValue: '') required String datasetDescription,
+    @JsonKey(name: 'LocationsName', readValue: _readCwaKey, defaultValue: '') required String locationsName,
+    @JsonKey(name: 'Location', readValue: _readCwaKey, defaultValue: []) required List<CwaLocation> location,
+  }) = _CwaLocations;
 
-  CwaLocations({required this.datasetDescription, required this.locationsName, required this.location});
-
-  factory CwaLocations.fromJson(Map<String, dynamic> json) {
-    // Handle "Location" vs "location"
-    final locList = json['Location'] ?? json['location'] ?? [];
-    return CwaLocations(
-      datasetDescription: json['DatasetDescription'] ?? '',
-      locationsName: json['LocationsName'] ?? '',
-      location: (locList as List).map((e) => CwaLocation.fromJson(e)).toList(),
-    );
-  }
+  factory CwaLocations.fromJson(Map<String, dynamic> json) => _$CwaLocationsFromJson(json);
 }
 
 /// Individual Location (e.g. "Xinyi District")
-class CwaLocation {
-  final String locationName;
-  final List<CwaWeatherElement> weatherElement;
+@freezed
+abstract class CwaLocation with _$CwaLocation {
+  const factory CwaLocation({
+    @JsonKey(name: 'LocationName', readValue: _readCwaKey, defaultValue: '') required String locationName,
+    @JsonKey(name: 'WeatherElement', readValue: _readCwaKey, defaultValue: [])
+    required List<CwaWeatherElement> weatherElement,
+  }) = _CwaLocation;
 
-  CwaLocation({required this.locationName, required this.weatherElement});
-
-  factory CwaLocation.fromJson(Map<String, dynamic> json) {
-    // Handle "LocationName" vs "locationName"
-    final name = json['LocationName'] ?? json['locationName'] ?? '';
-    // Handle "WeatherElement" vs "weatherElement"
-    final elements = json['WeatherElement'] ?? json['weatherElement'] ?? [];
-    return CwaLocation(
-      locationName: name,
-      weatherElement: (elements as List).map((e) => CwaWeatherElement.fromJson(e)).toList(),
-    );
-  }
+  factory CwaLocation.fromJson(Map<String, dynamic> json) => _$CwaLocationFromJson(json);
 }
 
 /// Weather Element (e.g. Temperature series)
-class CwaWeatherElement {
-  final String elementName;
-  final List<CwaTime> time;
+@freezed
+abstract class CwaWeatherElement with _$CwaWeatherElement {
+  const factory CwaWeatherElement({
+    @JsonKey(name: 'ElementName', readValue: _readCwaKey, defaultValue: '') required String elementName,
+    @JsonKey(name: 'Time', readValue: _readCwaKey, defaultValue: []) required List<CwaTime> time,
+  }) = _CwaWeatherElement;
 
-  CwaWeatherElement({required this.elementName, required this.time});
-
-  factory CwaWeatherElement.fromJson(Map<String, dynamic> json) {
-    // Handle "ElementName" vs "elementName"
-    final name = json['ElementName'] ?? json['elementName'] ?? '';
-    // Handle "Time" vs "time"
-    final t = json['Time'] ?? json['time'] ?? [];
-    return CwaWeatherElement(elementName: name, time: (t as List).map((e) => CwaTime.fromJson(e)).toList());
-  }
+  factory CwaWeatherElement.fromJson(Map<String, dynamic> json) => _$CwaWeatherElementFromJson(json);
 }
 
 /// Time Entry (Start, End, Value)
-class CwaTime {
-  final DateTime startTime;
-  final DateTime? endTime;
-  final List<Map<String, dynamic>> elementValue;
+@freezed
+abstract class CwaTime with _$CwaTime {
+  const CwaTime._();
 
-  CwaTime({required this.startTime, this.endTime, required this.elementValue});
+  const factory CwaTime({
+    @JsonKey(name: 'StartTime', readValue: _readCwaKey) required DateTime startTime,
+    @JsonKey(name: 'EndTime', readValue: _readCwaKey) DateTime? endTime,
+    @JsonKey(name: 'ElementValue', readValue: _readCwaKey, defaultValue: [])
+    required List<Map<String, dynamic>> elementValue,
+  }) = _CwaTime;
 
-  factory CwaTime.fromJson(Map<String, dynamic> json) {
-    final start = json['StartTime'] ?? json['startTime'];
-    final end = json['EndTime'] ?? json['endTime'];
-    final vals = json['ElementValue'] ?? json['elementValue'] ?? [];
-
-    return CwaTime(
-      startTime: DateTime.parse(start),
-      endTime: end != null ? DateTime.parse(end) : null,
-      elementValue: List<Map<String, dynamic>>.from(vals),
-    );
-  }
+  factory CwaTime.fromJson(Map<String, dynamic> json) => _$CwaTimeFromJson(json);
 
   /// Helper to get the value string for a specific key preference
   /// e.g. getValue(['Temperature', 'value'])
@@ -108,13 +96,8 @@ class CwaTime {
         return first[key].toString();
       }
     }
-    // Fallback: return first value if keys don't match (for simple 'value' case)
-    if (first.isNotEmpty) {
-      // but maybe it's not what we want. Safer to return empty if not found?
-      // Let's stick to key preference.
-      // Check if 'value' exists as implicit fallback
-      if (first.containsKey('value')) return first['value'].toString();
-    }
+    // Fallback: implicit 'value' key when none of the preferences match.
+    if (first.containsKey('value')) return first['value'].toString();
     return '';
   }
 }
