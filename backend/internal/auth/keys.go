@@ -30,3 +30,12 @@ func resendRateKey(email string) cache.Key {
 		ID:     email,
 	}
 }
+
+// verifyRateKey returns the cache key for counting email verification attempts per email.
+func verifyRateKey(email string) cache.Key {
+	return cache.Key{
+		Module: cache.ModuleAuth,
+		Domain: "rate:verify",
+		ID:     email,
+	}
+}

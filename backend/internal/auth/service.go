@@ -48,6 +48,11 @@ const maxLoginAttempts int64 = 10
 // allowed within the ResendRateWindow per email address.
 const maxResendAttempts int64 = 3
 
+// maxVerifyAttempts is the maximum number of email verification code submission
+// attempts allowed within the VerifyRateWindow. Exceeding this limit returns
+// ErrTooManyRequests to prevent brute-forcing the 6-digit code.
+const maxVerifyAttempts int64 = 5
+
 // Durations holds the configurable time windows for the auth flows
 // (token lifetimes, verification code TTL and outbound mail timeout).
 type Durations struct {
@@ -63,6 +68,10 @@ type Durations struct {
 	// ResendRateWindow is the sliding window for resend-verification-code requests.
 	// After maxResendAttempts requests the caller receives ErrTooManyRequests.
 	ResendRateWindow time.Duration
+
+	// VerifyRateWindow is the sliding window for email verification code submission
+	// attempts. After maxVerifyAttempts the caller receives ErrTooManyRequests.
+	VerifyRateWindow time.Duration
 }
 
 // DefaultDurations returns the built-in auth time windows. It is used as a
@@ -75,6 +84,7 @@ func DefaultDurations() Durations {
 		MailSendTimeout:     15 * time.Second,
 		LoginRateWindow:     15 * time.Minute,
 		ResendRateWindow:    30 * time.Minute,
+		VerifyRateWindow:    10 * time.Minute,
 	}
 }
 
@@ -214,6 +224,19 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 
 // VerifyEmail 驗證使用者的 Email。
 func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string) error {
+	// 頻率限制：同一 email 在視窗內最多允許 maxVerifyAttempts 次提交。
+	// 在 DB 查詢之前計數，防止 timing side-channel 洩漏使用者存在與否。
+	// 計數失敗時 fail-open。
+	if svc.authCache != nil {
+		count, err := svc.authCache.Increment(ctx, verifyRateKey(emailAddr), svc.durations.VerifyRateWindow)
+		if err != nil {
+			svc.logger.WarnContext(ctx, "驗證碼頻率限制計數失敗，跳過限制", "email", emailAddr, "error", err)
+		} else if count > maxVerifyAttempts {
+			svc.logger.WarnContext(ctx, "驗證碼提交次數過多", "email", emailAddr, "count", count)
+			return apperror.ErrTooManyRequests
+		}
+	}
+
 	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -253,6 +276,7 @@ func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string)
 		return err
 	}
 	_ = svc.authCache.Delete(ctx, authVerificationKey(emailAddr))
+	_ = svc.authCache.Delete(ctx, verifyRateKey(emailAddr))
 
 	return nil
 }
@@ -525,6 +549,7 @@ func (svc *authService) ClearRateLimit(ctx context.Context, email string) error 
 	}
 	_ = svc.authCache.Delete(ctx, loginRateKey(email))
 	_ = svc.authCache.Delete(ctx, resendRateKey(email))
+	_ = svc.authCache.Delete(ctx, verifyRateKey(email))
 	return nil
 }
 
