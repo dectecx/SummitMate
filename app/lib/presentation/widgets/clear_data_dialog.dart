@@ -4,7 +4,7 @@ import 'package:flutter/services.dart'; // for SystemNavigator
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/di/injection.dart';
-import '../../infrastructure/database/app_database.dart';
+import '../../domain/domain.dart';
 import 'buttons/summit_destructive_button.dart';
 
 /// 顯示清除資料對話框
@@ -97,7 +97,7 @@ void showClearDataDialog(BuildContext context) {
               Navigator.pop(dialogContext);
 
               // 執行 Drift 清除
-              await getIt<AppDatabase>().clearSelectedData(
+              await getIt<IDevToolsService>().clearSelectedData(
                 trips: clearItinerary,
                 messages: clearMessages,
                 gear: clearGear,

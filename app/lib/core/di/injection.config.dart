@@ -150,6 +150,7 @@ import '../../infrastructure/services/adapters/itinerary_sync_adapter.dart'
 import '../../infrastructure/services/adapters/trip_sync_adapter.dart' as _i148;
 import '../../infrastructure/services/auth_service.dart' as _i227;
 import '../../infrastructure/services/connectivity_service.dart' as _i315;
+import '../../infrastructure/services/dev_tools_service.dart' as _i537;
 import '../../infrastructure/services/geolocator_service.dart' as _i548;
 import '../../infrastructure/services/jwt_token_validator.dart' as _i1065;
 import '../../infrastructure/services/sync_engine.dart' as _i968;
@@ -219,6 +220,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i455.CwaWeatherSource>(() => _i455.CwaWeatherSource());
     gh.lazySingleton<_i958.AppErrorCubit>(() => _i958.AppErrorCubit());
     gh.lazySingleton<_i304.IPollService>(() => _i133.MockPollService());
+    gh.lazySingleton<_i614.IDevToolsService>(
+      () => _i537.DevToolsService(db: gh<_i89.AppDatabase>()),
+    );
     gh.lazySingleton<_i1012.ITokenValidator>(() => _i1065.JwtTokenValidator());
     gh.lazySingleton<_i730.IAdService>(() => _i702.AdService());
     gh.lazySingleton<_i484.IGearKeyLocalDataSource>(

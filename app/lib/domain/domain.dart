@@ -60,6 +60,7 @@ export 'interfaces/i_ad_service.dart';
 export 'interfaces/i_auth_service.dart';
 export 'interfaces/i_connectivity_service.dart';
 export 'interfaces/i_data_service.dart';
+export 'interfaces/i_dev_tools_service.dart';
 export 'interfaces/i_gear_library_cloud_service.dart';
 export 'interfaces/i_geolocator_service.dart';
 export 'interfaces/i_poll_service.dart';

@@ -6,8 +6,6 @@ import 'package:summitmate/presentation/cubits/auth/auth_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear/gear_cubit.dart';
 import 'package:summitmate/presentation/cubits/meal/meal_cubit.dart';
 import 'package:summitmate/presentation/cubits/poll/poll_cubit.dart';
-import 'package:summitmate/infrastructure/database/app_database.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:summitmate/app.dart';
 import 'package:summitmate/presentation/cubits/meal/meal_state.dart';
 import 'dart:math';
@@ -407,33 +405,46 @@ class DriftViewerScreen extends StatefulWidget {
 }
 
 class _DriftViewerScreenState extends State<DriftViewerScreen> {
-  final db = getIt<AppDatabase>();
-  List<drift.TableInfo> get _tables => db.allTables.toList();
-  drift.TableInfo? _selectedTable;
+  final _devTools = getIt<IDevToolsService>();
+  List<String> _tables = [];
+  String? _selectedTable;
   List<Map<String, dynamic>> _data = [];
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    if (_tables.isNotEmpty) {
-      _selectedTable = _tables.first;
-      _loadData();
+    _init();
+  }
+
+  Future<void> _init() async {
+    final tables = await _devTools.getTableNames();
+    if (!mounted) return;
+    setState(() {
+      _tables = tables;
+      _selectedTable = tables.isNotEmpty ? tables.first : null;
+    });
+    if (_selectedTable != null) {
+      await _loadData();
     }
   }
 
   Future<void> _loadData() async {
-    if (_selectedTable == null) return;
+    final table = _selectedTable;
+    if (table == null) return;
     setState(() => _isLoading = true);
     try {
-      final results = await db.customSelect('SELECT * FROM ${_selectedTable!.actualTableName} LIMIT 100').get();
+      final results = await _devTools.getTableData(table);
+      if (!mounted) return;
       setState(() {
-        _data = results.map((row) => row.data).toList();
+        _data = results;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('載入失敗: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('載入失敗: $e')));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -445,9 +456,9 @@ class _DriftViewerScreenState extends State<DriftViewerScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: DropdownButtonFormField<drift.TableInfo>(
+            child: DropdownButtonFormField<String>(
               value: _selectedTable,
-              items: _tables.map((t) => DropdownMenuItem(value: t, child: Text(t.actualTableName))).toList(),
+              items: _tables.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
               onChanged: (val) {
                 setState(() {
                   _selectedTable = val;
