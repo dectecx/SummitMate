@@ -110,6 +110,29 @@ abstract interface class ITripRepository {
   /// 刪除糧食計畫天數
   Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId);
 
+  /// 取得行程的完整每日餐食計畫（含各天的 MealItem）
+  Future<Result<List<DailyMealPlan>, Exception>> getDailyMealPlans(String tripId);
+
+  // ========== Meal Item Operations ==========
+
+  /// 新增餐點
+  ///
+  /// [dayId] 天數 ID / [mealType] 餐種 / [name] 名稱 / [weight] 重量(g) / [calories] 卡路里
+  Future<Result<MealItem, Exception>> addMealItem(
+    String dayId,
+    MealType mealType,
+    String name,
+    double weight,
+    double calories, {
+    String? note,
+  });
+
+  /// 刪除餐點
+  Future<Result<void, Exception>> removeMealItem(String itemId);
+
+  /// 更新餐點數量
+  Future<Result<void, Exception>> updateMealItemQuantity(String itemId, int quantity);
+
   /// 更新本地行程 ID (遷移行程及其所有關聯資料)
   Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId);
 

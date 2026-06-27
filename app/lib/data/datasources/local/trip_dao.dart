@@ -3,15 +3,18 @@ import 'package:injectable/injectable.dart';
 import '../../../infrastructure/database/app_database.dart';
 import '../../../domain/entities/trip.dart';
 import '../../../domain/entities/meal_plan_day.dart';
+import '../../../domain/entities/meal_item.dart';
+import '../../../domain/enums/meal_type.dart';
 import '../interfaces/i_trip_local_data_source.dart';
 import '../../models/trip_table.dart';
 import '../../models/meal_plan_day_table.dart';
+import '../../models/meal_item_table.dart';
 import '../../models/gear_item_table.dart';
 import '../../models/itinerary_item_table.dart';
 
 part 'trip_dao.g.dart';
 
-@DriftAccessor(tables: [TripsTable, MealPlanDaysTable, GearItemsTable, ItineraryItemsTable])
+@DriftAccessor(tables: [TripsTable, MealPlanDaysTable, MealItemsTable, GearItemsTable, ItineraryItemsTable])
 @LazySingleton(as: ITripLocalDataSource)
 class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implements ITripLocalDataSource {
   TripDao(AppDatabase db) : super(db);
@@ -215,5 +218,63 @@ class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implemen
         const TripsTableCompanion(syncStatus: Value(SyncStatus.pendingUpdate)),
       );
     }
+  }
+
+  // ========== Meal Item Operations ==========
+
+  @override
+  Future<Map<String, Map<MealType, List<MealItem>>>> getMealItemsForTrip(String tripId) async {
+    // JOIN meal_items with meal_plan_days to filter by tripId in one query
+    final query = select(mealItemsTable).join([
+      innerJoin(mealPlanDaysTable, mealPlanDaysTable.id.equalsExp(mealItemsTable.dayId)),
+    ])..where(mealPlanDaysTable.tripId.equals(tripId));
+
+    final rows = await query.get();
+    final result = <String, Map<MealType, List<MealItem>>>{};
+
+    for (final row in rows) {
+      final entity = row.readTable(mealItemsTable);
+      final dayId = entity.dayId;
+      final mealType = entity.mealType; // Already converted by MealTypeConverter
+      final item = MealItem(
+        id: entity.id,
+        name: entity.name,
+        weight: entity.weight,
+        calories: entity.calories,
+        quantity: entity.quantity,
+        note: entity.note,
+      );
+      final dayMap = result.putIfAbsent(dayId, () => {});
+      dayMap[mealType] = [...(dayMap[mealType] ?? []), item];
+    }
+    return result;
+  }
+
+  @override
+  Future<void> saveMealItem(String dayId, MealType mealType, MealItem item) async {
+    await into(mealItemsTable).insertOnConflictUpdate(
+      MealItemsTableCompanion.insert(
+        id: item.id,
+        dayId: dayId,
+        mealType: mealType,
+        name: item.name,
+        weight: item.weight,
+        calories: item.calories,
+        quantity: Value(item.quantity),
+        note: Value(item.note),
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteMealItem(String itemId) async {
+    await (delete(mealItemsTable)..where((t) => t.id.equals(itemId))).go();
+  }
+
+  @override
+  Future<void> updateMealItemQuantity(String itemId, int quantity) async {
+    await (update(mealItemsTable)..where((t) => t.id.equals(itemId))).write(
+      MealItemsTableCompanion(quantity: Value(quantity)),
+    );
   }
 }

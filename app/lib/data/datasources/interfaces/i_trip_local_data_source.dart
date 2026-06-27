@@ -1,5 +1,7 @@
 import '../../../domain/entities/trip.dart';
 import '../../../domain/entities/meal_plan_day.dart';
+import '../../../domain/entities/meal_item.dart';
+import '../../../domain/enums/meal_type.dart';
 
 /// 行程 (Trip) 的本地資料來源介面
 ///
@@ -56,6 +58,20 @@ abstract interface class ITripLocalDataSource {
 
   /// 批量更新糧食計畫天數 (通常用於從雲端同步下來時，完整替換或更新)
   Future<void> replaceMealPlanDays(String tripId, List<MealPlanDay> days);
+
+  // ========== Meal Item Operations ==========
+
+  /// 取得行程所有天數的餐點資料，以 dayId 為鍵，回傳 `Map<dayId, Map<MealType, List<MealItem>>>`
+  Future<Map<String, Map<MealType, List<MealItem>>>> getMealItemsForTrip(String tripId);
+
+  /// 新增或更新單筆餐點
+  Future<void> saveMealItem(String dayId, MealType mealType, MealItem item);
+
+  /// 刪除單筆餐點
+  Future<void> deleteMealItem(String itemId);
+
+  /// 更新餐點數量
+  Future<void> updateMealItemQuantity(String itemId, int quantity);
 
   /// 遷移行程 ID (用於離線建立行程後，上傳至雲端取得新 ID 時，同步更新所有本地關聯資料)
   Future<void> migrateTripId(String oldId, String newId);

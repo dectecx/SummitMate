@@ -18,6 +18,7 @@ import '../../data/models/log_table.dart';
 import '../../data/models/weather_table.dart';
 import '../../data/models/gear_set_cache_table.dart';
 import '../../data/models/meal_plan_day_table.dart';
+import '../../data/models/meal_item_table.dart';
 
 // Enums (Needed for Drift TypeConverters in generated code)
 import '../../domain/enums/group_event_category.dart';
@@ -47,6 +48,7 @@ part 'app_database.g.dart';
     WeatherDataTable,
     GearSetCacheTable,
     MealPlanDaysTable,
+    MealItemsTable,
   ],
   daos: [],
 )
