@@ -29,6 +29,9 @@ abstract interface class IGroupEventRemoteDataSource {
     String? linkedTripId,
   });
 
+  /// 更新揪團（僅限建立者）
+  Future<Result<GroupEvent, Exception>> updateEvent(GroupEvent event);
+
   /// 刪除揪團
   Future<Result<void, Exception>> deleteEvent(String eventId);
 

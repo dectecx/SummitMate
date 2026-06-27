@@ -11,15 +11,20 @@ class MockGroupEventLocalDataSource extends Mock implements IGroupEventLocalData
 
 class MockGroupEventRemoteDataSource extends Mock implements IGroupEventRemoteDataSource {}
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
   late GroupEventRepository repository;
   late MockGroupEventLocalDataSource mockLocalDataSource;
   late MockGroupEventRemoteDataSource mockRemoteDataSource;
+  late MockConnectivityService mockConnectivity;
 
   setUp(() {
     mockLocalDataSource = MockGroupEventLocalDataSource();
     mockRemoteDataSource = MockGroupEventRemoteDataSource();
-    repository = GroupEventRepository(mockLocalDataSource, mockRemoteDataSource);
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+    repository = GroupEventRepository(mockLocalDataSource, mockRemoteDataSource, mockConnectivity);
   });
 
   group('GroupEventRepository.syncMyEvents', () {

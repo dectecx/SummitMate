@@ -3,14 +3,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_local_data_source.dart';
-import 'package:summitmate/data/datasources/interfaces/i_favorites_remote_data_source.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/favorites_repository.dart';
 
 class MockFavoritesLocalDataSource extends Mock implements IFavoritesLocalDataSource {}
-
-class MockFavoritesRemoteDataSource extends Mock implements IFavoritesRemoteDataSource {}
 
 class MockAuthService extends Mock implements IAuthService {}
 
@@ -19,7 +16,6 @@ class FakeFavorite extends Fake implements Favorite {}
 void main() {
   late FavoritesRepository repository;
   late MockFavoritesLocalDataSource mockLocalDataSource;
-  late MockFavoritesRemoteDataSource mockRemoteDataSource;
   late MockAuthService mockAuthService;
 
   setUpAll(() {
@@ -29,18 +25,13 @@ void main() {
 
   setUp(() {
     mockLocalDataSource = MockFavoritesLocalDataSource();
-    mockRemoteDataSource = MockFavoritesRemoteDataSource();
     mockAuthService = MockAuthService();
-    repository = FavoritesRepository(
-      localDataSource: mockLocalDataSource,
-      remoteDataSource: mockRemoteDataSource,
-      authService: mockAuthService,
-    );
+    repository = FavoritesRepository(localDataSource: mockLocalDataSource, authService: mockAuthService);
   });
 
-  group('FavoritesRepository', () {
+  group('FavoritesRepository (C 模式)', () {
     final tFavorite = Favorite(
-      id: 'fav1',
+      id: 'mountain_target1',
       targetId: 'target1',
       type: FavoriteType.mountain,
       createdAt: DateTime.now(),
@@ -51,49 +42,21 @@ void main() {
     final tException = Exception('Test Error');
 
     group('getFavorites', () {
-      test(
-        'Given getFavorites, When triggered, Then it should return local favorites immediately and trigger remote sync',
-        () async {
-          // Arrange
-          when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavorite]);
-          when(
-            () => mockRemoteDataSource.getFavorites(
-              page: any(named: 'page'),
-              limit: any(named: 'limit'),
-            ),
-          ).thenAnswer(
-            (_) async => Success<PaginatedList<Favorite>, Exception>(
-              const PaginatedList(items: [], page: 1, total: 0, hasMore: false),
-            ),
-          );
-          when(() => mockLocalDataSource.saveFavorites(any())).thenAnswer((_) async {});
+      test('Given local favorites, When getFavorites, Then it returns them from local only', () async {
+        when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavorite]);
 
-          // Act
-          final result = await repository.getFavorites();
-
-          // Assert
-          expect(result, isA<Success<PaginatedList<Favorite>, Exception>>());
-          final paginated = (result as Success<PaginatedList<Favorite>, Exception>).value;
-          expect(paginated.items, [tFavorite]);
-
-          verify(() => mockLocalDataSource.getFavorites()).called(1);
-          verify(
-            () => mockRemoteDataSource.getFavorites(
-              page: any(named: 'page'),
-              limit: any(named: 'limit'),
-            ),
-          ).called(1);
-        },
-      );
-
-      test('Given local fetch fails, When calling getFavorites, Then it should return Failure', () async {
-        // Arrange
-        when(() => mockLocalDataSource.getFavorites()).thenThrow(tException);
-
-        // Act
         final result = await repository.getFavorites();
 
-        // Assert
+        expect(result, isA<Success<PaginatedList<Favorite>, Exception>>());
+        expect((result as Success<PaginatedList<Favorite>, Exception>).value.items, [tFavorite]);
+        verify(() => mockLocalDataSource.getFavorites()).called(1);
+      });
+
+      test('Given local fetch fails, When getFavorites, Then it returns Failure', () async {
+        when(() => mockLocalDataSource.getFavorites()).thenThrow(tException);
+
+        final result = await repository.getFavorites();
+
         expect(result, isA<Failure<PaginatedList<Favorite>, Exception>>());
         expect((result as Failure).exception, tException);
       });
@@ -103,41 +66,16 @@ void main() {
       const tId = 'target1';
       const tType = FavoriteType.mountain;
 
-      test('Given logged in, When calling toggleFavorite, Then it should toggle local and remote', () async {
-        // Arrange
+      test('Given a toggle, When toggleFavorite, Then it only writes local (pending queue)', () async {
         when(() => mockAuthService.currentUserId).thenReturn('user1');
-        when(() => mockAuthService.isLoggedIn()).thenAnswer((_) async => true);
-        when(
-          () => mockLocalDataSource.toggleFavorite(any(), any(), any(), userId: any(named: 'userId')),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockRemoteDataSource.updateFavorite(any(), any(), any()),
-        ).thenAnswer((_) async => const Success(null));
-
-        // Act
-        final result = await repository.toggleFavorite(tId, tType, true);
-
-        // Assert
-        expect(result, isA<Success<void, Exception>>());
-        verify(() => mockLocalDataSource.toggleFavorite(tId, tType, true, userId: 'user1')).called(1);
-        verify(() => mockRemoteDataSource.updateFavorite(tId, tType, true)).called(1);
-      });
-
-      test('Given not logged in, When calling toggleFavorite, Then it should only toggle local', () async {
-        // Arrange
-        when(() => mockAuthService.currentUserId).thenReturn('user1');
-        when(() => mockAuthService.isLoggedIn()).thenAnswer((_) async => false);
         when(
           () => mockLocalDataSource.toggleFavorite(any(), any(), any(), userId: any(named: 'userId')),
         ).thenAnswer((_) async {});
 
-        // Act
         final result = await repository.toggleFavorite(tId, tType, true);
 
-        // Assert
         expect(result, isA<Success<void, Exception>>());
         verify(() => mockLocalDataSource.toggleFavorite(tId, tType, true, userId: 'user1')).called(1);
-        verifyNever(() => mockRemoteDataSource.updateFavorite(any(), any(), any()));
       });
     });
   });
