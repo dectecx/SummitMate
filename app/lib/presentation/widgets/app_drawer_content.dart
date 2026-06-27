@@ -53,18 +53,8 @@ class AppDrawerContent extends StatelessWidget {
               final activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
               final allTrips = tripState is TripLoaded ? tripState.trips : <Trip>[];
 
-              final now = DateTime.now();
-              final today = DateTime(now.year, now.month, now.day);
-
-              final ongoingTrips = allTrips.where((t) {
-                final end = t.endDate ?? t.startDate;
-                return !end.isBefore(today);
-              }).toList();
-
-              final archivedTrips = allTrips.where((t) {
-                final end = t.endDate ?? t.startDate;
-                return end.isBefore(today);
-              }).toList();
+              final ongoingTrips = allTrips.where((t) => t.isOngoing).toList();
+              final archivedTrips = allTrips.where((t) => t.isArchived).toList();
 
               final content = ListView(
                 padding: EdgeInsets.zero,
