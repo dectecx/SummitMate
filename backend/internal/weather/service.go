@@ -159,22 +159,33 @@ func (s *weatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time
 	issueTimeStr := dataset.DatasetInfo.IssueTime
 	var issueTime *time.Time
 	if issueTimeStr != "" {
-		if t, err := time.Parse(time.RFC3339, issueTimeStr); err == nil {
+		if t, err := parseCWATime(issueTimeStr); err == nil {
 			issueTime = &t
+		} else {
+			s.logger.Warn("CWA IssueTime 解析失敗，將略過發布時間", "issue_time", issueTimeStr, "error", err)
 		}
 	}
 
 	var rows []rawRow
+	skipped := 0
 	for _, loc := range dataset.Locations.Location {
 		for _, el := range loc.WeatherElement {
 			for _, t := range el.Time {
-				startTime, err := time.Parse(time.RFC3339, t.StartTime)
+				startTime, err := parseCWATime(t.StartTime)
 				if err != nil {
-					startTime, _ = time.Parse("2006-01-02T15:04:05", t.StartTime)
+					skipped++
+					s.logger.Warn("天氣時間解析失敗，跳過此筆",
+						"location", loc.LocationName, "element", el.ElementName,
+						"field", "StartTime", "value", t.StartTime, "error", err)
+					continue
 				}
-				endTime, err := time.Parse(time.RFC3339, t.EndTime)
+				endTime, err := parseCWATime(t.EndTime)
 				if err != nil {
-					endTime, _ = time.Parse("2006-01-02T15:04:05", t.EndTime)
+					skipped++
+					s.logger.Warn("天氣時間解析失敗，跳過此筆",
+						"location", loc.LocationName, "element", el.ElementName,
+						"field", "EndTime", "value", t.EndTime, "error", err)
+					continue
 				}
 
 				val := extractValue(el.ElementName, t.ElementValue)
@@ -190,7 +201,24 @@ func (s *weatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time
 		}
 	}
 
+	if skipped > 0 {
+		s.logger.Warn("部分天氣資料因時間解析失敗被跳過", "skipped_count", skipped)
+	}
+
 	return rows, issueTime, nil
+}
+
+// cwaTimeLayouts 為 CWA 開放資料可能出現的時間格式。
+var cwaTimeLayouts = []string{time.RFC3339, "2006-01-02T15:04:05"}
+
+// parseCWATime 嘗試以多種已知格式解析 CWA 時間字串，全部失敗才回傳 error。
+func parseCWATime(s string) (time.Time, error) {
+	for _, layout := range cwaTimeLayouts {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("無法解析時間格式: %q", s)
 }
 
 // extractValue 從 ElementValue 中提取主要數值（對應 GAS 的 extractValue）
@@ -271,35 +299,81 @@ func (s *weatherService) aggregate(rows []rawRow, issueTime *time.Time) []Weathe
 	}
 
 	var records []WeatherRecord
+	parseErrCount := 0
 	for ck, vals := range consolidated {
 		records = append(records, WeatherRecord{
 			Location:  ck.Location,
 			StartTime: ck.StartTime,
 			EndTime:   ck.EndTime,
 			Wx:        vals["Wx"],
-			Temp:      parseFloat(vals["T"]),
-			PoP:       parseInt(vals["PoP"]),
-			MinTemp:   parseFloat(vals["MinT"]),
-			MaxTemp:   parseFloat(vals["MaxT"]),
-			Humidity:  parseFloat(vals["RH"]),
-			WindSpeed: parseFloat(vals["WS"]),
-			MinAT:     parseFloat(vals["MinAT"]),
-			MaxAT:     parseFloat(vals["MaxAT"]),
+			Temp:      s.parseFloatField(ck.Location, "T", vals["T"], &parseErrCount),
+			PoP:       s.parseIntField(ck.Location, "PoP", vals["PoP"], &parseErrCount),
+			MinTemp:   s.parseFloatField(ck.Location, "MinT", vals["MinT"], &parseErrCount),
+			MaxTemp:   s.parseFloatField(ck.Location, "MaxT", vals["MaxT"], &parseErrCount),
+			Humidity:  s.parseFloatField(ck.Location, "RH", vals["RH"], &parseErrCount),
+			WindSpeed: s.parseFloatField(ck.Location, "WS", vals["WS"], &parseErrCount),
+			MinAT:     s.parseFloatField(ck.Location, "MinAT", vals["MinAT"], &parseErrCount),
+			MaxAT:     s.parseFloatField(ck.Location, "MaxAT", vals["MaxAT"], &parseErrCount),
 			IssueTime: issueTime,
 		})
+	}
+
+	if parseErrCount > 0 {
+		s.logger.Warn("部分天氣數值解析失敗，已以 0 填補", "error_count", parseErrCount)
 	}
 
 	return records
 }
 
-func parseFloat(s string) float64 {
+// cwaMissingValues 為 CWA 表示「無資料」的常見符號，視為缺值而非解析錯誤。
+var cwaMissingValues = map[string]struct{}{
+	"":  {},
+	"-": {},
+	"X": {},
+	"x": {},
+}
+
+func isMissingValue(s string) bool {
+	_, ok := cwaMissingValues[strings.TrimSpace(s)]
+	return ok
+}
+
+// parseFloat 解析浮點數值；缺值符號回傳 (0, nil)，無法解析回傳 error。
+func parseFloat(s string) (float64, error) {
 	s = strings.TrimSpace(s)
-	v, _ := strconv.ParseFloat(s, 64)
+	if isMissingValue(s) {
+		return 0, nil
+	}
+	return strconv.ParseFloat(s, 64)
+}
+
+// parseInt 解析整數值；缺值符號回傳 (0, nil)，無法解析回傳 error。
+func parseInt(s string) (int, error) {
+	s = strings.TrimSpace(s)
+	if isMissingValue(s) {
+		return 0, nil
+	}
+	return strconv.Atoi(s)
+}
+
+// parseFloatField 解析浮點欄位，解析失敗時記錄 warning 並累加錯誤計數，回傳 0。
+func (s *weatherService) parseFloatField(location, field, raw string, errCount *int) float64 {
+	v, err := parseFloat(raw)
+	if err != nil {
+		*errCount++
+		s.logger.Warn("天氣浮點數值解析失敗，以 0 填補",
+			"location", location, "field", field, "value", raw, "error", err)
+	}
 	return v
 }
 
-func parseInt(s string) int {
-	s = strings.TrimSpace(s)
-	v, _ := strconv.Atoi(s)
+// parseIntField 解析整數欄位，解析失敗時記錄 warning 並累加錯誤計數，回傳 0。
+func (s *weatherService) parseIntField(location, field, raw string, errCount *int) int {
+	v, err := parseInt(raw)
+	if err != nil {
+		*errCount++
+		s.logger.Warn("天氣整數數值解析失敗，以 0 填補",
+			"location", location, "field", field, "value", raw, "error", err)
+	}
 	return v
 }
