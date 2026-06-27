@@ -25,4 +25,10 @@ abstract interface class IGroupEventLocalDataSource {
 
   /// 清除所有揪團資料
   Future<void> clear();
+
+  /// 儲存最後同步時間
+  Future<void> saveLastSyncTime(DateTime time);
+
+  /// 取得最後同步時間，若從未同步則回傳 null
+  Future<DateTime?> getLastSyncTime();
 }

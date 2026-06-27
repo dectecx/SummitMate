@@ -3,12 +3,13 @@ import 'package:injectable/injectable.dart';
 import '../../../infrastructure/database/app_database.dart';
 import '../interfaces/i_group_event_local_data_source.dart';
 import '../../models/group_event_table.dart';
+import '../../models/sync_meta_data_table.dart';
 import '../../../domain/entities/group_event.dart';
 
 part 'group_event_dao.g.dart';
 
 @LazySingleton(as: IGroupEventLocalDataSource)
-@DriftAccessor(tables: [GroupEventsTable, GroupEventApplicationsTable])
+@DriftAccessor(tables: [GroupEventsTable, GroupEventApplicationsTable, SyncMetaDataTable])
 class GroupEventDao extends DatabaseAccessor<AppDatabase>
     with _$GroupEventDaoMixin
     implements IGroupEventLocalDataSource {
@@ -61,6 +62,20 @@ class GroupEventDao extends DatabaseAccessor<AppDatabase>
   Future<void> clear() async {
     await delete(groupEventsTable).go();
     await delete(groupEventApplicationsTable).go();
+  }
+
+  @override
+  Future<void> saveLastSyncTime(DateTime time) async {
+    await into(syncMetaDataTable).insertOnConflictUpdate(
+      SyncMetaDataTableCompanion.insert(key: 'group_events', lastSyncTime: Value(time)),
+    );
+  }
+
+  @override
+  Future<DateTime?> getLastSyncTime() async {
+    final query = select(syncMetaDataTable)..where((t) => t.key.equals('group_events'));
+    final row = await query.getSingleOrNull();
+    return row?.lastSyncTime;
   }
 
   GroupEvent _mapToDomain(GroupEventsTableData row) {
