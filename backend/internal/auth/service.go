@@ -338,6 +338,7 @@ func (svc *authService) Logout(ctx context.Context, tokenStr string) error {
 }
 
 // RefreshToken 解析現有的 Refresh Token 並簽發新的 JWT Tokens。
+// 採用「黑名單輪替」策略：每次 refresh 後舊 token 立即廢除，防止重放攻擊。
 func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*User, string, string, error) {
 	claims, err := svc.tokenManager.ParseToken(tokenString)
 	if err != nil {
@@ -346,6 +347,21 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 
 	if claims.TokenType != "refresh" {
 		return nil, "", "", apperror.ErrUnauthorized.WithMessage("無效的 Token 類型")
+	}
+
+	// 檢查 refresh token 是否已被撤銷（黑名單）
+	if svc.authCache != nil {
+		_, cacheErr := svc.authCache.Get(ctx, authBlacklistKey(tokenString))
+		switch {
+		case cacheErr == nil:
+			// 命中黑名單，token 已被登出或已輪替
+			return nil, "", "", apperror.ErrUnauthorized.WithMessage("Token 已被撤銷")
+		case errors.Is(cacheErr, cache.ErrKeyNotFound):
+			// 未命中黑名單，繼續驗證
+		default:
+			svc.logger.ErrorContext(ctx, "refresh token 黑名單檢查失敗，fail-closed 拒絕請求", "error", cacheErr)
+			return nil, "", "", apperror.ErrUnauthorized.WithMessage("服務暫時無法使用，請稍後再試")
+		}
 	}
 
 	user, err := svc.userRepo.GetByID(ctx, claims.UserID)
@@ -367,6 +383,16 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 	newRefreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", svc.durations.RefreshTokenTTL)
 	if err != nil {
 		return nil, "", "", err
+	}
+
+	// 將舊 refresh token 加入黑名單（token 輪替），防止重放攻擊
+	if svc.authCache != nil {
+		ttl := time.Until(claims.ExpiresAt.Time)
+		if ttl > 0 {
+			if cacheErr := svc.authCache.Set(ctx, authBlacklistKey(tokenString), "1", ttl); cacheErr != nil {
+				svc.logger.ErrorContext(ctx, "舊 refresh token 加入黑名單失敗", "user_id", user.ID, "error", cacheErr)
+			}
+		}
 	}
 
 	return user, newAccessToken, newRefreshToken, nil
