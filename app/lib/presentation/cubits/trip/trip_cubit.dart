@@ -21,45 +21,62 @@ class TripCubit extends Cubit<TripState> {
   static const String _source = 'TripCubit';
 
   StreamSubscription<String>? _tripUpdateSubscription;
+  Timer? _debounceTimer;
+  bool _isLoading = false;
 
   TripCubit(this._tripRepository, this._authService, this._syncEngine) : super(const TripInitial()) {
     _tripUpdateSubscription = _tripRepository.tripUpdateStream.listen((tripId) {
-      // 當行程更新時，重新載入列表以更新 UI 狀態 (如 SyncStatus)
-      loadTrips();
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+        loadTrips(silent: true);
+      });
     });
   }
 
   @override
   Future<void> close() {
+    _debounceTimer?.cancel();
     _tripUpdateSubscription?.cancel();
     return super.close();
   }
 
   /// 載入行程列表
-  Future<void> loadTrips() async {
-    emit(const TripLoading());
+  ///
+  /// [silent] 為 true 時，若已有資料則跳過 TripLoading emit，直接靜默刷新，
+  /// 避免 stream 觸發造成 UI 閃爍。並行呼叫時後者會被忽略。
+  Future<void> loadTrips({bool silent = false}) async {
+    if (_isLoading) return;
+    _isLoading = true;
+    if (!silent) emit(const TripLoading());
     try {
-      final result = await _tripRepository.getAllTrips(_authService.currentUserId ?? '');
+      final userId = _authService.currentUserId ?? '';
+      final result = await _tripRepository.getAllTrips(userId);
 
       if (result is Success<List<Trip>, Exception>) {
         final trips = result.value;
-        final activeTripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? '');
+        final activeTripResult = await _tripRepository.getActiveTrip(userId);
 
         Trip? activeTrip;
         if (activeTripResult is Success<Trip?, Exception>) {
           activeTrip = activeTripResult.value;
         }
 
-        emit(TripLoaded(trips: trips, activeTrip: activeTrip));
-      } else {
+        if (!isClosed) emit(TripLoaded(trips: trips, activeTrip: activeTrip));
+      } else if (!silent) {
         final error = (result as Failure).exception;
         getIt<AppErrorCubit>().reportError(error);
-        emit(TripError(AppErrorHandler.getUserMessage(error)));
+        if (!isClosed) emit(TripError(AppErrorHandler.getUserMessage(error)));
       }
     } catch (e) {
-      LogService.error('載入行程失敗: $e', source: _source);
-      getIt<AppErrorCubit>().reportError(e);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
+      if (silent) {
+        LogService.error('靜默刷新行程失敗: $e', source: _source);
+      } else {
+        LogService.error('載入行程失敗: $e', source: _source);
+        getIt<AppErrorCubit>().reportError(e);
+        if (!isClosed) emit(TripError(AppErrorHandler.getUserMessage(e)));
+      }
+    } finally {
+      _isLoading = false;
     }
   }
 
@@ -111,22 +128,24 @@ class TripCubit extends Cubit<TripState> {
       );
       final result = await _tripRepository.updateTrip(updatedTrip);
 
-      // 手動更新當前狀態中的 trips 列表與 activeTrip，確保 UI 立即反映變更
       if (result is Success && state is TripLoaded) {
+        // inline 更新當前狀態，避免 emit TripLoading 造成 UI 閃爍；
+        // stream 觸發的 debounced silent refresh 會在背景補齊最新資料。
         final currentState = state as TripLoaded;
         final updatedTrips = currentState.trips.map((t) => t.id == updatedTrip.id ? updatedTrip : t).toList();
-        emit(
-          currentState.copyWith(
-            trips: updatedTrips,
-            activeTrip: currentState.activeTrip?.id == updatedTrip.id ? updatedTrip : currentState.activeTrip,
-          ),
-        );
-      }
-
-      if (result is Success) {
+        if (!isClosed) {
+          emit(
+            currentState.copyWith(
+              trips: updatedTrips,
+              activeTrip: currentState.activeTrip?.id == updatedTrip.id ? updatedTrip : currentState.activeTrip,
+            ),
+          );
+        }
+      } else if (result is Success) {
+        // 邊界情況：成功但狀態非 TripLoaded，做完整載入
         await loadTrips();
       } else {
-        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        if (!isClosed) emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
     } catch (e) {
       LogService.error('更新行程失敗: $e', source: _source);
