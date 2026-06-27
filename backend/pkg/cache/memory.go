@@ -17,11 +17,16 @@ type cacheItem[T any] struct {
 type memoryCache[T any] struct {
 	items sync.Map
 	mu    sync.Mutex // 用於 Increment 的原子操作
+
+	done      chan struct{} // 用於通知 janitor goroutine 停止
+	closeOnce sync.Once     // 確保 Close 僅關閉 done 一次
 }
 
 // NewMemoryCache 建立一個新的記憶體快取實作。
 func NewMemoryCache[T any]() Cache[T] {
-	c := &memoryCache[T]{}
+	c := &memoryCache[T]{
+		done: make(chan struct{}),
+	}
 	go c.startJanitor(time.Minute)
 	return c
 }
@@ -128,14 +133,29 @@ func (c *memoryCache[T]) Increment(ctx context.Context, key Key, ttl time.Durati
 
 func (c *memoryCache[T]) startJanitor(interval time.Duration) {
 	ticker := time.NewTicker(interval)
-	for range ticker.C {
-		now := time.Now().UnixNano()
-		c.items.Range(func(key, value any) bool {
-			item := value.(cacheItem[T])
-			if item.expiresAt > 0 && now > item.expiresAt {
-				c.items.Delete(key)
-			}
-			return true
-		})
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			now := time.Now().UnixNano()
+			c.items.Range(func(key, value any) bool {
+				item := value.(cacheItem[T])
+				if item.expiresAt > 0 && now > item.expiresAt {
+					c.items.Delete(key)
+				}
+				return true
+			})
+		case <-c.done:
+			return
+		}
 	}
+}
+
+// Close 停止背景清理 goroutine，釋放資源。可安全重複呼叫。
+func (c *memoryCache[T]) Close() error {
+	c.closeOnce.Do(func() {
+		close(c.done)
+	})
+	return nil
 }

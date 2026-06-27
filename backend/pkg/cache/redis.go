@@ -73,3 +73,7 @@ func (r *redisCache[T]) Increment(ctx context.Context, key Key, ttl time.Duratio
 
 	return val, nil
 }
+
+func (r *redisCache[T]) Close() error {
+	return r.client.Close()
+}

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -38,10 +39,11 @@ import (
 )
 
 type App struct {
-	Config *config.Config
-	Logger *slog.Logger
-	Pool   *pgxpool.Pool
-	Server *http.Server
+	Config    *config.Config
+	Logger    *slog.Logger
+	Pool      *pgxpool.Pool
+	Server    *http.Server
+	AuthCache cache.Cache[string]
 }
 
 func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
@@ -106,6 +108,7 @@ func (a *App) Run() error {
 	}
 
 	// Graceful shutdown
+	shutdownComplete := make(chan struct{})
 	go func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
@@ -118,10 +121,34 @@ func (a *App) Run() error {
 		if err := a.Server.Shutdown(ctx); err != nil {
 			a.Logger.Error("Server forced to shutdown", "error", err)
 		}
+
+		a.releaseResources()
+		close(shutdownComplete)
 	}()
 
 	a.Logger.Info("SummitMate API is running", "addr", a.Config.Addr(), "env", a.Config.Env)
-	return a.Server.ListenAndServe()
+
+	// ListenAndServe 在 graceful shutdown 後會回傳 http.ErrServerClosed，視為正常結束。
+	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	// 等待背景 shutdown 流程（含資源釋放）完成後再返回。
+	<-shutdownComplete
+	return nil
+}
+
+// releaseResources 釋放 App 持有的外部資源（DB pool、cache 等）。
+func (a *App) releaseResources() {
+	if a.AuthCache != nil {
+		if err := a.AuthCache.Close(); err != nil {
+			a.Logger.Error("Failed to close auth cache", "error", err)
+		}
+	}
+
+	if a.Pool != nil {
+		a.Pool.Close()
+	}
 }
 
 func (a *App) setupDocs(router *chi.Mux) {
@@ -216,6 +243,7 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize auth cache: %w", err)
 	}
+	a.AuthCache = authCache
 
 	flagService := flag.NewFlagService(flagRepo, logger)
 

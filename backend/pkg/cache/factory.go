@@ -39,8 +39,9 @@ func NewCache[T any](cfg Config) (Cache[T], error) {
 			DB:       db,
 		})
 
-		// 檢查 Redis 連線
+		// 檢查 Redis 連線；失敗時須關閉 client 避免連線資源洩漏。
 		if err := client.Ping(context.Background()).Err(); err != nil {
+			_ = client.Close()
 			return nil, fmt.Errorf("redis connection failed: %w", err)
 		}
 
