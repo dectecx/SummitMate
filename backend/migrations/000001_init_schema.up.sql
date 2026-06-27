@@ -270,17 +270,19 @@ CREATE TABLE poll_options (
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     created_by UUID         NOT NULL REFERENCES users(id),
     updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_by UUID         NOT NULL REFERENCES users(id)
+    updated_by UUID         NOT NULL REFERENCES users(id),
+    UNIQUE (poll_id, id)
 );
 
 CREATE INDEX idx_poll_options_poll_id ON poll_options(poll_id);
 
 CREATE TABLE poll_votes (
     poll_id        UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
-    option_id      UUID NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
+    option_id      UUID NOT NULL,
     user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (poll_id, option_id, user_id)
+    PRIMARY KEY (poll_id, option_id, user_id),
+    FOREIGN KEY (poll_id, option_id) REFERENCES poll_options(poll_id, id) ON DELETE CASCADE
 );
 
 -- 3.5 Group Events

@@ -63,6 +63,7 @@ func TestPollService_VoteOption(t *testing.T) {
 
 		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil).Once()
 		mockRepo.On("GetPollByID", mock.Anything, pollID).Return(&Poll{ID: pollID, TripID: tripID, Status: "open", AllowMultipleVotes: false}, nil).Once()
+		mockRepo.On("GetPollOption", mock.Anything, optionID).Return(&PollOption{ID: optionID, PollID: pollID}, nil).Once()
 		mockRepo.On("VoteOption", mock.Anything, pollID, optionID, userID, false).Return(nil).Once()
 		mockRepo.On("GetPollByID", mock.Anything, pollID).Return(&Poll{ID: pollID}, nil).Once()
 
@@ -86,5 +87,23 @@ func TestPollService_VoteOption(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "投票活動已結束")
 		assert.Nil(t, result)
+	})
+
+	t.Run("Given option belongs to different poll, When calling PollService VoteOption, Then it returns not found error", func(t *testing.T) {
+		tripID := "trip-1"
+		pollID := "poll-1"
+		optionID := "opt-from-other-poll"
+		userID := "user-1"
+
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil).Once()
+		mockRepo.On("GetPollByID", mock.Anything, pollID).Return(&Poll{ID: pollID, TripID: tripID, Status: "open", AllowMultipleVotes: false}, nil).Once()
+		mockRepo.On("GetPollOption", mock.Anything, optionID).Return(&PollOption{ID: optionID, PollID: "poll-other"}, nil).Once()
+
+		result, err := svc.VoteOption(context.Background(), tripID, pollID, optionID, userID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "找不到該投票選項")
+		assert.Nil(t, result)
+		mockRepo.AssertExpectations(t)
 	})
 }
