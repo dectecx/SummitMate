@@ -64,21 +64,26 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
   Future<void> _addOption(PollCubit cubit, String pollId) async {
     final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新增選項'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: '選項內容', hintText: '輸入新的投票選項'),
-          autofocus: true,
+    final String? result;
+    try {
+      result = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('新增選項'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: '選項內容', hintText: '輸入新的投票選項'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            FilledButton(onPressed: () => Navigator.pop(context, controller.text.trim()), child: const Text('新增')),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(context, controller.text.trim()), child: const Text('新增')),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
 
     if (result != null && result.isNotEmpty) {
       setState(() => _isSubmitting = true);

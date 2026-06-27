@@ -131,21 +131,26 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
   Future<void> _showAddDialog(BuildContext context) async {
     final cubit = context.read<ItineraryCubit>();
     final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('新增天數'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: '名稱', hintText: 'e.g. D3, 撤退日'),
-          autofocus: true,
+    final String? result;
+    try {
+      result = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('新增天數'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: '名稱', hintText: 'e.g. D3, 撤退日'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('新增')),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('新增')),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
 
     if (result != null && result.isNotEmpty && mounted) {
       if (_localDays.contains(result)) {
@@ -175,21 +180,26 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
     final cubit = context.read<ItineraryCubit>();
     final oldName = _localDays[index];
     final controller = TextEditingController(text: oldName);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('重新命名'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: '名稱'),
-          autofocus: true,
+    final String? result;
+    try {
+      result = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('重新命名'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: '名稱'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('確定')),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('確定')),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
 
     if (result != null && result.isNotEmpty && result != oldName && mounted) {
       if (_localDays.contains(result)) {

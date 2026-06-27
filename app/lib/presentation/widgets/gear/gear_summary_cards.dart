@@ -102,36 +102,40 @@ class GearTotalWeightCard extends StatefulWidget {
 class _GearTotalWeightCardState extends State<GearTotalWeightCard> {
   double _comfortWeight = 15.0; // default 15 kg
 
-  void _showSetComfortWeightDialog() {
+  Future<void> _showSetComfortWeightDialog() async {
     final controller = TextEditingController(text: _comfortWeight.toStringAsFixed(1));
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('自訂舒適重量'),
-          content: TextField(
-            controller: controller,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: '舒適重量 (kg)', suffixText: 'kg'),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                final val = double.tryParse(controller.text);
-                if (val != null && val > 0) {
-                  setState(() {
-                    _comfortWeight = val;
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('確定'),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('自訂舒適重量'),
+            content: TextField(
+              controller: controller,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(labelText: '舒適重量 (kg)', suffixText: 'kg'),
             ),
-          ],
-        );
-      },
-    );
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+              FilledButton(
+                onPressed: () {
+                  final val = double.tryParse(controller.text);
+                  if (val != null && val > 0) {
+                    setState(() {
+                      _comfortWeight = val;
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('確定'),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   @override
