@@ -324,7 +324,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         final option = poll.options[index];
         final isSelected = _selectedOptionIds.contains(option.id);
         final percentage = poll.totalVotes > 0 ? option.voteCount / poll.totalVotes : 0.0;
-        final votersList = option.voters.map((v) => v['user_name'] ?? v['user_id']).join(', ');
+        final votersList = option.voters.join(', ');
         final canInteract = poll.isActive && !isOffline;
 
         return Column(

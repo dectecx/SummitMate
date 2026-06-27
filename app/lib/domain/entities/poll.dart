@@ -52,7 +52,7 @@ abstract class PollOption with _$PollOption {
     required String text,
     required String creatorId,
     @Default(0) int voteCount,
-    @Default([]) List<Map<String, dynamic>> voters,
+    @Default([]) List<String> voters,
     required DateTime createdAt,
     required String createdBy,
     required DateTime updatedAt,

@@ -24,7 +24,7 @@ abstract class PollOptionResponse with _$PollOptionResponse {
     required String text,
     @JsonKey(name: 'creator_id') required String creatorId,
     @JsonKey(name: 'vote_count', defaultValue: 0) required int voteCount,
-    @JsonKey(defaultValue: []) required List<Map<String, dynamic>> voters,
+    @JsonKey(defaultValue: []) required List<String> voters,
     @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
     @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
