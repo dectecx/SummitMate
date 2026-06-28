@@ -24,7 +24,9 @@ import '../../data/models/meal_item_table.dart';
 import '../../domain/enums/group_event_category.dart';
 import '../../domain/enums/group_event_status.dart';
 import '../../domain/enums/group_event_application_status.dart';
+import '../../domain/enums/meal_type.dart';
 import '../../data/models/converters/sync_status_converter.dart';
+import '../../data/models/converters/meal_type_converter.dart';
 
 part 'app_database.g.dart';
 
