@@ -106,7 +106,7 @@ func Load() *Config {
 		DBHealthCheckPeriod: getEnvAsDuration("DB_HEALTH_CHECK_PERIOD", 1*time.Minute),
 		DBConnectTimeout:    getEnvAsDuration("DB_CONNECT_TIMEOUT", 10*time.Second),
 
-		JWTSecret:       getEnv("JWT_SECRET", ""),
+		JWTSecret:       getEnv("JWT_SECRET", "1234567890123456"),
 		AccessTokenTTL:  getEnvAsDuration("ACCESS_TOKEN_TTL", 1*time.Hour),
 		RefreshTokenTTL: getEnvAsDuration("REFRESH_TOKEN_TTL", 14*24*time.Hour),
 
