@@ -64,9 +64,15 @@ class AuthInterceptor extends Interceptor {
         return handler.next(err);
       }
 
-      // 避免無限迴圈：若本身是 refresh 或 login 介面 401，直接清除 Session 並回傳錯誤
-      if (path.contains('/auth/refresh') || path.contains('/auth/login')) {
-        LogService.warning('[AuthInterceptor] 401 on auth endpoint ($path). Triggering logout.', source: _source);
+      // /auth/login 的 401 代表帳號不存在或密碼錯誤，屬於正常業務回應，直接透傳錯誤給呼叫端處理
+      if (path.contains('/auth/login')) {
+        LogService.warning('[AuthInterceptor] 401 on login endpoint ($path). Passing through (invalid credentials).', source: _source);
+        return handler.next(err);
+      }
+
+      // /auth/refresh 的 401 代表 refresh token 真正過期，需清除 Session 並通知使用者重新登入
+      if (path.contains('/auth/refresh')) {
+        LogService.warning('[AuthInterceptor] 401 on refresh endpoint ($path). Triggering logout.', source: _source);
         getIt<IAuthService>().logout();
         getIt<AppErrorCubit>().reportAuthExpired();
         return handler.next(err);
