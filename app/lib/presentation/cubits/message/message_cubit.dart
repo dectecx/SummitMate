@@ -27,6 +27,7 @@ class MessageCubit extends Cubit<MessageState> with SafeEmitMixin<MessageState> 
   }
 
   Future<void> loadMessages() async {
+    if (_authService.currentUserId == null) return;
     safeEmit(const MessageLoading());
     try {
       await _refreshLocalMessages();

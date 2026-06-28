@@ -68,6 +68,7 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState>, RemoteSy
   // ──────────────────────────────────────────
 
   Future<void> loadPolls() async {
+    if (_authService.currentUserId == null) return;
     safeEmit(const PollLoading());
 
     final tripId = await _currentTripId;

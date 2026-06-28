@@ -176,9 +176,13 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
               if (activeTripId != null) {
                 context.read<GearCubit>().loadGear(activeTripId);
                 context.read<MealCubit>().loadMealPlans(activeTripId);
+                context.read<MessageCubit>().loadMessages();
+                context.read<PollCubit>().loadPolls();
               } else {
                 context.read<GearCubit>().reset();
                 context.read<MealCubit>().reset();
+                context.read<MessageCubit>().reset();
+                context.read<PollCubit>().reset();
               }
             }
           },
