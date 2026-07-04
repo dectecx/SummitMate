@@ -141,9 +141,11 @@ class GroupEventReviewScreen extends StatelessWidget {
                       onPressed: isSyncing
                           ? null
                           : () async {
+                              final cubit = context.read<GroupEventReviewCubit>();
                               final reason = await _showRejectReasonDialog(context);
                               if (reason != null) {
-                                context.read<GroupEventReviewCubit>().reviewApplication(
+                                if (!context.mounted) return;
+                                cubit.reviewApplication(
                                   app.id,
                                   GroupEventReviewAction.reject,
                                   note: reason,

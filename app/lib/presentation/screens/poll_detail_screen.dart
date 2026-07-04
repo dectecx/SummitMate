@@ -88,6 +88,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     }
 
     if (result != null && result.isNotEmpty) {
+      if (!mounted) return;
       setState(() => _isSubmitting = true);
       try {
         await cubit.addOption(pollId: pollId, text: result);
@@ -425,7 +426,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                 try {
                                   await context.read<PollCubit>().deleteOption(pollId: poll.id, optionId: option.id);
                                 } finally {
-                                  setState(() => _isSubmitting = false);
+                                  if (mounted) setState(() => _isSubmitting = false);
                                 }
                               }
                             },

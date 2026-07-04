@@ -33,7 +33,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
 
     try {
-      await context.read<SettingsCubit>().updateProfile(name, _selectedAvatar);
+      final cubit = context.read<SettingsCubit>();
+      await cubit.updateProfile(name, _selectedAvatar);
       // Configured -> HomeScreen will automatically switch to MainNavigationScreen
     } catch (e) {
       ToastService.error('設定失敗: $e');
