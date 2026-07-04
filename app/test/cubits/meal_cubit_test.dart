@@ -156,5 +156,70 @@ void main() {
         ],
       );
     });
+
+    group('Meal Item Management', () {
+      final initialDays = [
+        const MealPlanDay(id: 'day1', name: 'Day 1'),
+      ];
+      final initialMeal = const MealItem(id: 'item1', name: 'Bread', weight: 100, calories: 200, quantity: 1);
+      final initialDailyPlan = DailyMealPlan(
+        dayInfo: initialDays[0],
+        meals: {MealType.breakfast: [initialMeal]},
+      );
+
+      setUp(() {
+        when(() => mockTripRepository.getDailyMealPlans(any())).thenAnswer((_) async => Success([initialDailyPlan]));
+        when(() => mockTripRepository.markTripAsPendingUpdate(any())).thenAnswer((_) async => const Success(null));
+      });
+
+      blocTest<MealCubit, MealState>(
+        'addMealItem adds a new item',
+        build: () {
+          when(() => mockTripRepository.addMealItem('day1', MealType.breakfast, 'Coffee', 50, 10, note: null))
+              .thenAnswer((_) async => const Success(MealItem(id: 'item2', name: 'Coffee', weight: 50, calories: 10, quantity: 1)));
+          return mealCubit;
+        },
+        act: (cubit) async {
+          await cubit.loadMealPlans('test-trip-id');
+          await cubit.addMealItem('day1', MealType.breakfast, 'Coffee', 50, 10);
+        },
+        expect: () => [
+          isA<MealLoaded>(), // load
+          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.length, 'length', 2) // add
+        ],
+      );
+
+      blocTest<MealCubit, MealState>(
+        'removeMealItem removes an item',
+        build: () {
+          when(() => mockTripRepository.removeMealItem('item1')).thenAnswer((_) async => const Success(null));
+          return mealCubit;
+        },
+        act: (cubit) async {
+          await cubit.loadMealPlans('test-trip-id');
+          await cubit.removeMealItem('day1', MealType.breakfast, 'item1');
+        },
+        expect: () => [
+          isA<MealLoaded>(), // load
+          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.length, 'length', 0) // remove
+        ],
+      );
+
+      blocTest<MealCubit, MealState>(
+        'updateMealItemQuantity updates the quantity',
+        build: () {
+          when(() => mockTripRepository.updateMealItemQuantity('item1', 3)).thenAnswer((_) async => const Success(null));
+          return mealCubit;
+        },
+        act: (cubit) async {
+          await cubit.loadMealPlans('test-trip-id');
+          await cubit.updateMealItemQuantity('day1', MealType.breakfast, 'item1', 3);
+        },
+        expect: () => [
+          isA<MealLoaded>(), // load
+          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.first.quantity, 'quantity', 3) // update
+        ],
+      );
+    });
   });
 }
