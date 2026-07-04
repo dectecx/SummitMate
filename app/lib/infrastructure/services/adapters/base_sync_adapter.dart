@@ -75,25 +75,61 @@ abstract class BaseSyncAdapter<T extends SyncableEntity> implements ISyncAdapter
 
   @override
   Future<SyncPushResult> pushPending() async {
-    int pushed = 0;
-    int migrations = 0;
-    final errors = <String>[];
-
     List<T> pending;
     try {
       pending = (await getLocalItems()).where((i) => i.syncStatus != SyncStatus.synced).toList();
     } catch (e) {
       return SyncPushResult(errors: ['讀取 $tableName 待同步項目失敗: $e']);
     }
+    _sortPendingForPush(pending);
+    return executePush(pending);
+  }
 
-    // 刪除排在最後，避免「先刪父再推子」造成的孤兒
-    pending.sort((a, b) {
-      final aDelete = a.syncStatus == SyncStatus.pendingDelete;
-      final bDelete = b.syncStatus == SyncStatus.pendingDelete;
-      if (aDelete && !bDelete) return 1;
-      if (!aDelete && bDelete) return -1;
-      return 0;
-    });
+  /// 預設實作：推送所有 pending（等同 [pushPending]）。
+  ///
+  /// 具 tripId 欄位的 adapter（如 [ItinerarySyncAdapter]、[GearSyncAdapter]）
+  /// 應覆寫此方法以僅推送屬於 [tripId] 的項目。
+  @override
+  Future<SyncPushResult> pushPendingForTrip(String tripId) => pushPending();
+
+  @override
+  Future<SyncMergeResult> pullRemote() async {
+    List<String> scopes;
+    try {
+      scopes = await resolveScopes();
+    } catch (e) {
+      return SyncMergeResult(errors: ['解析 $tableName 同步範圍失敗: $e']);
+    }
+
+    var merged = const SyncMergeResult();
+    for (final scope in scopes) {
+      try {
+        merged = merged + await pullScope(scope);
+      } catch (e) {
+        merged = merged + SyncMergeResult(errors: ['拉取 $tableName ($scope) 失敗: $e']);
+      }
+    }
+    return merged;
+  }
+
+  /// 預設實作：拉取所有 scope（等同 [pullRemote]）。
+  ///
+  /// 使用 tripId 作為 scope 的 adapter（如 [ItinerarySyncAdapter]、[GearSyncAdapter]）
+  /// 應覆寫此方法以僅拉取 [tripId] 對應的遠端資料。
+  @override
+  Future<SyncMergeResult> pullRemoteForTrip(String tripId) => pullRemote();
+
+  // ──────────────────────────────────────────
+  // Protected helpers
+  // ──────────────────────────────────────────
+
+  /// 執行 push 迴圈，處理 ID 遷移與 synced/error 標記。
+  ///
+  /// 供 [pushPending] 與子類的 [pushPendingForTrip] 共用，避免重複邏輯。
+  Future<SyncPushResult> executePush(List<T> pending) async {
+    int pushed = 0;
+    int migrations = 0;
+    final errors = <String>[];
 
     for (final item in pending) {
       try {
@@ -117,27 +153,10 @@ abstract class BaseSyncAdapter<T extends SyncableEntity> implements ISyncAdapter
     return SyncPushResult(pushedCount: pushed, idMigrationsCount: migrations, errors: errors);
   }
 
-  @override
-  Future<SyncMergeResult> pullRemote() async {
-    List<String> scopes;
-    try {
-      scopes = await resolveScopes();
-    } catch (e) {
-      return SyncMergeResult(errors: ['解析 $tableName 同步範圍失敗: $e']);
-    }
-
-    var merged = const SyncMergeResult();
-    for (final scope in scopes) {
-      try {
-        merged = merged + await _pullScope(scope);
-      } catch (e) {
-        merged = merged + SyncMergeResult(errors: ['拉取 $tableName ($scope) 失敗: $e']);
-      }
-    }
-    return merged;
-  }
-
-  Future<SyncMergeResult> _pullScope(String scope) async {
+  /// 拉取單一 scope 並與本地合併（LWW）。
+  ///
+  /// 供 [pullRemote] 與子類的 [pullRemoteForTrip] 共用。
+  Future<SyncMergeResult> pullScope(String scope) async {
     final remoteItems = await fetchRemote(scope);
     final remoteIds = remoteItems.map((e) => e.id).toSet();
 
@@ -183,5 +202,20 @@ abstract class BaseSyncAdapter<T extends SyncableEntity> implements ISyncAdapter
       localWinsCount: localWins,
       remoteWinsCount: remoteWins,
     );
+  }
+
+  // ──────────────────────────────────────────
+  // Private helpers
+  // ──────────────────────────────────────────
+
+  void _sortPendingForPush(List<T> pending) {
+    // 刪除排在最後，避免「先刪父再推子」造成的孤兒
+    pending.sort((a, b) {
+      final aDelete = a.syncStatus == SyncStatus.pendingDelete;
+      final bDelete = b.syncStatus == SyncStatus.pendingDelete;
+      if (aDelete && !bDelete) return 1;
+      if (!aDelete && bDelete) return -1;
+      return 0;
+    });
   }
 }

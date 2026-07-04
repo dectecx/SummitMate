@@ -244,11 +244,17 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
   /// 上傳整個行程的資料到雲端 (Metadata + Itinerary + Gear)
   Future<bool> uploadFullTrip(Trip trip) async {
     try {
-      final result = await _syncEngine.runSyncCycle(force: true);
-      await loadTrips();
-      return result.isSuccess;
+      final result = await _syncEngine.syncTrip(trip.id, SyncDirection.upload);
+      if (result.isSuccess) {
+        await loadTrips();
+        return true;
+      } else {
+        safeEmit(TripError(result.errorMessage ?? '上傳行程失敗'));
+        return false;
+      }
     } catch (e) {
       LogService.error('Full trip upload exception: $e', source: _source);
+      safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
       return false;
     }
   }
@@ -256,11 +262,17 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
   /// 從雲端下載整個行程的資料到本地 (Metadata + Itinerary + Gear)
   Future<bool> downloadFullTrip(Trip trip) async {
     try {
-      final result = await _syncEngine.runSyncCycle(force: true);
-      await loadTrips();
-      return result.isSuccess;
+      final result = await _syncEngine.syncTrip(trip.id, SyncDirection.download);
+      if (result.isSuccess) {
+        await loadTrips();
+        return true;
+      } else {
+        safeEmit(TripError(result.errorMessage ?? '下載行程失敗'));
+        return false;
+      }
     } catch (e) {
       LogService.error('Full trip download exception: $e', source: _source);
+      safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
       return false;
     }
   }
@@ -283,13 +295,4 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
     if (trip == null) return false;
     return uploadFullTrip(trip);
   }
-}
-
-/// 同步方向
-enum SyncDirection {
-  /// 上傳 (本地覆蓋雲端)
-  upload,
-
-  /// 下載 (雲端覆蓋本地)
-  download,
 }

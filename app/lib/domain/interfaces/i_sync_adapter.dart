@@ -13,11 +13,23 @@ abstract interface class ISyncAdapter {
   /// 並回傳本次推送統計（含錯誤訊息）。
   Future<SyncPushResult> pushPending();
 
+  /// 推送隸屬指定行程的待同步項目到遠端。
+  ///
+  /// 用於對單一行程執行有向上傳（upload）操作。
+  /// 不含行程資料（如 Favorites）的 adapter 應回傳空結果。
+  Future<SyncPushResult> pushPendingForTrip(String tripId);
+
   /// 從遠端拉取並以 Last-Write-Wins 合併到本地。
   ///
   /// 負責解析同步範圍（scope）、拉取遠端、偵測遠端刪除與衝突合併，
   /// 並回傳本次合併統計（含錯誤訊息）。
   Future<SyncMergeResult> pullRemote();
+
+  /// 僅拉取指定行程的遠端資料並與本地合併。
+  ///
+  /// 用於對單一行程執行有向下載（download）操作。
+  /// 不含行程資料（如 Favorites）的 adapter 應回傳空結果。
+  Future<SyncMergeResult> pullRemoteForTrip(String tripId);
 }
 
 /// ID 遷移結果

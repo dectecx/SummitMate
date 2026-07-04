@@ -110,6 +110,65 @@ class SyncEngine implements ISyncEngine {
   }
 
   @override
+  Future<SyncResult> syncTrip(String tripId, SyncDirection direction) async {
+    final userId = _authService.currentUserId;
+    if (userId == null || userId == 'guest') {
+      return SyncResult.failure('訪客或未登入狀態，無法同步行程');
+    }
+    if (_connectivity.isOffline) {
+      return SyncResult.failure('目前為離線模式，無法同步行程');
+    }
+
+    try {
+      LogService.info('SyncEngine: syncTrip $tripId direction=$direction', source: 'SyncEngine');
+
+      if (direction == SyncDirection.upload) {
+        var aggregate = const SyncPushResult();
+        for (final adapter in _adapters) {
+          _setSyncing(adapter.tableName, true);
+          try {
+            aggregate = aggregate + await adapter.pushPendingForTrip(tripId);
+          } catch (e) {
+            aggregate = aggregate + SyncPushResult(errors: ['推送 ${adapter.tableName} ($tripId) 時發生異常: $e']);
+          } finally {
+            _setSyncing(adapter.tableName, false);
+          }
+        }
+        return SyncResult(
+          isSuccess: aggregate.isSuccess,
+          pushedCount: aggregate.pushedCount,
+          idMigrationsCount: aggregate.idMigrationsCount,
+          errors: aggregate.errors,
+          errorMessage: aggregate.errors.isNotEmpty ? aggregate.errors.join(', ') : null,
+          syncedAt: DateTime.now(),
+        );
+      } else {
+        var aggregate = const SyncMergeResult();
+        for (final adapter in _adapters) {
+          _setSyncing(adapter.tableName, true);
+          try {
+            aggregate = aggregate + await adapter.pullRemoteForTrip(tripId);
+          } catch (e) {
+            aggregate = aggregate + SyncMergeResult(errors: ['拉取 ${adapter.tableName} ($tripId) 時發生異常: $e']);
+          } finally {
+            _setSyncing(adapter.tableName, false);
+          }
+        }
+        return SyncResult(
+          isSuccess: aggregate.isSuccess,
+          pulledCount: aggregate.pulledCount,
+          conflictCount: aggregate.conflictCount,
+          errors: aggregate.errors,
+          errorMessage: aggregate.errors.isNotEmpty ? aggregate.errors.join(', ') : null,
+          syncedAt: DateTime.now(),
+        );
+      }
+    } catch (e) {
+      return SyncResult.failure('syncTrip 發生異常: $e');
+    }
+  }
+
+  @override
   Future<SyncResult> pushPending() async {
     var aggregate = const SyncPushResult();
 

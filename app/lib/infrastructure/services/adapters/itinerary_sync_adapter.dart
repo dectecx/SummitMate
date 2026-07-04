@@ -92,4 +92,23 @@ class ItinerarySyncAdapter extends BaseSyncAdapter<ItineraryItem> {
 
   @override
   DateTime? timestampOf(ItineraryItem item) => item.updatedAt ?? item.createdAt;
+
+  // ── Per-trip overrides ──
+
+  @override
+  Future<SyncPushResult> pushPendingForTrip(String tripId) async {
+    final all = await getLocalItems();
+    final pending = all.where((i) => i.tripId == tripId && i.syncStatus != SyncStatus.synced).toList();
+    pending.sort((a, b) {
+      final aDelete = a.syncStatus == SyncStatus.pendingDelete;
+      final bDelete = b.syncStatus == SyncStatus.pendingDelete;
+      if (aDelete && !bDelete) return 1;
+      if (!aDelete && bDelete) return -1;
+      return 0;
+    });
+    return executePush(pending);
+  }
+
+  @override
+  Future<SyncMergeResult> pullRemoteForTrip(String tripId) => pullScope(tripId);
 }

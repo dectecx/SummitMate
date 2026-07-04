@@ -102,4 +102,18 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
   /// 行程須「曾上傳過」(`cloudSyncedAt != null`) 才視為遠端刪除。
   @override
   bool wasEverSynced(Trip local) => local.cloudSyncedAt != null;
+
+  // ── Per-trip overrides ──
+
+  @override
+  Future<SyncPushResult> pushPendingForTrip(String tripId) async {
+    final all = await getLocalItems();
+    final pending = all.where((t) => t.id == tripId && t.syncStatus != SyncStatus.synced).toList();
+    return executePush(pending);
+  }
+
+  /// TripSyncAdapter 使用固定的 `__all_trips__` scope，無法只拉單筆；
+  /// 沿用 [pullRemote] 拉取所有行程後本地合併即可確保指定行程資料是最新的。
+  @override
+  Future<SyncMergeResult> pullRemoteForTrip(String tripId) => pullRemote();
 }

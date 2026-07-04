@@ -87,6 +87,15 @@ class SyncResult {
   }
 }
 
+/// 同步方向
+enum SyncDirection {
+  /// 上傳 (本地覆蓋雲端)
+  upload,
+
+  /// 下載 (雲端覆蓋本地)
+  download,
+}
+
 /// 同步引擎介面
 ///
 /// 負責編排本地待同步資料的上傳 (Push) 與遠端資料的拉取合併 (Pull)。
@@ -99,6 +108,12 @@ abstract interface class ISyncEngine {
   ///
   /// [force] 是否強制執行 (忽略節流)
   Future<SyncResult> runSyncCycle({bool force = false});
+
+  /// 針對單一行程執行有向同步
+  ///
+  /// [tripId] 指定行程的 ID；[direction] 為 upload（本地推雲端）或 download（雲端拉本地）。
+  /// 僅同步隸屬該行程的資料（行程本體、行程節點、裝備），不影響其他行程或使用者層級資料。
+  Future<SyncResult> syncTrip(String tripId, SyncDirection direction);
 
   /// 僅推送本地待同步資料到遠端
   Future<SyncResult> pushPending();
