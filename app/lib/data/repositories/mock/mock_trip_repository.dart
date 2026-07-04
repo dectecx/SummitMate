@@ -157,4 +157,37 @@ class MockTripRepository implements ITripRepository {
   Future<Result<void, Exception>> markTripAsPendingUpdate(String tripId) async {
     return const Success(null);
   }
+
+  @override
+  Future<Result<List<DailyMealPlan>, Exception>> getDailyMealPlans(String tripId) async {
+    return const Success([]);
+  }
+
+  @override
+  Future<Result<MealItem, Exception>> addMealItem(
+    String dayId,
+    MealType mealType,
+    String name,
+    double weight,
+    double calories, {
+    String? note,
+  }) async {
+    return Success(MealItem(
+      id: 'mock-meal-item-1',
+      name: name,
+      weight: weight,
+      calories: calories,
+      note: note,
+    ));
+  }
+
+  @override
+  Future<Result<void, Exception>> removeMealItem(String itemId) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> updateMealItemQuantity(String itemId, int quantity) async {
+    return const Success(null);
+  }
 }
