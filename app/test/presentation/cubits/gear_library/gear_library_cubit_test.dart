@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_state.dart';
-import 'package:summitmate/core/error/result.dart';
 
 class MockGearLibraryRepository extends Mock implements IGearLibraryRepository {}
 
@@ -13,6 +12,8 @@ class MockGearRepository extends Mock implements IGearRepository {}
 class MockTripRepository extends Mock implements ITripRepository {}
 
 class MockAuthService extends Mock implements IAuthService {}
+
+class MockGearLibrarySyncService extends Mock implements IGearLibrarySyncService {}
 
 class FakeGearLibraryItem extends Fake implements GearLibraryItem {}
 
@@ -24,8 +25,8 @@ void main() {
   group('GearLibraryCubit', () {
     late IGearLibraryRepository mockRepo;
     late IGearRepository mockGearRepo;
-    late ITripRepository mockTripRepo;
-    late IAuthService mockAuthService;
+    late MockAuthService mockAuthService;
+    late MockGearLibrarySyncService mockSyncService;
     late GearLibraryCubit cubit;
 
     final libItem1 = GearLibraryItem(
@@ -61,12 +62,12 @@ void main() {
       mockRepo = MockGearLibraryRepository();
       mockGearRepo = MockGearRepository();
       mockAuthService = MockAuthService();
-      mockTripRepo = MockTripRepository();
+      mockSyncService = MockGearLibrarySyncService();
 
       when(() => mockAuthService.currentUserId).thenReturn('u1');
       when(() => mockAuthService.currentUserEmail).thenReturn('u1@test.com');
 
-      cubit = GearLibraryCubit(mockRepo, mockGearRepo, mockTripRepo, mockAuthService);
+      cubit = GearLibraryCubit(mockRepo, mockGearRepo, mockAuthService, mockSyncService);
     });
 
     tearDown(() {
@@ -112,38 +113,14 @@ void main() {
         when(() => mockRepo.getAll(any())).thenAnswer((_) async => [libItem1]);
 
         // Mock sync logic
-        const linkedGear = GearItem(
-          id: 'g1',
-          name: 'OldName',
-          libraryItemId: 'lib1',
-          tripId: 't1',
-          weight: 1000,
-          category: 'Sleep',
-        );
-        when(() => mockGearRepo.getAllItems()).thenAnswer((_) async => [linkedGear]);
-        when(() => mockTripRepo.getTripById('t1')).thenAnswer(
-          (_) async => Success(
-            Trip(
-              id: 't1',
-              userId: 'u1',
-              name: 'T1',
-              startDate: DateTime.now(),
-              isActive: true,
-              createdAt: DateTime.now(),
-              createdBy: 'u1',
-              updatedAt: DateTime.now(),
-              updatedBy: 'u1',
-            ),
-          ),
-        );
-        when(() => mockGearRepo.updateItem(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockSyncService.syncLinkedGear(any())).thenAnswer((_) async {});
       },
       build: () => cubit,
       act: (cubit) => cubit.updateItem(libItem1),
       expect: () => [isA<GearLibraryLoaded>()],
       verify: (_) {
         verify(() => mockRepo.update(any())).called(1);
-        verify(() => mockGearRepo.updateItem(any())).called(1); // Should update linked gear
+        verify(() => mockSyncService.syncLinkedGear(any())).called(1); // Should update linked gear
       },
     );
   });

@@ -7,9 +7,14 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_cubit.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 
+import 'package:summitmate/presentation/cubits/app_error/app_error_cubit.dart';
+import 'package:get_it/get_it.dart';
+
 class MockAuthService extends Mock implements IAuthService {}
 
 class MockUsageTrackingService extends Mock implements UsageTrackingService {}
+
+class MockAppErrorCubit extends Mock implements AppErrorCubit {}
 
 void main() {
   late AuthCubit authCubit;
@@ -25,7 +30,11 @@ void main() {
     isVerified: true,
   );
 
-  setUp(() {
+  setUp(() async {
+    await GetIt.I.reset();
+    final mockAppErrorCubit = MockAppErrorCubit();
+    GetIt.I.registerSingleton<AppErrorCubit>(mockAppErrorCubit);
+    
     mockAuthService = MockAuthService();
     mockUsageTrackingService = MockUsageTrackingService();
     authStreamController = StreamController<UserProfile?>.broadcast();

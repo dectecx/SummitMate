@@ -44,6 +44,9 @@ void main() {
 
       setUp(() {
         when(() => mockTripRepository.getMealPlanDays(any())).thenAnswer((_) async => Success(initialDays));
+        when(() => mockTripRepository.getDailyMealPlans(any())).thenAnswer((_) async => Success(
+          initialDays.map((d) => DailyMealPlan(dayInfo: d)).toList(),
+        ));
         when(() => mockTripRepository.markTripAsPendingUpdate(any())).thenAnswer((_) async => const Success(null));
       });
 

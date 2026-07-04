@@ -12,6 +12,8 @@ class MockTripRepository extends Mock implements ITripRepository {}
 
 class MockAuthService extends Mock implements IAuthService {}
 
+class MockItineraryDayService extends Mock implements IItineraryDayService {}
+
 class FakeTrip extends Fake implements Trip {}
 
 class FakeItineraryItem extends Fake implements ItineraryItem {}
@@ -20,6 +22,7 @@ void main() {
   late IItineraryRepository mockItineraryRepository;
   late ITripRepository mockTripRepository;
   late MockAuthService mockAuthService;
+  late IItineraryDayService mockItineraryDayService;
   late ItineraryCubit cubit;
   late Trip testTrip;
   late ItineraryItem testItem;
@@ -50,6 +53,7 @@ void main() {
     mockItineraryRepository = MockItineraryRepository();
     mockTripRepository = MockTripRepository();
     mockAuthService = MockAuthService();
+    mockItineraryDayService = MockItineraryDayService();
 
     when(() => mockAuthService.currentUserId).thenReturn('user_1');
 
@@ -58,7 +62,7 @@ void main() {
     when(() => mockTripRepository.getTripById(any())).thenAnswer((_) async => Success(testTrip));
     when(() => mockTripRepository.markTripAsPendingUpdate(any())).thenAnswer((_) async => const Success(null));
 
-    cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);
+    cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService, mockItineraryDayService);
   });
 
   tearDown(() {
@@ -196,7 +200,7 @@ void main() {
         when(() => mockTripRepository.getMealPlanDays(any())).thenAnswer((_) async => const Success([]));
 
         // Re-initialize cubit with reset mocks
-        cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);
+        cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService, mockItineraryDayService);
       });
 
       blocTest<ItineraryCubit, ItineraryState>(
@@ -216,12 +220,13 @@ void main() {
         'renameDay updates dayNames and selects new name',
         build: () => cubit,
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1'], selectedDay: 'D1'),
+        setUp: () {
+           when(() => mockItineraryDayService.renameDay(any(), any(), any()))
+              .thenAnswer((_) async => const Success(null));
+        },
         act: (cubit) => cubit.renameDay('D1', 'Day 1'),
         verify: (_) {
-          final res = verify(() => mockTripRepository.updateTrip(captureAny()));
-          res.called(1);
-          final capturedTrip = res.captured.first as Trip;
-          expect(capturedTrip.dayNames, ['Day 1']);
+           verify(() => mockItineraryDayService.renameDay('trip_1', 'D1', 'Day 1')).called(1);
         },
       );
 
@@ -231,13 +236,12 @@ void main() {
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1', 'D2'], selectedDay: 'D1'),
         setUp: () {
           testTrip = testTrip.copyWith(dayNames: ['D1', 'D2']); // Setup for remove
+          when(() => mockItineraryDayService.removeDay(any(), any(), confirmUnlink: any(named: 'confirmUnlink')))
+              .thenAnswer((_) async => const Success(null));
         },
         act: (cubit) => cubit.removeDay('D2'),
         verify: (_) {
-          final res = verify(() => mockTripRepository.updateTrip(captureAny()));
-          res.called(1);
-          final capturedTrip = res.captured.first as Trip;
-          expect(capturedTrip.dayNames, ['D1']);
+          verify(() => mockItineraryDayService.removeDay('trip_1', 'D2', confirmUnlink: false)).called(1);
         },
       );
 

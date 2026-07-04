@@ -15,11 +15,13 @@ class ItineraryCubit extends Cubit<ItineraryState>
   final IItineraryRepository _repository;
   final ITripRepository _tripRepository;
   final IAuthService _authService;
+  final IItineraryDayService _itineraryDayService;
   static const String _source = 'ItineraryCubit';
 
   String? _currentTripId;
 
-  ItineraryCubit(this._repository, this._tripRepository, this._authService) : super(const ItineraryInitial());
+  ItineraryCubit(this._repository, this._tripRepository, this._authService, this._itineraryDayService)
+    : super(const ItineraryInitial());
 
   @override
   ITripRepository get tripRepository => _tripRepository;
@@ -126,27 +128,10 @@ class ItineraryCubit extends Cubit<ItineraryState>
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
 
-    if (oldName == newName) return;
-    if (trip.dayNames.contains(newName)) {
-      safeEmit(ItineraryError('名稱 "$newName" 已重複'));
-      await loadItinerary();
-      return;
-    }
+    final result = await _itineraryDayService.renameDay(trip.id, oldName, newName);
 
-    // 1. 更新 Trip dayNames
-    final index = trip.dayNames.indexOf(oldName);
-    if (index == -1) return;
-
-    final newDays = List<String>.from(trip.dayNames);
-    newDays[index] = newName;
-    final updatedTrip = trip.copyWith(dayNames: newDays);
-    await _tripRepository.updateTrip(updatedTrip);
-
-    // 2. 批次更新 Item 的 day 欄位
-    final tripItems = (await _repository.getByTripId(trip.id)).where((i) => i.day == oldName);
-    for (var item in tripItems) {
-      final updatedItem = item.copyWith(day: newName, updatedAt: DateTime.now());
-      await _repository.update(updatedItem);
+    if (result is Failure) {
+      safeEmit(ItineraryError(result.exception.toString()));
     }
 
     if (state is ItineraryLoaded && (state as ItineraryLoaded).selectedDay == oldName) {
@@ -162,36 +147,18 @@ class ItineraryCubit extends Cubit<ItineraryState>
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
 
-    // 1. 檢查是否有行程項目
-    final hasItems = (await _repository.getByTripId(trip.id)).any((i) => i.day == name);
-    if (hasItems) {
-      safeEmit(ItineraryError('無法刪除 "$name"，請先清空該天行程'));
-      await loadItinerary();
-      return;
-    }
+    final result = await _itineraryDayService.removeDay(trip.id, name, confirmUnlink: confirmUnlink);
 
-    // 2. 檢查是否綁定了糧食計畫天數
-    final mealDaysResult = await _tripRepository.getMealPlanDays(trip.id);
-    if (mealDaysResult is Success<List<MealPlanDay>, Exception>) {
-      final linkedDay = mealDaysResult.value.cast<MealPlanDay?>().firstWhere(
-        (d) => d?.linkedItineraryDay == name,
-        orElse: () => null,
-      );
-
-      if (linkedDay != null && !confirmUnlink) {
-        safeEmit(ItineraryDayRemovalWarning(dayName: name, mealPlanDayId: linkedDay.id));
-        return;
-      }
-
-      if (linkedDay != null && confirmUnlink) {
-        await _tripRepository.updateMealPlanDay(trip.id, linkedDay.id, linkedDay.name, linkedItineraryDay: null);
+    if (result is Failure) {
+      final exception = result.exception;
+      if (exception is MealPlanDayLinkedToItineraryException) {
+        safeEmit(ItineraryDayRemovalWarning(dayName: exception.dayName, mealPlanDayId: exception.mealPlanDayId));
+        return; // 不要呼叫 loadItinerary
+      } else {
+        safeEmit(ItineraryError(exception.toString()));
       }
     }
 
-    // 3. 執行刪除天數
-    final newDays = List<String>.from(trip.dayNames)..remove(name);
-    final updatedTrip = trip.copyWith(dayNames: newDays);
-    await _tripRepository.updateTrip(updatedTrip);
     await loadItinerary();
   }
 

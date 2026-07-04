@@ -12,6 +12,7 @@ export 'services/jwt_token_validator.dart';
 export 'services/sync_engine.dart';
 export 'services/weather_service.dart';
 export 'services/gear_library_sync_service.dart';
+export 'services/itinerary_day_service.dart';
 
 // Tools
 export 'tools/log_service.dart';
