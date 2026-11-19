@@ -54,7 +54,8 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> with SafeEmitMi
       );
 
       if (result is Success) {
-        // Success: Refresh list to get updated status
+        safeEmit(const GroupEventReviewActionSuccess('操作成功'));
+        // Refresh list to get updated status
         loadApplications();
       } else if (result is Failure) {
         safeEmit(GroupEventReviewError(result.exception.toString()));

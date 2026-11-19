@@ -49,6 +49,10 @@ class GroupEventReviewScreen extends StatelessWidget {
                     ScaffoldMessenger.of(
                       context,
                     ).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.red));
+                  } else if (state is GroupEventReviewActionSuccess) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+                    );
                   }
                 },
                 builder: (context, state) {

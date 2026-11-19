@@ -28,6 +28,14 @@ class GroupEventReviewSyncing extends GroupEventReviewState {
   List<Object> get props => [applications];
 }
 
+class GroupEventReviewActionSuccess extends GroupEventReviewState {
+  final String message;
+  const GroupEventReviewActionSuccess(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
 class GroupEventReviewError extends GroupEventReviewState {
   final String message;
 
