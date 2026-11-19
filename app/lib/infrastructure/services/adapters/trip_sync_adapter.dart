@@ -90,6 +90,18 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
       // 保留本地的 isActive 狀態
       await _localDataSource.updateTrip(remote.copyWith(isActive: local.isActive, syncStatus: SyncStatus.synced));
     }
+
+    // 清理因遠端天數減少而孤立的本地 MealPlanDay.linkedItineraryDay
+    final mealDays = await _localDataSource.getMealPlanDays(remote.id);
+    for (final mealDay in mealDays) {
+      final linkedDay = mealDay.linkedItineraryDay;
+      if (linkedDay != null && !remote.dayNames.contains(linkedDay)) {
+        await _localDataSource.saveMealPlanDay(
+          mealDay.copyWith(linkedItineraryDay: null),
+          remote.id,
+        );
+      }
+    }
   }
 
   @override

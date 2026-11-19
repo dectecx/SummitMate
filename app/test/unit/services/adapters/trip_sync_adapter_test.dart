@@ -5,6 +5,7 @@ import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source.dart';
 import 'package:summitmate/domain/entities/trip.dart';
+import 'package:summitmate/domain/entities/meal_plan_day.dart';
 import 'package:summitmate/domain/enums/sync_status.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import 'package:summitmate/infrastructure/services/adapters/trip_sync_adapter.dart';
@@ -17,6 +18,8 @@ class MockAppDatabase extends Mock implements AppDatabase {}
 
 class FakeTrip extends Fake implements Trip {}
 
+class FakeMealPlanDay extends Fake implements MealPlanDay {}
+
 void main() {
   late TripSyncAdapter adapter;
   late MockTripLocalDataSource mockLocal;
@@ -25,12 +28,15 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FakeTrip());
+    registerFallbackValue(FakeMealPlanDay());
   });
 
   setUp(() {
     mockLocal = MockTripLocalDataSource();
     mockRemote = MockTripRemoteDataSource();
     mockDb = MockAppDatabase();
+    when(() => mockLocal.getMealPlanDays(any())).thenAnswer((_) async => []);
+    when(() => mockLocal.saveMealPlanDay(any(), any())).thenAnswer((_) async {});
     adapter = TripSyncAdapter(mockLocal, mockRemote, mockDb);
   });
 
@@ -155,6 +161,24 @@ void main() {
       expect(result.conflictCount, 1);
       expect(result.localWinsCount, 1);
       verify(() => mockLocal.updateTrip(any())).called(1);
+    });
+
+    test('Given remote trip removed Day 3, When upsertLocalSynced, Then orphaned linkedItineraryDay is nulled', () async {
+      final remoteTrip = defaultTrip.copyWith(dayNames: ['Day 1', 'Day 2']);
+      const mealDay1 = MealPlanDay(id: 'm1', name: 'Meal 1', linkedItineraryDay: 'Day 1');
+      const mealDay3 = MealPlanDay(id: 'm3', name: 'Meal 3', linkedItineraryDay: 'Day 3');
+
+      when(() => mockLocal.addTrip(any())).thenAnswer((_) async {});
+      when(() => mockLocal.getMealPlanDays('1')).thenAnswer((_) async => [mealDay1, mealDay3]);
+      when(() => mockLocal.saveMealPlanDay(any(), any())).thenAnswer((_) async {});
+
+      await adapter.upsertLocalSynced(remoteTrip, null);
+
+      verifyNever(() => mockLocal.saveMealPlanDay(mealDay1, '1'));
+      verify(() => mockLocal.saveMealPlanDay(
+        const MealPlanDay(id: 'm3', name: 'Meal 3', linkedItineraryDay: null),
+        '1',
+      )).called(1);
     });
   });
 }
