@@ -451,6 +451,20 @@ INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p
 WHERE r.code = 'ADMIN';
 
+-- LEADER: trip leadership and event management permissions
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.code = 'LEADER' AND p.code IN (
+    'trip.create', 'trip.edit', 'trip.delete', 'trip.view',
+    'gear.manage', 'poll.create', 'poll.vote',
+    'event.create', 'event.manage'
+);
+
+-- GUIDE: trip assistance permissions
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.code = 'GUIDE' AND p.code IN ('trip.view', 'trip.edit', 'gear.manage', 'poll.vote');
+
 -- MEMBER: basic permissions
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p

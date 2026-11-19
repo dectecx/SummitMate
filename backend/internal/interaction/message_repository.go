@@ -41,7 +41,7 @@ func (r *messageRepository) ListTripMessages(ctx context.Context, tripID string,
 		return nil, 0, false, fmt.Errorf("count trip messages for trip %s: %w", tripID, err)
 	}
 
-	query := fmt.Sprintf(`
+	query := `
 		SELECT
 			m.id, m.trip_id, m.parent_id, m.user_id, u.display_name, u.avatar,
 			m.category, m.content, m.timestamp, m.created_at, m.created_by, m.updated_at, m.updated_by
@@ -50,7 +50,7 @@ func (r *messageRepository) ListTripMessages(ctx context.Context, tripID string,
 		WHERE m.trip_id = $1
 		ORDER BY m.id ASC
 		LIMIT $2 OFFSET $3
-	`)
+	`
 
 	rows, err := db.Query(ctx, query, tripID, limit, (page-1)*limit)
 	if err != nil {

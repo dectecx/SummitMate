@@ -307,3 +307,44 @@ func TestGroupEventRepository_ToggleLike(t *testing.T) {
 		assert.False(t, isLiked)
 	})
 }
+
+// ---------------------------------------------------------------------------
+// TripSnapshot – Scan & Value
+// ---------------------------------------------------------------------------
+
+func TestTripSnapshot_Scan(t *testing.T) {
+	t.Run("Given valid JSON byte slice, When scanning into TripSnapshot, Then all fields are unmarshaled", func(t *testing.T) {
+		endDate := time.Date(2026, 6, 2, 18, 0, 0, 0, time.UTC)
+		jsonData := []byte(`{
+			"name": "Jade Mountain Trek",
+			"start_date": "2026-06-01T08:00:00Z",
+			"end_date": "2026-06-02T18:00:00Z",
+			"itinerary": ["Trailhead", "Paiyun Lodge", "Main Peak"]
+		}`)
+
+		var ts groupevent.TripSnapshot
+		err := ts.Scan(jsonData)
+
+		require.NoError(t, err)
+		assert.Equal(t, "Jade Mountain Trek", ts.Name)
+		expectedStart := time.Date(2026, 6, 1, 8, 0, 0, 0, time.UTC)
+		assert.True(t, ts.StartDate.Equal(expectedStart))
+		require.NotNil(t, ts.EndDate)
+		assert.True(t, ts.EndDate.Equal(endDate))
+		assert.Equal(t, []string{"Trailhead", "Paiyun Lodge", "Main Peak"}, ts.Itinerary)
+	})
+
+	t.Run("Given invalid type, When scanning, Then returns error", func(t *testing.T) {
+		var ts groupevent.TripSnapshot
+		err := ts.Scan("invalid-string-type")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "type assertion to []byte failed")
+	})
+
+	t.Run("Given invalid JSON byte slice, When scanning, Then returns unmarshal error", func(t *testing.T) {
+		var ts groupevent.TripSnapshot
+		err := ts.Scan([]byte(`{invalid-json`))
+		assert.Error(t, err)
+	})
+}
+
