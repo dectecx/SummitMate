@@ -1,5 +1,4 @@
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/entities/meal_plan_day.dart';
 import '../models/trip_meal_api_models.dart';
 
 /// TripMealItem API Model ↔ Domain Model 轉換

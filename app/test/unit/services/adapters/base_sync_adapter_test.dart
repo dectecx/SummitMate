@@ -15,9 +15,9 @@ class _Entity implements SyncableEntity {
   @override
   final SyncStatus syncStatus;
   @override
-  final DateTime? updatedAt;
+  final DateTime? updatedAt = null;
 
-  const _Entity(this.id, this.syncStatus, [this.updatedAt]);
+  const _Entity(this.id, this.syncStatus);
 }
 
 /// 測試用的具體 adapter：記錄被推送/標記的項目，並以 hook 模擬遠端行為。
@@ -28,7 +28,7 @@ class _TestAdapter extends BaseSyncAdapter<_Entity> {
   final List<_Entity> local;
 
   /// 回傳每個 id 對應的 ID 遷移（模擬後端配發永久 ID）。
-  final Map<String, String> idMigrations;
+  final Map<String, String> idMigrations = const {};
 
   /// 推送時應拋錯的 id 集合。
   final Set<String> failingIds;
@@ -39,7 +39,6 @@ class _TestAdapter extends BaseSyncAdapter<_Entity> {
   _TestAdapter(
     this.db, {
     required this.local,
-    this.idMigrations = const {},
     this.failingIds = const {},
   });
 

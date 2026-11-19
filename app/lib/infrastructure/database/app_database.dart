@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import '../tools/log_service.dart';
 
 // Tables
 import '../../data/models/settings_table.dart';
@@ -149,7 +150,10 @@ QueryExecutor _openConnection() {
       driftWorker: Uri.parse('drift_worker.js'),
       onResult: (result) {
         if (result.missingFeatures.isNotEmpty) {
-          print('Using ${result.chosenImplementation} due to missing browser features: ${result.missingFeatures}');
+          LogService.warning(
+            'Using ${result.chosenImplementation} due to missing browser features: ${result.missingFeatures}',
+            source: 'AppDatabase',
+          );
         }
       },
     ),

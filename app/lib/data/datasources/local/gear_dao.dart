@@ -10,7 +10,7 @@ part 'gear_dao.g.dart';
 @LazySingleton(as: IGearLocalDataSource)
 @DriftAccessor(tables: [GearItemsTable])
 class GearDao extends DatabaseAccessor<AppDatabase> with _$GearDaoMixin implements IGearLocalDataSource {
-  GearDao(AppDatabase db) : super(db);
+  GearDao(super.db);
 
   @override
   Future<List<GearItem>> getAll() async {

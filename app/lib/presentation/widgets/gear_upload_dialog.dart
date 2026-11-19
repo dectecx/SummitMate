@@ -86,9 +86,13 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
               // 可見性選擇
               const Text('可見性', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              _RadioGroup(
-                value: _visibility,
-                onChanged: (v) => setState(() => _visibility = v),
+              RadioGroup<GearSetVisibility>(
+                groupValue: _visibility,
+                onChanged: (v) {
+                  if (v != null) {
+                    setState(() => _visibility = v);
+                  }
+                },
                 child: Column(
                   children: [
                     const _VisibilityOption(
@@ -185,22 +189,6 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
   }
 }
 
-class _RadioGroup extends InheritedWidget {
-  final GearSetVisibility value;
-  final ValueChanged<GearSetVisibility> onChanged;
-
-  const _RadioGroup({required this.value, required this.onChanged, required super.child});
-
-  static _RadioGroup of(BuildContext context) {
-    final result = context.dependOnInheritedWidgetOfExactType<_RadioGroup>();
-    assert(result != null, 'No _RadioGroup found in context');
-    return result!;
-  }
-
-  @override
-  bool updateShouldNotify(_RadioGroup oldWidget) => value != oldWidget.value;
-}
-
 class _VisibilityOption extends StatelessWidget {
   final String icon;
   final String title;
@@ -211,11 +199,11 @@ class _VisibilityOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final group = _RadioGroup.of(context);
-    final isSelected = value == group.value;
+    final registry = RadioGroup.maybeOf<GearSetVisibility>(context);
+    final isSelected = value == registry?.groupValue;
 
     return InkWell(
-      onTap: () => group.onChanged(value),
+      onTap: () => registry?.onChanged.call(value),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -227,8 +215,6 @@ class _VisibilityOption extends StatelessWidget {
           children: [
             Radio<GearSetVisibility>(
               value: value,
-              groupValue: group.value,
-              onChanged: (v) => v != null ? group.onChanged(v) : null,
             ),
             Text(icon, style: const TextStyle(fontSize: 18)),
             const SizedBox(width: 8),

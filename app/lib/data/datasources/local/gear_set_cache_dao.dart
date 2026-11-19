@@ -14,7 +14,7 @@ part 'gear_set_cache_dao.g.dart';
 class GearSetCacheDao extends DatabaseAccessor<AppDatabase>
     with _$GearSetCacheDaoMixin
     implements IGearSetCacheLocalDataSource {
-  GearSetCacheDao(AppDatabase db) : super(db);
+  GearSetCacheDao(super.db);
 
   /// 取得所有快取的裝備組合
   @override

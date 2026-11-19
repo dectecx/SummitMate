@@ -11,7 +11,7 @@ part 'settings_dao.g.dart';
 @DriftAccessor(tables: [SettingsTable])
 @LazySingleton(as: ISettingsLocalDataSource)
 class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin implements ISettingsLocalDataSource {
-  SettingsDao(AppDatabase db) : super(db);
+  SettingsDao(super.db);
 
   @override
   Future<Settings?> getSettings() async {

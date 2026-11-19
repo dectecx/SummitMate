@@ -11,7 +11,7 @@ part 'itinerary_dao.g.dart';
 @LazySingleton(as: IItineraryLocalDataSource)
 @DriftAccessor(tables: [ItineraryItemsTable, SyncMetaDataTable])
 class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixin implements IItineraryLocalDataSource {
-  ItineraryDao(AppDatabase db) : super(db);
+  ItineraryDao(super.db);
 
   @override
   Future<List<ItineraryItem>> getAll() async {

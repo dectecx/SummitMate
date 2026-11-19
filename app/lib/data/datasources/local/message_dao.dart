@@ -11,7 +11,7 @@ part 'message_dao.g.dart';
 @DriftAccessor(tables: [MessagesTable, SyncMetaDataTable])
 @LazySingleton(as: IMessageLocalDataSource)
 class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin implements IMessageLocalDataSource {
-  MessageDao(AppDatabase db) : super(db);
+  MessageDao(super.db);
 
   @override
   Future<List<Message>> getAll() async {

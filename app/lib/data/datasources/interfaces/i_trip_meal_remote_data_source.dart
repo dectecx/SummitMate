@@ -1,5 +1,4 @@
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/entities/meal_plan_day.dart';
 
 /// 行程餐飲 (Trip Meal) 的遠端資料來源介面
 abstract interface class ITripMealRemoteDataSource {

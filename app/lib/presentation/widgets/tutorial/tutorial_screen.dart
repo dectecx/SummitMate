@@ -13,7 +13,7 @@ class TutorialScreen extends StatefulWidget {
   static void show(BuildContext context) {
     Navigator.of(
       context,
-    ).push(PageRouteBuilder(opaque: false, pageBuilder: (context, _, __) => const TutorialScreen()));
+    ).push(PageRouteBuilder(opaque: false, pageBuilder: (_, _, _) => const TutorialScreen()));
   }
 
   @override

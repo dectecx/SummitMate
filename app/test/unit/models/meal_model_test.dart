@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/entities/meal_plan_day.dart';
 
 void main() {
   group('MealItem Tests', () {

@@ -67,7 +67,7 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
                     const SizedBox(height: 8),
                     Expanded(
                       child: ReorderableListView(
-                        onReorder: _onReorder,
+                        onReorderItem: _onReorderItem,
                         children: [
                           for (int i = 0; i < _localDays.length; i++)
                             ListTile(
@@ -105,11 +105,7 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
     );
   }
 
-  void _onReorder(int oldIndex, int newIndex) async {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-
+  void _onReorderItem(int oldIndex, int newIndex) async {
     if (oldIndex == newIndex) return;
 
     setState(() {

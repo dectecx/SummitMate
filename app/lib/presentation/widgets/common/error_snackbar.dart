@@ -24,7 +24,7 @@ class ErrorSnackbar {
             ? SnackBarAction(label: '重試', textColor: colorScheme.error, onPressed: onRetry)
             : SnackBarAction(
                 label: '關閉',
-                textColor: colorScheme.onErrorContainer.withOpacity(0.7),
+                textColor: colorScheme.onErrorContainer.withValues(alpha: 0.7),
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 },

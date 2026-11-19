@@ -9,7 +9,7 @@ part 'log_dao.g.dart';
 @LazySingleton()
 @DriftAccessor(tables: [LogsTable])
 class LogDao extends DatabaseAccessor<AppDatabase> with _$LogDaoMixin {
-  LogDao(AppDatabase db) : super(db);
+  LogDao(super.db);
 
   Future<List<LogEntry>> getAllLogs() async {
     final rows = await (select(

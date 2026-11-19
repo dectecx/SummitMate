@@ -231,7 +231,7 @@ class _DevPanelContentState extends State<DevPanelContent> {
                                     setState(() {
                                       _apiUrlController.text = EnvConfig.apiBaseUrl;
                                     });
-                                    if (mounted) {
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(const SnackBar(content: Text('已還原為預設環境變數設定')));
@@ -254,7 +254,7 @@ class _DevPanelContentState extends State<DevPanelContent> {
                                   await prefs.setString('custom_api_base_url', newUrl);
                                   getIt<Dio>().options.baseUrl = newUrl;
                                   setState(() {});
-                                  if (mounted) {
+                                  if (context.mounted) {
                                     ScaffoldMessenger.of(
                                       context,
                                     ).showSnackBar(SnackBar(content: Text('API 網址已更新為: $newUrl (立即生效)')));
@@ -421,6 +421,8 @@ class _DevPanelContentState extends State<DevPanelContent> {
           final authCubit = context.read<AuthCubit>();
           await authCubit.logout(); // Use AuthCubit to ensure app-wide state changes
 
+          if (!context.mounted) return;
+
           // Reset relevant local Cubit states explicitly
           context.read<MealCubit>().reset();
           context.read<GearCubit>().reset();
@@ -433,7 +435,7 @@ class _DevPanelContentState extends State<DevPanelContent> {
             await authService.login(email: email, password: 'password123');
           }
         } finally {
-          Navigator.pop(context); // pop loading
+          if (context.mounted) Navigator.pop(context); // pop loading
           if (context.mounted) Navigator.pop(context); // pop dev panel
         }
       },
@@ -480,7 +482,7 @@ class _DevPanelContentState extends State<DevPanelContent> {
     pollCubit.createPoll(title: '測試投票 ${random.nextInt(1000)}', initialOptions: ['選項 A', '選項 B', '選項 C']).then((
       success,
     ) {
-      if (success) {
+      if (context.mounted && success) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已建立隨機投票')));
       }
     });
@@ -547,7 +549,7 @@ class _DriftViewerScreenState extends State<DriftViewerScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: DropdownButtonFormField<String>(
-              value: _selectedTable,
+              initialValue: _selectedTable,
               items: _tables.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
               onChanged: (val) {
                 setState(() {

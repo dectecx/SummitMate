@@ -1,5 +1,4 @@
 import '../../core/error/result.dart';
-import '../entities/gear_item.dart';
 import '../domain.dart';
 
 /// 裝備組合 (GearSet) Repository 介面

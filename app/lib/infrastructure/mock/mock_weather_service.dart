@@ -1,5 +1,4 @@
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/interfaces/i_weather_service.dart';
 
 class MockWeatherService implements IWeatherService {
   @override

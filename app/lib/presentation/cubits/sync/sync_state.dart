@@ -18,8 +18,7 @@ abstract class SyncState extends Equatable {
 class SyncInitial extends SyncState {
   final DateTime? lastSyncTime;
 
-  const SyncInitial({this.lastSyncTime, int pendingCount = 0, bool isOnline = true})
-    : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncInitial({this.lastSyncTime, super.pendingCount, super.isOnline});
 
   @override
   List<Object?> get props => [...super.props, lastSyncTime];
@@ -28,8 +27,7 @@ class SyncInitial extends SyncState {
 class SyncInProgress extends SyncState {
   final String message;
 
-  const SyncInProgress({this.message = '正在同步資料...', int pendingCount = 0, bool isOnline = true})
-    : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncInProgress({this.message = '正在同步資料...', super.pendingCount, super.isOnline});
 
   @override
   List<Object?> get props => [...super.props, message];
@@ -48,9 +46,9 @@ class SyncSuccess extends SyncState {
     this.pushedCount = 0,
     this.pulledCount = 0,
     this.conflictCount = 0,
-    int pendingCount = 0,
-    bool isOnline = true,
-  }) : super(pendingCount: pendingCount, isOnline: isOnline);
+    super.pendingCount,
+    super.isOnline,
+  });
 
   @override
   List<Object?> get props => [...super.props, timestamp, message, pushedCount, pulledCount, conflictCount];
@@ -60,8 +58,7 @@ class SyncFailure extends SyncState {
   final String errorMessage;
   final DateTime? lastSuccessTime;
 
-  const SyncFailure({required this.errorMessage, this.lastSuccessTime, int pendingCount = 0, bool isOnline = true})
-    : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncFailure({required this.errorMessage, this.lastSuccessTime, super.pendingCount, super.isOnline});
 
   @override
   List<Object?> get props => [...super.props, errorMessage, lastSuccessTime];

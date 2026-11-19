@@ -1,6 +1,5 @@
 import 'package:injectable/injectable.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/entities/meal_plan_day.dart';
 import '../../api/mappers/trip_meal_api_mapper.dart';
 import '../../api/services/trip_meal_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';

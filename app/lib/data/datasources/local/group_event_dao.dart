@@ -13,7 +13,7 @@ part 'group_event_dao.g.dart';
 class GroupEventDao extends DatabaseAccessor<AppDatabase>
     with _$GroupEventDaoMixin
     implements IGroupEventLocalDataSource {
-  GroupEventDao(AppDatabase db) : super(db);
+  GroupEventDao(super.db);
 
   @override
   Future<List<GroupEvent>> getAllEvents() async {

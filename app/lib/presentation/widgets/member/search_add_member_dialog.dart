@@ -237,14 +237,14 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundImage: (_searchResult!.avatar != null && _searchResult!.avatar!.isNotEmpty)
-                    ? NetworkImage(_searchResult!.avatar!)
+                backgroundImage: _searchResult!.avatar.isNotEmpty
+                    ? NetworkImage(_searchResult!.avatar)
                     : null,
-                onBackgroundImageError: (_searchResult!.avatar != null && _searchResult!.avatar!.isNotEmpty)
+                onBackgroundImageError: _searchResult!.avatar.isNotEmpty
                     ? (_, _) {}
                     : null,
-                child: (_searchResult!.avatar == null || _searchResult!.avatar!.isEmpty)
-                    ? Text(_searchResult!.displayName[0])
+                child: _searchResult!.avatar.isEmpty
+                    ? Text(_searchResult!.displayName.isNotEmpty ? _searchResult!.displayName[0] : '')
                     : null,
               ),
               const SizedBox(width: 16),

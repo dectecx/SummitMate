@@ -11,7 +11,7 @@ part 'poll_dao.g.dart';
 @DriftAccessor(tables: [PollsTable, PollOptionsTable, SyncMetaDataTable])
 @LazySingleton(as: IPollLocalDataSource)
 class PollDao extends DatabaseAccessor<AppDatabase> with _$PollDaoMixin implements IPollLocalDataSource {
-  PollDao(AppDatabase db) : super(db);
+  PollDao(super.db);
 
   @override
   Future<List<Poll>> getAllPolls() async {

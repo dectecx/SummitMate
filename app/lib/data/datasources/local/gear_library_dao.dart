@@ -12,7 +12,7 @@ part 'gear_library_dao.g.dart';
 class GearLibraryDao extends DatabaseAccessor<AppDatabase>
     with _$GearLibraryDaoMixin
     implements IGearLibraryLocalDataSource {
-  GearLibraryDao(AppDatabase db) : super(db);
+  GearLibraryDao(super.db);
 
   @override
   Future<List<GearLibraryItem>> getAllItems() async {

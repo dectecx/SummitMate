@@ -17,7 +17,7 @@ part 'trip_dao.g.dart';
 @DriftAccessor(tables: [TripsTable, MealPlanDaysTable, MealItemsTable, GearItemsTable, ItineraryItemsTable])
 @LazySingleton(as: ITripLocalDataSource)
 class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implements ITripLocalDataSource {
-  TripDao(AppDatabase db) : super(db);
+  TripDao(super.db);
 
   @override
   Future<List<Trip>> getAllTrips() async {

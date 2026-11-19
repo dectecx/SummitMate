@@ -4,7 +4,6 @@ import 'package:injectable/injectable.dart';
 import '../../core/location/i_location_resolver.dart';
 import '../../data/cwa/cwa_weather_source.dart';
 import '../../domain/domain.dart';
-import '../../domain/entities/weather_data.dart';
 import '../database/app_database.dart';
 
 @LazySingleton(as: IWeatherService)

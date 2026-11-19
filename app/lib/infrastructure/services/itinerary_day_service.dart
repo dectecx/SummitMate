@@ -47,7 +47,7 @@ class ItineraryDayService implements IItineraryDayService {
       final newDays = List<String>.from(trip.dayNames)..[index] = newName;
       final updateTripResult = await _tripRepository.updateTrip(trip.copyWith(dayNames: newDays));
       if (updateTripResult is Failure) {
-        return Failure((updateTripResult as Failure).exception);
+        return Failure(updateTripResult.exception);
       }
 
       // 2. 批次更新對應的 ItineraryItem.day
@@ -58,7 +58,7 @@ class ItineraryDayService implements IItineraryDayService {
         );
         if (updateResult is Failure) {
           LogService.error(
-            'Failed to update item day for item ${item.id}: ${(updateResult as Failure).exception}',
+            'Failed to update item day for item ${item.id}: ${updateResult.exception}',
             source: _source,
           );
         }
@@ -122,7 +122,7 @@ class ItineraryDayService implements IItineraryDayService {
       final newDays = List<String>.from(trip.dayNames)..remove(name);
       final updateResult = await _tripRepository.updateTrip(trip.copyWith(dayNames: newDays));
       if (updateResult is Failure) {
-        return Failure((updateResult as Failure).exception);
+        return Failure(updateResult.exception);
       }
 
       LogService.info('Removed day "$name" from trip $tripId', source: _source);
