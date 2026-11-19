@@ -468,7 +468,13 @@ func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID stri
 		EndDate:   tripObj.EndDate,
 	}
 	for _, item := range itinerary {
-		snapshot.Itinerary = append(snapshot.Itinerary, item.Name)
+		snapshot.Itinerary = append(snapshot.Itinerary, ItineraryItemSnapshot{
+			ID:       item.ID,
+			Name:     item.Name,
+			Day:      item.Day,
+			EstTime:  item.EstTime,
+			Altitude: int(item.Altitude),
+		})
 	}
 
 	if err := s.repo.UpdateTripSnapshot(ctx, eventID, snapshot, userID); err != nil {

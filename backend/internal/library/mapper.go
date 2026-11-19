@@ -82,8 +82,10 @@ func ToModelMealLibraryItem(req api.MealLibraryItemRequest) MealLibraryItem {
 	if req.Category != nil && *req.Category != "" {
 		category = *req.Category
 	}
-	ingredients := req.Ingredients
-	if ingredients == nil {
+	var ingredients []string
+	if req.Ingredients != nil {
+		ingredients = *req.Ingredients
+	} else {
 		ingredients = []string{}
 	}
 	return MealLibraryItem{

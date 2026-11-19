@@ -319,7 +319,11 @@ func TestTripSnapshot_Scan(t *testing.T) {
 			"name": "Jade Mountain Trek",
 			"start_date": "2026-06-01T08:00:00Z",
 			"end_date": "2026-06-02T18:00:00Z",
-			"itinerary": ["Trailhead", "Paiyun Lodge", "Main Peak"]
+			"itinerary": [
+				{"id": "item-1", "name": "Trailhead", "day": "Day 1", "est_time": "08:00", "altitude": 2600},
+				{"id": "item-2", "name": "Paiyun Lodge", "day": "Day 1", "est_time": "15:00", "altitude": 3402},
+				{"id": "item-3", "name": "Main Peak", "day": "Day 2", "est_time": "06:00", "altitude": 3952}
+			]
 		}`)
 
 		var ts groupevent.TripSnapshot
@@ -331,7 +335,14 @@ func TestTripSnapshot_Scan(t *testing.T) {
 		assert.True(t, ts.StartDate.Equal(expectedStart))
 		require.NotNil(t, ts.EndDate)
 		assert.True(t, ts.EndDate.Equal(endDate))
-		assert.Equal(t, []string{"Trailhead", "Paiyun Lodge", "Main Peak"}, ts.Itinerary)
+		require.Len(t, ts.Itinerary, 3)
+		assert.Equal(t, "item-1", ts.Itinerary[0].ID)
+		assert.Equal(t, "Trailhead", ts.Itinerary[0].Name)
+		assert.Equal(t, "Day 1", ts.Itinerary[0].Day)
+		assert.Equal(t, "08:00", ts.Itinerary[0].EstTime)
+		assert.Equal(t, 2600, ts.Itinerary[0].Altitude)
+		assert.Equal(t, "Main Peak", ts.Itinerary[2].Name)
+		assert.Equal(t, 3952, ts.Itinerary[2].Altitude)
 	})
 
 	t.Run("Given invalid type, When scanning, Then returns error", func(t *testing.T) {

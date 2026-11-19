@@ -22,11 +22,20 @@ const (
 	ApplicationStatusRejected = "rejected"
 )
 
+// ItineraryItemSnapshot represents a simplified itinerary item in a trip snapshot.
+type ItineraryItemSnapshot struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Day      string `json:"day"`
+	EstTime  string `json:"est_time"`
+	Altitude int    `json:"altitude"`
+}
+
 type TripSnapshot struct {
-	Name      string     `json:"name"`
-	StartDate time.Time  `json:"start_date"`
-	EndDate   *time.Time `json:"end_date"`
-	Itinerary []string   `json:"itinerary"` // 簡化的行程節點名稱列表
+	Name      string                  `json:"name"`
+	StartDate time.Time               `json:"start_date"`
+	EndDate   *time.Time              `json:"end_date"`
+	Itinerary []ItineraryItemSnapshot `json:"itinerary"`
 }
 
 func (ts *TripSnapshot) Value() (driver.Value, error) {

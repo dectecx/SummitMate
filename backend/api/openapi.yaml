@@ -3973,7 +3973,22 @@ components:
         itinerary:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/ItineraryItemSnapshot'
+
+    ItineraryItemSnapshot:
+      type: object
+      required: [id, name, day, est_time, altitude]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        day:
+          type: string
+        est_time:
+          type: string
+        altitude:
+          type: integer
 
     GroupEvent:
       type: object

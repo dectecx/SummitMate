@@ -31,11 +31,21 @@ func ToGroupEventResponse(e *GroupEvent, requesterID string) api.GroupEvent {
 
 	var snapshot *api.TripSnapshot
 	if e.TripSnapshot != nil {
+		itinerary := make([]api.ItineraryItemSnapshot, len(e.TripSnapshot.Itinerary))
+		for i, item := range e.TripSnapshot.Itinerary {
+			itinerary[i] = api.ItineraryItemSnapshot{
+				Id:       item.ID,
+				Name:     item.Name,
+				Day:      item.Day,
+				EstTime:  item.EstTime,
+				Altitude: item.Altitude,
+			}
+		}
 		snapshot = &api.TripSnapshot{
 			Name:      e.TripSnapshot.Name,
 			StartDate: e.TripSnapshot.StartDate,
 			EndDate:   e.TripSnapshot.EndDate,
-			Itinerary: e.TripSnapshot.Itinerary,
+			Itinerary: itinerary,
 		}
 	}
 
