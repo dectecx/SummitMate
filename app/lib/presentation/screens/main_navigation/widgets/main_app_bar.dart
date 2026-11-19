@@ -47,6 +47,10 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
     final settingsState = context.watch<SettingsCubit>().state;
     final themeType = settingsState is SettingsLoaded ? settingsState.settings.theme : AppThemeType.nature;
 
+    final authState = context.watch<AuthCubit>().state;
+    final user = (authState is AuthAuthenticated) ? authState.user : null;
+    final canEdit = activeTrip != null && getIt<PermissionService>().canEditTripSync(user, activeTrip!);
+
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -115,17 +119,19 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         // Tab 0: 行程編輯與地圖 (僅在有行程時顯示)
         if (currentIndex == 0) ...[
-          IconButton(
-            icon: Icon(isEditMode ? Icons.check : Icons.edit),
-            tooltip: isEditMode ? '完成' : '編輯行程',
-            onPressed: onEditToggle,
-          ),
-          if (isEditMode)
+          if (canEdit) ...[
             IconButton(
-              icon: Icon(Icons.cloud_upload_outlined, color: isOffline ? Theme.of(context).disabledColor : null),
-              tooltip: isOffline ? '離線模式下無法上傳' : '上傳至雲端',
-              onPressed: isOffline ? () => ToastService.error('離線模式下無法使用雲端上傳功能') : onUpload,
+              icon: Icon(isEditMode ? Icons.check : Icons.edit),
+              tooltip: isEditMode ? '完成' : '編輯行程',
+              onPressed: onEditToggle,
             ),
+            if (isEditMode)
+              IconButton(
+                icon: Icon(Icons.cloud_upload_outlined, color: isOffline ? Theme.of(context).disabledColor : null),
+                tooltip: isOffline ? '離線模式下無法上傳' : '上傳至雲端',
+                onPressed: isOffline ? () => ToastService.error('離線模式下無法使用雲端上傳功能') : onUpload,
+              ),
+          ],
           if (!isEditMode) ...[IconButton(icon: const Icon(Icons.map_outlined), tooltip: '查看地圖', onPressed: onMap)],
         ],
         // 同步狀態指示器

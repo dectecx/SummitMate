@@ -10,8 +10,6 @@ import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../core/di/injection.dart';
-import '../../core/services/permission_service.dart';
 
 import '../widgets/common/modern_sliver_app_bar.dart';
 import '../widgets/trip/trip_card.dart';

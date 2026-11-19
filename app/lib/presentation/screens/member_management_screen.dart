@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/di/injection.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -11,7 +10,6 @@ import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
 import '../widgets/cloud_guard.dart';
-import '../../core/services/permission_service.dart';
 
 /// 成員管理畫面
 ///

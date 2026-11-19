@@ -7,7 +7,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/core.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/core/di/injection.dart';
 import '../../../infrastructure/infrastructure.dart';
 import '../app_error/app_error_cubit.dart';
 import 'trip_state.dart';

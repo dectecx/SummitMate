@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
-import '../../core/di/injection.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';

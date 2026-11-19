@@ -165,14 +165,16 @@ abstract class BaseSyncAdapter<T extends SyncableEntity> implements ISyncAdapter
     int localWins = 0;
     int remoteWins = 0;
 
-    // 偵測遠端刪除：本地有 pending 變更、遠端不存在、且曾被成功推送過
+    // 偵測遠端刪除：本地存在但遠端已無此項目（且該項目曾被成功同步過）
     final localItems = await getLocalItemsForScope(scope);
     for (final local in localItems) {
-      if (SyncConflictResolver.hasPendingChanges(local.syncStatus) &&
-          !remoteIds.contains(local.id) &&
-          wasEverSynced(local)) {
+      if (!remoteIds.contains(local.id) && wasEverSynced(local)) {
         await deleteLocal(local.id);
-        conflict++;
+        if (SyncConflictResolver.hasPendingChanges(local.syncStatus)) {
+          conflict++;
+        } else {
+          remoteWins++;
+        }
       }
     }
 
