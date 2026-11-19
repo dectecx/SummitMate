@@ -103,6 +103,19 @@ docker run -p 8080:8080 \
 
 本專案支援多種 Web 部署方式，以下列出 Netlify 與 GitHub Pages 的配置流程。
 
+### 本地開發與除錯
+
+```bash
+# 格式化代碼
+dart format . -l 120
+
+# 代碼生成 (Freezed / Drift / Retrofit)
+dart run build_runner build --delete-conflicting-outputs
+
+# 啟動 Web (Chrome 開發測試，指定 Port)
+flutter run -d chrome --web-port 54263 --dart-define-from-file=.env.dev
+```
+
 ### 方式 A: Netlify (Via GitHub Actions)
 
 此方式透過 CI/CD 自動建置並部署至 Netlify。
@@ -166,13 +179,38 @@ git push origin --set-upstream gh-pages
 
 ## 3. Android Deployment
 
-建置 Release APK：
+### 本地執行與除錯
 
 ```bash
-flutter build apk --dart-define-from-file=.env.prod
+# 啟動模擬器
+flutter emulators --launch <emulator_id>
+
+# 執行 App (開發環境)
+flutter run --dart-define-from-file=.env.dev
+
+# 執行 App (正式環境)
+flutter run --dart-define-from-file=.env.prod
 ```
 
-輸出路徑：`build/app/outputs/flutter-apk/app-release.apk`
+### 建置安裝套件
+
+```bash
+# 建置 Debug APK (開發環境)
+flutter build apk --debug --dart-define-from-file=.env.dev
+
+# 建置 Debug APK (正式環境)
+flutter build apk --debug --dart-define-from-file=.env.prod
+
+# 建置 Release APK (正式環境)
+flutter build apk --release --dart-define-from-file=.env.prod
+
+# 建置 Release AppBundle (Google Play 上架)
+flutter build appbundle --release --dart-define-from-file=.env.prod
+```
+
+輸出路徑：
+- APK: `app/build/app/outputs/flutter-apk/`
+- AppBundle: `app/build/app/outputs/bundle/release/app-release.aab`
 
 ### 環境變數設定 (AdMob)
 
