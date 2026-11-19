@@ -65,10 +65,7 @@ class ItinerarySyncAdapter extends BaseSyncAdapter<ItineraryItem> {
   Future<List<ItineraryItem>> fetchRemote(String scope) => _remoteDataSource.getItinerary(scope);
 
   @override
-  Future<List<ItineraryItem>> getLocalItemsForScope(String scope) async {
-    final all = await _localDataSource.getAll();
-    return all.where((i) => i.tripId == scope).toList();
-  }
+  Future<List<ItineraryItem>> getLocalItemsForScope(String scope) => _localDataSource.getByTripId(scope);
 
   @override
   Future<ItineraryItem?> getLocalById(String id) => _localDataSource.getById(id);

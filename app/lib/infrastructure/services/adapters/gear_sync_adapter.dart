@@ -65,10 +65,7 @@ class GearSyncAdapter extends BaseSyncAdapter<GearItem> {
   Future<List<GearItem>> fetchRemote(String scope) => _remoteDataSource.getTripGear(scope);
 
   @override
-  Future<List<GearItem>> getLocalItemsForScope(String scope) async {
-    final all = await _localDataSource.getAll();
-    return all.where((i) => i.tripId == scope).toList();
-  }
+  Future<List<GearItem>> getLocalItemsForScope(String scope) => _localDataSource.getByTripId(scope);
 
   @override
   Future<GearItem?> getLocalById(String id) => _localDataSource.getById(id);

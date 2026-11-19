@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
+import '../common/user_avatar.dart';
 
 /// 成員列表項目 Widget
 ///
@@ -33,7 +34,7 @@ class MemberListTile extends StatelessWidget {
 
   /// 取得本地化角色名稱
   String _getRoleName(String code) {
-    return RoleConstants.displayName[code] ?? code;
+    return RoleConstants.getDisplayName(code);
   }
 
   @override
@@ -45,12 +46,12 @@ class MemberListTile extends StatelessWidget {
     IconData roleIcon;
     Color? roleColor;
 
-    if (role == RoleConstants.admin || role == RoleConstants.leader || isOwner) {
+    if (RoleConstants.isAdmin(role) || RoleConstants.isLeader(role) || isOwner) {
       roleText = _getRoleName(RoleConstants.leader);
       if (isOwner) roleText += ' (擁)';
       roleIcon = Icons.stars;
       roleColor = Colors.amber;
-    } else if (role == RoleConstants.guide) {
+    } else if (RoleConstants.isGuide(role)) {
       roleText = _getRoleName(RoleConstants.guide);
       roleIcon = Icons.hiking;
       roleColor = Colors.green;
@@ -61,10 +62,10 @@ class MemberListTile extends StatelessWidget {
     }
 
     return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: (member.avatar != null && member.avatar!.isNotEmpty) ? NetworkImage(member.avatar!) : null,
-        onBackgroundImageError: (_, _) {},
-        child: (member.avatar == null || member.avatar!.isEmpty) ? Text(member.name[0]) : null,
+      leading: UserAvatar(
+        avatar: member.avatar,
+        fallbackText: member.name,
+        radius: 20,
       ),
       title: Text(member.name),
       subtitle: Column(

@@ -2,11 +2,11 @@ import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/gear_item.dart';
 import 'converters/sync_status_converter.dart';
+import 'trip_table.dart';
 
-// TODO: 確認是否需要建立 Foreign Key 關聯 TripTable
 class GearItemsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get tripId => text()();
+  TextColumn get tripId => text().references(TripsTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get name => text()();
   RealColumn get weight => real()();
   TextColumn get category => text()();

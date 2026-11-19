@@ -21,21 +21,10 @@ abstract class UserProfile with _$UserProfile {
   }) = _UserProfile;
 
   /// 角色顯示名稱
-  String get roleName {
-    switch (role) {
-      case RoleConstants.admin:
-        return '管理員';
-      case RoleConstants.leader:
-        return '團長';
-      case RoleConstants.guide:
-        return '嚮導';
-      default:
-        return '成員';
-    }
-  }
+  String get roleName => RoleConstants.getDisplayName(role);
 
-  bool get isAdmin => role == RoleConstants.admin;
-  bool get isLeader => role == RoleConstants.leader || role == RoleConstants.admin;
+  bool get isAdmin => RoleConstants.isAdmin(role);
+  bool get isLeader => RoleConstants.isLeader(role) || RoleConstants.isAdmin(role);
 
   /// 檢查權限
   bool can(String permission) => permissions.contains(permission);

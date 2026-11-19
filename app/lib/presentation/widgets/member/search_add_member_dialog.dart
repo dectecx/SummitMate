@@ -3,6 +3,7 @@ import 'package:summitmate/core/core.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../common/user_avatar.dart';
 
 /// 搜尋類型枚舉
 enum SearchType { email, id }
@@ -145,7 +146,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
 
   /// 取得本地化角色名稱
   String _getRoleName(String code) {
-    return RoleConstants.displayName[code] ?? code;
+    return RoleConstants.getDisplayName(code);
   }
 
   @override
@@ -235,17 +236,10 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
           ),
           child: Row(
             children: [
-              CircleAvatar(
+              UserAvatar(
                 radius: 24,
-                backgroundImage: _searchResult!.avatar.isNotEmpty
-                    ? NetworkImage(_searchResult!.avatar)
-                    : null,
-                onBackgroundImageError: _searchResult!.avatar.isNotEmpty
-                    ? (_, _) {}
-                    : null,
-                child: _searchResult!.avatar.isEmpty
-                    ? Text(_searchResult!.displayName.isNotEmpty ? _searchResult!.displayName[0] : '')
-                    : null,
+                avatar: _searchResult!.avatar,
+                fallbackText: _searchResult!.displayName,
               ),
               const SizedBox(width: 16),
               Expanded(

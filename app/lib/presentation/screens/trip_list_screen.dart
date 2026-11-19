@@ -204,8 +204,8 @@ class TripListScreen extends StatelessWidget {
 
     final isOwner = currentUser != null && trip.userId == currentUser.id;
     final roleLabel = isOwner
-        ? RoleConstants.displayName[RoleConstants.leader] ?? 'Leader'
-        : RoleConstants.displayName[RoleConstants.member] ?? 'Member';
+        ? RoleConstants.getDisplayName(RoleConstants.leader)
+        : RoleConstants.getDisplayName(RoleConstants.member);
 
     return TripCard(
       trip: trip,

@@ -147,9 +147,9 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [member] 成員資料 Map (包含 id, display_name, role_code 等)
   void _showRoleDialog(TripMember member) {
     String currentRole = member.role;
-    String selectedRole = (currentRole == RoleConstants.guide) ? RoleConstants.guide : RoleConstants.member;
+    String selectedRole = RoleConstants.isGuide(currentRole) ? RoleConstants.guide : RoleConstants.member;
 
-    final isTargetLeader = currentRole == RoleConstants.leader || currentRole == RoleConstants.admin;
+    final isTargetLeader = RoleConstants.isLeader(currentRole) || RoleConstants.isAdmin(currentRole);
     final isCurrentUserOwner = _permissionService.isOwner(widget.trip, _currentUserId);
 
     showDialog(
@@ -316,7 +316,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
 
   /// Helper to get localized role name
   String _getRoleName(String code) {
-    return RoleConstants.displayName[code] ?? code;
+    return RoleConstants.getDisplayName(code);
   }
 
   @override

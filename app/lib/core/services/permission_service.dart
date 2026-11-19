@@ -21,7 +21,7 @@ class PermissionService {
   bool canSync(UserProfile? user, String permission) {
     if (user == null) return false;
     // Admin 擁有所有權限
-    if (user.role == RoleConstants.admin) return true;
+    if (RoleConstants.isAdmin(user.role)) return true;
     return user.permissions.contains(permission);
   }
 
@@ -36,7 +36,7 @@ class PermissionService {
   /// 是否可以編輯行程 (Sync)
   bool canEditTripSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.role == RoleConstants.admin) return true;
+    if (RoleConstants.isAdmin(user.role)) return true;
 
     // 0. 團長 (Leader/Owner) 絕對擁有編輯權限
     if (trip.userId == user.id) return true;
@@ -56,7 +56,7 @@ class PermissionService {
   /// 是否可以刪除行程 (Sync)
   bool canDeleteTripSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.role == RoleConstants.admin) return true;
+    if (RoleConstants.isAdmin(user.role)) return true;
 
     // 0. 團長 (Leader/Owner) 絕對擁有刪除權限
     if (trip.userId == user.id) return true;
@@ -73,7 +73,7 @@ class PermissionService {
   /// 是否可以移交團長 (Sync)
   bool canTransferTripSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.role == RoleConstants.admin) return true;
+    if (RoleConstants.isAdmin(user.role)) return true;
 
     return user.permissions.contains('trip.transfer');
   }
@@ -87,7 +87,7 @@ class PermissionService {
   /// 是否可以管理成員 (Sync)
   bool canManageMembersSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.role == RoleConstants.admin) return true;
+    if (RoleConstants.isAdmin(user.role)) return true;
 
     // 行程擁有者 (Owner) 具有成員管理權限
     if (trip.userId == user.id) return true;
@@ -115,7 +115,7 @@ class PermissionService {
     final me = members.where((m) => m.userId == currentUserId).firstOrNull;
     if (me == null) return false;
 
-    return me.role == RoleConstants.leader || me.role == RoleConstants.admin;
+    return RoleConstants.isLeader(me.role) || RoleConstants.isAdmin(me.role);
   }
 
   /// 是否為行程擁有者
@@ -129,7 +129,7 @@ class PermissionService {
   /// 是否可以刪除留言 (Sync)
   bool canDeleteMessageSync(UserProfile? user, Message message) {
     if (user == null) return false;
-    if (user.role == RoleConstants.admin) return true;
+    if (RoleConstants.isAdmin(user.role)) return true;
 
     // 用戶只能刪除自己的留言
     return message.userId == user.id;

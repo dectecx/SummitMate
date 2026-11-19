@@ -83,8 +83,8 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
                 final userId = (authState is AuthAuthenticated) ? authState.userId : '';
                 final isOwner = activeTrip!.userId == userId;
                 final roleLabel = isOwner
-                    ? RoleConstants.displayName[RoleConstants.leader] ?? 'Leader'
-                    : RoleConstants.displayName[RoleConstants.member] ?? 'Member';
+                    ? RoleConstants.getDisplayName(RoleConstants.leader)
+                    : RoleConstants.getDisplayName(RoleConstants.member);
 
                 // Use Theme Colors for Role Badge
                 final color = isOwner ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary;

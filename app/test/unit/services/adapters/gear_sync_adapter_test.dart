@@ -106,7 +106,7 @@ void main() {
     test('Given not exists in local, When pullRemote, Then it adds gear to local', () async {
       when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
       when(() => mockRemote.getTripGear('trip1')).thenAnswer((_) async => [defaultItem]);
-      when(() => mockLocal.getAll()).thenAnswer((_) async => []);
+      when(() => mockLocal.getByTripId(any())).thenAnswer((_) async => []);
       when(() => mockLocal.getById(any())).thenAnswer((_) async => null);
       when(() => mockLocal.addItem(any())).thenAnswer((_) async => 1);
 
@@ -121,7 +121,7 @@ void main() {
       final localItem = defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate);
       when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
       when(() => mockRemote.getTripGear('trip1')).thenAnswer((_) async => []);
-      when(() => mockLocal.getAll()).thenAnswer((_) async => [localItem]);
+      when(() => mockLocal.getByTripId(any())).thenAnswer((_) async => [localItem]);
       when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
 
       final result = await adapter.pullRemote();
@@ -134,7 +134,7 @@ void main() {
       final remoteItem = defaultItem.copyWith(name: 'Remote updated', updatedAt: DateTime(2026, 6, 6, 12, 1, 0));
       when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
       when(() => mockRemote.getTripGear('trip1')).thenAnswer((_) async => [remoteItem]);
-      when(() => mockLocal.getAll()).thenAnswer((_) async => [defaultItem]);
+      when(() => mockLocal.getByTripId(any())).thenAnswer((_) async => [defaultItem]);
       when(() => mockLocal.getById('gear1')).thenAnswer((_) async => defaultItem);
       when(() => mockLocal.updateItem(any())).thenAnswer((_) async {});
 

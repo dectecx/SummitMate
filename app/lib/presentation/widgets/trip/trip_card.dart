@@ -52,7 +52,7 @@ class TripCard extends StatelessWidget {
     final dateText = trip.endDate != null
         ? '${dateFormat.format(trip.startDate)} - ${dateFormat.format(trip.endDate!)}'
         : dateFormat.format(trip.startDate);
-    final isLeader = roleLabel == (RoleConstants.displayName[RoleConstants.leader] ?? 'Leader');
+    final isLeader = roleLabel == RoleConstants.getDisplayName(RoleConstants.leader);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
