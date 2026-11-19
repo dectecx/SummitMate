@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:summitmate/core/core.dart';
+import '../../cubits/settings/settings_cubit.dart';
+import '../../cubits/settings/settings_state.dart';
 import '../../screens/gear_cloud_screen.dart';
 import '../../screens/gear_library_screen.dart';
 import '../../screens/meal_planner_screen.dart';
@@ -90,24 +93,17 @@ class GearQuickLinks extends StatelessWidget {
 /// 總重量卡片
 ///
 /// 顯示裝備加糧食的總重量。
-class GearTotalWeightCard extends StatefulWidget {
+class GearTotalWeightCard extends StatelessWidget {
   final double totalWeight;
 
   const GearTotalWeightCard({super.key, required this.totalWeight});
 
-  @override
-  State<GearTotalWeightCard> createState() => _GearTotalWeightCardState();
-}
-
-class _GearTotalWeightCardState extends State<GearTotalWeightCard> {
-  double _comfortWeight = 15.0; // default 15 kg
-
-  Future<void> _showSetComfortWeightDialog() async {
-    final controller = TextEditingController(text: _comfortWeight.toStringAsFixed(1));
+  Future<void> _showSetComfortWeightDialog(BuildContext context, double currentWeight) async {
+    final controller = TextEditingController(text: currentWeight.toStringAsFixed(1));
     try {
       await showDialog<void>(
         context: context,
-        builder: (context) {
+        builder: (dialogContext) {
           return AlertDialog(
             title: const Text('自訂舒適重量'),
             content: TextField(
@@ -116,15 +112,13 @@ class _GearTotalWeightCardState extends State<GearTotalWeightCard> {
               decoration: const InputDecoration(labelText: '舒適重量 (kg)', suffixText: 'kg'),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
               FilledButton(
                 onPressed: () {
                   final val = double.tryParse(controller.text);
                   if (val != null && val > 0) {
-                    setState(() {
-                      _comfortWeight = val;
-                    });
-                    Navigator.pop(context);
+                    context.read<SettingsCubit>().updateComfortWeight(val);
+                    Navigator.pop(dialogContext);
                   }
                 },
                 child: const Text('確定'),
@@ -140,9 +134,12 @@ class _GearTotalWeightCardState extends State<GearTotalWeightCard> {
 
   @override
   Widget build(BuildContext context) {
+    final settingsState = context.watch<SettingsCubit>().state;
+    final comfortWeight = settingsState is SettingsLoaded ? settingsState.settings.comfortWeightKg : 15.0;
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final double rawProgress = widget.totalWeight / _comfortWeight;
+    final double rawProgress = totalWeight / comfortWeight;
     final double weightProgress = rawProgress.clamp(0.0, 1.0);
     final Color progressColor =
         Color.lerp(colorScheme.secondary, Colors.redAccent, rawProgress.clamp(0.0, 1.0)) ?? colorScheme.secondary;
@@ -159,7 +156,7 @@ class _GearTotalWeightCardState extends State<GearTotalWeightCard> {
               children: [
                 Text('總重量 (含糧食)', style: TextStyle(fontSize: 18, color: colorScheme.onPrimaryContainer)),
                 Text(
-                  '${widget.totalWeight.toStringAsFixed(2)} kg',
+                  '${totalWeight.toStringAsFixed(2)} kg',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary),
                 ),
               ],
@@ -169,13 +166,13 @@ class _GearTotalWeightCardState extends State<GearTotalWeightCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 InkWell(
-                  onTap: _showSetComfortWeightDialog,
+                  onTap: () => _showSetComfortWeightDialog(context, comfortWeight),
                   borderRadius: BorderRadius.circular(4),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '舒適重量 (${_comfortWeight.toStringAsFixed(1)}kg)',
+                        '舒適重量 (${comfortWeight.toStringAsFixed(1)}kg)',
                         style: TextStyle(
                           fontSize: 12,
                           color: colorScheme.onPrimaryContainer.withValues(alpha: 0.7),

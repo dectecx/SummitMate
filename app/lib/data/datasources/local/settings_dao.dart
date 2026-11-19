@@ -29,6 +29,7 @@ class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin 
       darkMode: row.darkMode,
       lastSyncTime: row.lastSyncTime,
       autoSyncIntervalMinutes: row.autoSyncIntervalMinutes,
+      comfortWeightKg: row.comfortWeightKg,
     );
   }
 

@@ -16,6 +16,7 @@ class SettingsTable extends Table {
   BoolColumn get darkMode => boolean().withDefault(const Constant(false))();
   DateTimeColumn get lastSyncTime => dateTime().nullable()();
   IntColumn get autoSyncIntervalMinutes => integer().withDefault(const Constant(5))();
+  RealColumn get comfortWeightKg => real().withDefault(const Constant(15.0))();
 }
 
 /// 設定資料對映擴充
@@ -32,6 +33,7 @@ extension SettingsMapping on Settings {
       darkMode: Value(darkMode),
       lastSyncTime: Value(lastSyncTime),
       autoSyncIntervalMinutes: Value(autoSyncIntervalMinutes),
+      comfortWeightKg: Value(comfortWeightKg),
     );
   }
 }

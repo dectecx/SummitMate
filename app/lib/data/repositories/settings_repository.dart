@@ -91,6 +91,15 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   @override
+  Future<void> updateComfortWeight(double kg) async {
+    final settings = await getSettings();
+    final newSettings = settings.copyWith(comfortWeightKg: kg);
+    await _localDataSource.saveSettings(newSettings);
+    _cachedSettings = newSettings;
+    _settingsController.add(null);
+  }
+
+  @override
   Future<void> resetSettings() async {
     await _localDataSource.clear();
     _cachedSettings = null;

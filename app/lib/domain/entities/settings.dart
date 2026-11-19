@@ -23,6 +23,7 @@ abstract class Settings with _$Settings {
     // 5~10080 (5分鐘~7天) = 使用者可選範圍
     // DevTools 模式下可設定 1~10080
     @Default(5) int autoSyncIntervalMinutes,
+    @Default(15.0) double comfortWeightKg,
   }) = _Settings;
 
   factory Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);

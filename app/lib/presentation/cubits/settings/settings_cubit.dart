@@ -177,6 +177,23 @@ class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsStat
     }
   }
 
+  /// 更新舒適重量
+  ///
+  /// [kg] 舒適重量 (公斤)
+  Future<void> updateComfortWeight(double kg) async {
+    if (state is! SettingsLoaded) return;
+    final currentState = state as SettingsLoaded;
+
+    try {
+      await _repository.updateComfortWeight(kg);
+      final updatedSettings = await _repository.getSettings();
+      safeEmit(currentState.copyWith(settings: updatedSettings));
+    } catch (e) {
+      LogService.error('Failed to update comfort weight: $e', source: _source);
+      safeEmit(currentState.copyWith(transientError: AppErrorHandler.getUserMessage(e)));
+    }
+  }
+
   /// 更新主題
   ///
   /// [theme] 新的主題

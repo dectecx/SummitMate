@@ -40,6 +40,11 @@ abstract interface class ISettingsRepository {
   /// [theme] 新的主題類型
   Future<void> updateTheme(AppThemeType theme);
 
+  /// 更新舒適重量
+  ///
+  /// [kg] 舒適重量 (公斤)
+  Future<void> updateComfortWeight(double kg);
+
   /// 重置設定為預設值
   Future<void> resetSettings();
 

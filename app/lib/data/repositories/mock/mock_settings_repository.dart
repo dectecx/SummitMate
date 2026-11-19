@@ -37,6 +37,9 @@ class MockSettingsRepository implements ISettingsRepository {
   Future<void> updateTheme(AppThemeType theme) async {}
 
   @override
+  Future<void> updateComfortWeight(double kg) async {}
+
+  @override
   Future<void> resetSettings() async {}
 
   // ========== Watch ==========

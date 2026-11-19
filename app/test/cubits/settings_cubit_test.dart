@@ -142,6 +142,24 @@ void main() {
     );
 
     blocTest<SettingsCubit, SettingsState>(
+      'updateComfortWeight calls repo and updates state',
+      build: () => settingsCubit,
+      seed: () => SettingsLoaded(settings: testSettings, hasSeenOnboarding: true),
+      act: (cubit) async {
+        when(() => mockRepo.updateComfortWeight(18.5)).thenAnswer((_) async {});
+        when(() => mockRepo.getSettings()).thenAnswer((_) async => testSettings.copyWith(comfortWeightKg: 18.5));
+        await cubit.updateComfortWeight(18.5);
+      },
+      expect: () => [
+        isA<SettingsLoaded>()
+            .having((s) => s.settings.comfortWeightKg, 'comfortWeightKg', 18.5),
+      ],
+      verify: (_) {
+        verify(() => mockRepo.updateComfortWeight(18.5)).called(1);
+      },
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
       'toggleOfflineMode failure rolls back to original settings with transientError',
       build: () => settingsCubit,
       seed: () => SettingsLoaded(settings: testSettings, hasSeenOnboarding: true),
