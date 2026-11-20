@@ -1,6 +1,5 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
-import '../../../core/models/paginated_list.dart';
 import '../../../domain/entities/trip.dart';
 import '../../../domain/enums/sync_status.dart';
 import '../../../domain/interfaces/i_sync_adapter.dart';
@@ -40,21 +39,24 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
       case SyncStatus.pendingUpdate:
       case SyncStatus.conflict:
         final result = await _remoteDataSource.uploadTrip(item);
-        if (result is Success<String, Exception>) {
-          final remoteId = result.value;
-          if (item.syncStatus == SyncStatus.pendingCreate && remoteId != item.id) {
-            return IdMigration(tempId: item.id, permanentId: remoteId);
-          }
-          return null;
+        switch (result) {
+          case Success(value: final remoteId):
+            if (item.syncStatus == SyncStatus.pendingCreate && remoteId != item.id) {
+              return IdMigration(tempId: item.id, permanentId: remoteId);
+            }
+            return null;
+          case Failure(:final exception):
+            throw exception;
         }
-        throw (result as Failure<String, Exception>).exception;
       case SyncStatus.pendingDelete:
         final result = await _remoteDataSource.deleteTrip(item.id);
-        if (result is Success<void, Exception>) {
-          await _localDataSource.deleteTrip(item.id);
-          return null;
+        switch (result) {
+          case Success():
+            await _localDataSource.deleteTrip(item.id);
+            return null;
+          case Failure(:final exception):
+            throw exception;
         }
-        throw (result as Failure<void, Exception>).exception;
       default:
         return null;
     }
@@ -70,10 +72,10 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
   @override
   Future<List<Trip>> fetchRemote(String scope) async {
     final result = await _remoteDataSource.getRemoteTrips();
-    if (result is Success<PaginatedList<Trip>, Exception>) {
-      return result.value.items;
-    }
-    throw (result as Failure<PaginatedList<Trip>, Exception>).exception;
+    return switch (result) {
+      Success(value: final v) => v.items,
+      Failure(exception: final e) => throw e,
+    };
   }
 
   @override

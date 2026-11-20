@@ -103,7 +103,10 @@ class ItineraryCubit extends Cubit<ItineraryState>
   /// 新增天數
   Future<void> addDay(String name) async {
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
-    final trip = tripResult is Success ? (tripResult as Success).value : null;
+    final trip = switch (tripResult) {
+      Success(value: final t) => t,
+      Failure() => null,
+    };
 
     if (trip == null) return;
 
@@ -125,7 +128,10 @@ class ItineraryCubit extends Cubit<ItineraryState>
   /// 重新命名天數
   Future<void> renameDay(String oldName, String newName) async {
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
-    final trip = tripResult is Success ? (tripResult as Success).value : null;
+    final trip = switch (tripResult) {
+      Success(value: final t) => t,
+      Failure() => null,
+    };
     if (trip == null) return;
 
     final result = await _itineraryDayService.renameDay(trip.id, oldName, newName);
@@ -144,7 +150,10 @@ class ItineraryCubit extends Cubit<ItineraryState>
   /// 移除天數
   Future<void> removeDay(String name, {bool confirmUnlink = false}) async {
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
-    final trip = tripResult is Success ? (tripResult as Success).value : null;
+    final trip = switch (tripResult) {
+      Success(value: final t) => t,
+      Failure() => null,
+    };
     if (trip == null) return;
 
     final result = await _itineraryDayService.removeDay(trip.id, name, confirmUnlink: confirmUnlink);
@@ -165,7 +174,10 @@ class ItineraryCubit extends Cubit<ItineraryState>
   /// 重新排序天數
   Future<void> reorderDays(List<String> newOrder) async {
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
-    final trip = tripResult is Success ? (tripResult as Success).value : null;
+    final trip = switch (tripResult) {
+      Success(value: final t) => t,
+      Failure() => null,
+    };
     if (trip == null) return;
 
     final updatedTrip = trip.copyWith(dayNames: newOrder);

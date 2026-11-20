@@ -95,11 +95,13 @@ class GearLibraryRepository implements IGearLibraryRepository {
     String? search,
   }) async {
     final result = await _remoteDataSource.listLibrary(page: page, limit: limit, category: category, search: search);
-    if (result is Success<PaginatedList<GearLibraryItem>, Exception>) {
-      await _localDataSource.saveItems(result.value.items);
-      return result;
+    switch (result) {
+      case Success(:final value):
+        await _localDataSource.saveItems(value.items);
+        return Success(value);
+      case Failure(:final exception):
+        return Failure(exception);
     }
-    return Failure((result as Failure).exception);
   }
 
   @override

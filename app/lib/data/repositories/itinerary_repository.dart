@@ -100,11 +100,21 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> saveAll(List<ItineraryItem> items) async {
     try {
-      // 策略：保留本地打卡紀錄 (Drift 實作中應考慮 upsert 或手動合併)
-      final existingItems = await _localDataSource.getAll();
+      if (items.isEmpty) {
+        return const Success(null);
+      }
+      // 策略：保留本地打卡紀錄，並僅針對傳入項目所屬之行程進行局部清理
+      final tripIds = items.map((item) => item.tripId).where((id) => id.isNotEmpty).toSet();
+      final List<ItineraryItem> existingItems = [];
+      for (final tripId in tripIds) {
+        final tripItems = await _localDataSource.getByTripId(tripId);
+        existingItems.addAll(tripItems);
+      }
       final localDataMap = {for (var item in existingItems) item.id: item};
 
-      await _localDataSource.clear();
+      for (final tripId in tripIds) {
+        await _localDataSource.clearByTripId(tripId);
+      }
 
       for (final item in items) {
         var itemToSave = item;
@@ -113,7 +123,6 @@ class ItineraryRepository implements IItineraryRepository {
           // 合併本地打卡狀態
           itemToSave = item.copyWith(
             isCheckedIn: localItem.isCheckedIn,
-            // TODO: 若 ItineraryItem 有 actualTime 等屬性，在此合併
           );
         }
         await _localDataSource.addItem(itemToSave);

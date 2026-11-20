@@ -161,11 +161,13 @@ class GroupEventRepository with RepositoryRemoteAccess implements IGroupEventRep
   @override
   Future<Result<void, Exception>> apply({required String eventId, required String userId, String? note}) async {
     final result = await online<String>('applyEvent', () => _remoteDataSource.applyEvent(eventId: eventId, note: note));
-    if (result is Success<String, Exception>) {
-      await syncEventById(eventId);
-      return const Success(null);
+    switch (result) {
+      case Success():
+        await syncEventById(eventId);
+        return const Success(null);
+      case Failure(:final exception):
+        return Failure(exception);
     }
-    return Failure((result as Failure<String, Exception>).exception);
   }
 
   @override

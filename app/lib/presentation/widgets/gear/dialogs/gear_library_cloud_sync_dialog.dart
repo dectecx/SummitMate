@@ -125,12 +125,13 @@ class _GearLibraryCloudSyncDialogState extends State<GearLibraryCloudSyncDialog>
 
       setState(() {
         _isLoading = false;
-        if (result is Success<int, Exception>) {
-          _isSuccess = true;
-          _resultMessage = '成功上傳 ${result.value} 個裝備';
-        } else {
-          _isSuccess = false;
-          _resultMessage = '上傳失敗: ${(result as Failure).exception}';
+        switch (result) {
+          case Success(value: final count):
+            _isSuccess = true;
+            _resultMessage = '成功上傳 $count 個裝備';
+          case Failure(:final exception):
+            _isSuccess = false;
+            _resultMessage = '上傳失敗: $exception';
         }
       });
     } catch (e) {
@@ -180,12 +181,13 @@ class _GearLibraryCloudSyncDialogState extends State<GearLibraryCloudSyncDialog>
 
       setState(() {
         _isLoading = false;
-        if (result is Success<int, Exception>) {
-          _isSuccess = true;
-          _resultMessage = '成功下載 ${result.value} 個裝備';
-        } else {
-          _isSuccess = false;
-          _resultMessage = '下載失敗: ${(result as Failure).exception}';
+        switch (result) {
+          case Success(value: final count):
+            _isSuccess = true;
+            _resultMessage = '成功下載 $count 個裝備';
+          case Failure(:final exception):
+            _isSuccess = false;
+            _resultMessage = '下載失敗: $exception';
         }
       });
     } catch (e) {

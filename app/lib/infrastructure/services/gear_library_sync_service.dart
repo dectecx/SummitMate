@@ -28,12 +28,9 @@ class GearLibrarySyncService implements IGearLibrarySyncService {
 
     for (final gear in linkedItems) {
       final tripResult = await _tripRepository.getTripById(gear.tripId);
-      if (tripResult is Success) {
-        final trip = (tripResult as Success).value;
-        if (trip != null) {
-          final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
-          if (isArchived) continue;
-        }
+      if (tripResult case Success(value: final trip) when trip != null) {
+        final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
+        if (isArchived) continue;
       }
 
       bool changed = false;
@@ -70,11 +67,8 @@ class GearLibrarySyncService implements IGearLibrarySyncService {
     final List<LinkedTripInfo> result = [];
     for (final tid in tripIds) {
       final tripResult = await _tripRepository.getTripById(tid);
-      if (tripResult is Success) {
-        final trip = (tripResult as Success).value;
-        if (trip != null) {
-          result.add(LinkedTripInfo(tripId: trip.id, tripName: trip.name, startDate: trip.startDate));
-        }
+      if (tripResult case Success(value: final trip) when trip != null) {
+        result.add(LinkedTripInfo(tripId: trip.id, tripName: trip.name, startDate: trip.startDate));
       }
     }
     return result;

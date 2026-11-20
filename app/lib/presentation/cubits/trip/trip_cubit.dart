@@ -52,20 +52,19 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
       final userId = _authService.currentUserId ?? '';
       final result = await _tripRepository.getAllTrips(userId);
 
-      if (result is Success<List<Trip>, Exception>) {
-        final trips = result.value;
-        final activeTripResult = await _tripRepository.getActiveTrip(userId);
-
-        Trip? activeTrip;
-        if (activeTripResult is Success<Trip?, Exception>) {
-          activeTrip = activeTripResult.value;
-        }
-
-        safeEmit(TripLoaded(trips: trips, activeTrip: activeTrip));
-      } else if (!silent) {
-        final error = (result as Failure).exception;
-        getIt<AppErrorCubit>().reportError(error);
-        safeEmit(TripError(AppErrorHandler.getUserMessage(error)));
+      switch (result) {
+        case Success(value: final trips):
+          final activeTripResult = await _tripRepository.getActiveTrip(userId);
+          final activeTrip = switch (activeTripResult) {
+            Success(value: final t) => t,
+            Failure() => null,
+          };
+          safeEmit(TripLoaded(trips: trips, activeTrip: activeTrip));
+        case Failure(:final exception) when !silent:
+          getIt<AppErrorCubit>().reportError(exception);
+          safeEmit(TripError(AppErrorHandler.getUserMessage(exception)));
+        case Failure():
+          break;
       }
     } catch (e) {
       if (silent) {
@@ -102,13 +101,14 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
       );
 
       final result = await _tripRepository.saveTrip(newTrip);
-      if (result is Success) {
-        await _tripRepository.setActiveTrip(_authService.currentUserId ?? '', newTrip.id);
-        await loadTrips();
-        return newTrip;
-      } else {
-        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
-        return null;
+      switch (result) {
+        case Success():
+          await _tripRepository.setActiveTrip(_authService.currentUserId ?? '', newTrip.id);
+          await loadTrips();
+          return newTrip;
+        case Failure(:final exception):
+          safeEmit(TripError(AppErrorHandler.getUserMessage(exception)));
+          return null;
       }
     } catch (e) {
       LogService.error('新增行程失敗: $e', source: _source);
@@ -128,22 +128,23 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
       );
       final result = await _tripRepository.updateTrip(updatedTrip);
 
-      if (result is Success && state is TripLoaded) {
-        // inline 更新當前狀態，避免 emit TripLoading 造成 UI 閃爍；
-        // stream 觸發的 debounced silent refresh 會在背景補齊最新資料。
-        final currentState = state as TripLoaded;
-        final updatedTrips = currentState.trips.map((t) => t.id == updatedTrip.id ? updatedTrip : t).toList();
-        safeEmit(
-          currentState.copyWith(
-            trips: updatedTrips,
-            activeTrip: currentState.activeTrip?.id == updatedTrip.id ? updatedTrip : currentState.activeTrip,
-          ),
-        );
-      } else if (result is Success) {
-        // 邊界情況：成功但狀態非 TripLoaded，做完整載入
-        await loadTrips();
-      } else {
-        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+      switch (result) {
+        case Success() when state is TripLoaded:
+          // inline 更新當前狀態，避免 emit TripLoading 造成 UI 閃爍；
+          // stream 觸發的 debounced silent refresh 會在背景補齊最新資料。
+          final currentState = state as TripLoaded;
+          final updatedTrips = currentState.trips.map((t) => t.id == updatedTrip.id ? updatedTrip : t).toList();
+          safeEmit(
+            currentState.copyWith(
+              trips: updatedTrips,
+              activeTrip: currentState.activeTrip?.id == updatedTrip.id ? updatedTrip : currentState.activeTrip,
+            ),
+          );
+        case Success():
+          // 邊界情況：成功但狀態非 TripLoaded，做完整載入
+          await loadTrips();
+        case Failure(:final exception):
+          safeEmit(TripError(AppErrorHandler.getUserMessage(exception)));
       }
     } catch (e) {
       LogService.error('更新行程失敗: $e', source: _source);
@@ -165,10 +166,11 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
     safeEmit(const TripLoading());
     try {
       final result = await _tripRepository.setActiveTrip(_authService.currentUserId ?? '', tripId);
-      if (result is Success) {
-        await loadTrips();
-      } else {
-        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+      switch (result) {
+        case Success():
+          await loadTrips();
+        case Failure(:final exception):
+          safeEmit(TripError(AppErrorHandler.getUserMessage(exception)));
       }
     } catch (e) {
       LogService.error('設定活躍行程失敗: $e', source: _source);
@@ -200,10 +202,11 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
       );
 
       final result = await _tripRepository.saveTrip(newTrip);
-      if (result is Success) {
-        await loadTrips();
-      } else {
-        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+      switch (result) {
+        case Success():
+          await loadTrips();
+        case Failure(:final exception):
+          safeEmit(TripError(AppErrorHandler.getUserMessage(exception)));
       }
     } catch (e) {
       LogService.error('匯入行程失敗: $e', source: _source);
@@ -229,10 +232,11 @@ class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
   Future<void> deleteTrip(String id) async {
     try {
       final result = await _tripRepository.deleteTrip(id);
-      if (result is Success) {
-        await loadTrips();
-      } else {
-        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+      switch (result) {
+        case Success():
+          await loadTrips();
+        case Failure(:final exception):
+          safeEmit(TripError(AppErrorHandler.getUserMessage(exception)));
       }
     } catch (e) {
       LogService.error('刪除行程失敗: $e', source: _source);

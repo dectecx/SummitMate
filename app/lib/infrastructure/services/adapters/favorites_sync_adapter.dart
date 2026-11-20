@@ -1,6 +1,5 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
-import '../../../core/models/paginated_list.dart';
 import '../../../domain/entities/favorite.dart';
 import '../../../domain/enums/sync_status.dart';
 import '../../../domain/interfaces/i_sync_adapter.dart';
@@ -57,11 +56,10 @@ class FavoritesSyncAdapter extends BaseSyncAdapter<Favorite> {
   @override
   Future<List<Favorite>> fetchRemote(String scope) async {
     final result = await _remote.getFavorites();
-    if (result is Success<PaginatedList<Favorite>, Exception>) {
-      // 正規化 id 為決定性主鍵，使 id-keyed 合併與本地一致
-      return result.value.items.map((f) => f.copyWith(id: '${f.type.name}_${f.targetId}')).toList();
-    }
-    throw (result as Failure<PaginatedList<Favorite>, Exception>).exception;
+    return switch (result) {
+      Success(value: final v) => v.items.map((f) => f.copyWith(id: '${f.type.name}_${f.targetId}')).toList(),
+      Failure(exception: final e) => throw e,
+    };
   }
 
   @override

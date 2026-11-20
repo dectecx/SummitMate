@@ -41,17 +41,15 @@ class _TripSelectionDialogState extends State<TripSelectionDialog> {
 
     if (!mounted) return;
 
-    if (result is Failure) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = (result as Failure).exception.toString();
-      });
-    } else {
-      setState(() {
-        _isLoading = false;
-        _cloudTrips = (result as Success<List<Trip>, Exception>).value;
-      });
-    }
+    setState(() {
+      _isLoading = false;
+      switch (result) {
+        case Success(value: final trips):
+          _cloudTrips = trips;
+        case Failure(:final exception):
+          _errorMessage = exception.toString();
+      }
+    });
   }
 
   Future<void> _importAndSwitchTrip(Trip cloudTrip) async {
