@@ -531,7 +531,7 @@ func (r *groupEventRepository) DeleteComment(ctx context.Context, commentID stri
 		return fmt.Errorf("delete comment %s: %w", commentID, err)
 	}
 
-	_, err = db.Exec(ctx, "UPDATE group_events SET comment_count = comment_count - 1 WHERE id = $1", eventID)
+	_, err = db.Exec(ctx, "UPDATE group_events SET comment_count = GREATEST(0, comment_count - 1) WHERE id = $1", eventID)
 	if err != nil {
 		return fmt.Errorf("decrement comment count for event %s: %w", eventID, err)
 	}
@@ -554,7 +554,7 @@ func (r *groupEventRepository) ToggleLike(ctx context.Context, eventID, userID s
 		if err != nil {
 			return false, fmt.Errorf("delete like for event %s, user %s: %w", eventID, userID, err)
 		}
-		_, err = db.Exec(ctx, "UPDATE group_events SET like_count = like_count - 1 WHERE id = $1", eventID)
+		_, err = db.Exec(ctx, "UPDATE group_events SET like_count = GREATEST(0, like_count - 1) WHERE id = $1", eventID)
 		if err != nil {
 			return false, fmt.Errorf("decrement like count for event %s: %w", eventID, err)
 		}

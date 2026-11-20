@@ -69,6 +69,20 @@ func (s *groupEventService) CreateEvent(ctx context.Context, event *GroupEvent) 
 		}
 	}
 
+	// 若有綁定行程，驗證該行程是否存在且建立者必須為該行程擁有者
+	if event.LinkedTripID != nil && *event.LinkedTripID != "" {
+		tripObj, err := s.tripServ.GetTrip(ctx, *event.LinkedTripID, event.HostID)
+		if err != nil {
+			return err
+		}
+		if tripObj == nil {
+			return apperror.ErrTripNotFound
+		}
+		if tripObj.UserID != event.HostID {
+			return apperror.ErrTripAccessDenied
+		}
+	}
+
 	event.Status = "open"
 	if err := s.repo.CreateEvent(ctx, event); err != nil {
 		s.logger.ErrorContext(ctx, "建立活動失敗", "host_id", event.HostID, "title", event.Title, "error", err)
@@ -285,12 +299,20 @@ func (s *groupEventService) ListApplications(ctx context.Context, id string, use
 }
 
 func (s *groupEventService) ProcessApplication(ctx context.Context, appID, status, rejectionReason, executorID string) error {
+	if status != ApplicationStatusApproved && status != ApplicationStatusRejected {
+		return apperror.ErrBadRequest.WithMessage("審核狀態無效，僅能為 approved 或 rejected")
+	}
+
 	app, err := s.repo.GetApplicationByID(ctx, appID)
 	if err != nil {
 		return err
 	}
 	if app == nil {
 		return apperror.ErrApplicationNotFound
+	}
+
+	if app.Status != "" && app.Status != ApplicationStatusPending {
+		return apperror.ErrBadRequest.WithMessage("該申請已被處理，無法重複審核")
 	}
 
 	event, err := s.repo.GetEventByID(ctx, app.EventID, executorID)
@@ -401,13 +423,16 @@ func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, 
 		return apperror.ErrEventAccessDenied
 	}
 
-	if tripID != nil {
+	if tripID != nil && *tripID != "" {
 		trip, err := s.tripServ.GetTrip(ctx, *tripID, userID)
 		if err != nil {
 			return err
 		}
 		if trip == nil {
 			return apperror.ErrTripNotFound
+		}
+		if trip.UserID != userID {
+			return apperror.ErrTripAccessDenied
 		}
 	}
 

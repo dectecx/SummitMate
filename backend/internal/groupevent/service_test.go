@@ -90,6 +90,42 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "活動標題為必填")
 	})
+
+	t.Run("Given linked trip not owned by host, When CreateEvent, Then returns ErrTripAccessDenied", func(t *testing.T) {
+		tripID := "trip-1"
+		event := &GroupEvent{
+			Title:        "Hiking Trip",
+			HostID:       "user-1",
+			HostName:     "Host User",
+			HostAvatar:   "avatar-1",
+			LinkedTripID: &tripID,
+		}
+		mockTrip.On("GetTrip", mock.Anything, tripID, "user-1").Return(&trip.Trip{ID: tripID, UserID: "other-user"}, nil).Once()
+
+		err := svc.CreateEvent(context.Background(), event)
+
+		assert.ErrorIs(t, err, apperror.ErrTripAccessDenied)
+		mockTrip.AssertExpectations(t)
+	})
+
+	t.Run("Given linked trip owned by host, When CreateEvent, Then succeeds", func(t *testing.T) {
+		tripID := "trip-1"
+		event := &GroupEvent{
+			Title:        "Hiking Trip",
+			HostID:       "user-1",
+			HostName:     "Host User",
+			HostAvatar:   "avatar-1",
+			LinkedTripID: &tripID,
+		}
+		mockTrip.On("GetTrip", mock.Anything, tripID, "user-1").Return(&trip.Trip{ID: tripID, UserID: "user-1"}, nil).Once()
+		mockRepo.On("CreateEvent", mock.Anything, event).Return(nil).Once()
+
+		err := svc.CreateEvent(context.Background(), event)
+
+		assert.NoError(t, err)
+		mockTrip.AssertExpectations(t)
+		mockRepo.AssertExpectations(t)
+	})
 }
 
 func TestGroupEventService_UpdateEvent(t *testing.T) {
@@ -363,6 +399,28 @@ func TestGroupEventService_ProcessApplication(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 		mockTx.AssertExpectations(t)
 	})
+
+	t.Run("Given invalid status, When calling ProcessApplication, Then it returns bad request", func(t *testing.T) {
+		_, _, _, _, svc := newSetup()
+		err := svc.ProcessApplication(context.Background(), "app-1", "invalid_status", "", "host-1")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "審核狀態無效")
+	})
+
+	t.Run("Given already approved application, When calling ProcessApplication, Then it returns bad request", func(t *testing.T) {
+		mockRepo, _, _, _, svc := newSetup()
+		appID := "app-1"
+		app := &GroupEventApplication{ID: appID, EventID: "event-1", UserID: "user-1", Status: ApplicationStatusApproved}
+
+		mockRepo.On("GetApplicationByID", mock.Anything, appID).Return(app, nil).Once()
+
+		err := svc.ProcessApplication(context.Background(), appID, ApplicationStatusApproved, "", "host-1")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "該申請已被處理")
+		mockRepo.AssertExpectations(t)
+	})
 }
 
 func TestGroupEventService_UpdateTripLink(t *testing.T) {
@@ -386,7 +444,7 @@ func TestGroupEventService_UpdateTripLink(t *testing.T) {
 		newTripID := "trip-new"
 
 		event := &GroupEvent{ID: eventID, HostID: userID, LinkedTripID: &oldTripID}
-		newTrip := &trip.Trip{ID: newTripID}
+		newTrip := &trip.Trip{ID: newTripID, UserID: userID}
 		apps := []*GroupEventApplication{
 			{UserID: "member-1", Status: ApplicationStatusApproved},
 			{UserID: "member-2", Status: ApplicationStatusPending},
@@ -417,7 +475,7 @@ func TestGroupEventService_UpdateTripLink(t *testing.T) {
 		newTripID := "trip-new"
 
 		event := &GroupEvent{ID: eventID, HostID: userID, LinkedTripID: &oldTripID}
-		newTrip := &trip.Trip{ID: newTripID}
+		newTrip := &trip.Trip{ID: newTripID, UserID: userID}
 		apps := []*GroupEventApplication{
 			{UserID: "member-1", Status: ApplicationStatusApproved},
 		}
@@ -445,7 +503,7 @@ func TestGroupEventService_UpdateTripLink(t *testing.T) {
 		newTripID := "trip-new"
 
 		event := &GroupEvent{ID: eventID, HostID: userID, LinkedTripID: nil}
-		newTrip := &trip.Trip{ID: newTripID}
+		newTrip := &trip.Trip{ID: newTripID, UserID: userID}
 
 		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
 		mockTrip.On("GetTrip", mock.Anything, newTripID, userID).Return(newTrip, nil).Once()
@@ -460,6 +518,25 @@ func TestGroupEventService_UpdateTripLink(t *testing.T) {
 		mockTrip.AssertNotCalled(t, "BatchAddMembers", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 		mockRepo.AssertExpectations(t)
 		mockTx.AssertExpectations(t)
+	})
+
+	t.Run("Given trip not owned by user, When calling UpdateTripLink, Then returns ErrTripAccessDenied", func(t *testing.T) {
+		mockRepo, mockTrip, _, _, svc := newSetup()
+		eventID := "event-1"
+		userID := "host-1"
+		newTripID := "trip-new"
+
+		event := &GroupEvent{ID: eventID, HostID: userID, LinkedTripID: nil}
+		newTrip := &trip.Trip{ID: newTripID, UserID: "other-user"}
+
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
+		mockTrip.On("GetTrip", mock.Anything, newTripID, userID).Return(newTrip, nil).Once()
+
+		err := svc.UpdateTripLink(context.Background(), eventID, &newTripID, userID)
+
+		assert.ErrorIs(t, err, apperror.ErrTripAccessDenied)
+		mockRepo.AssertExpectations(t)
+		mockTrip.AssertExpectations(t)
 	})
 }
 
