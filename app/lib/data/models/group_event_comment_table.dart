@@ -1,10 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/group_event_comment.dart';
+import 'group_event_table.dart';
 
 class GroupEventCommentsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get eventId => text()();
+  TextColumn get eventId => text().references(GroupEventsTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get userId => text()();
   TextColumn get content => text()();
   TextColumn get userName => text()();

@@ -16,12 +16,19 @@ class PollDao extends DatabaseAccessor<AppDatabase> with _$PollDaoMixin implemen
   @override
   Future<List<Poll>> getAllPolls() async {
     final polls = await select(pollsTable).get();
-    final results = <Poll>[];
-    for (final pollRow in polls) {
-      final options = await (select(pollOptionsTable)..where((o) => o.pollId.equals(pollRow.id))).get();
-      results.add(_mapToDomain(pollRow, options));
+    if (polls.isEmpty) return [];
+
+    final pollIds = polls.map((p) => p.id).toList();
+    final allOptions = await (select(pollOptionsTable)..where((o) => o.pollId.isIn(pollIds))).get();
+    final optionsByPollId = <String, List<PollOptionsTableData>>{};
+    for (final opt in allOptions) {
+      optionsByPollId.putIfAbsent(opt.pollId, () => []).add(opt);
     }
-    return results;
+
+    return polls.map((pollRow) {
+      final options = optionsByPollId[pollRow.id] ?? [];
+      return _mapToDomain(pollRow, options);
+    }).toList();
   }
 
   @override

@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/poll.dart';
+import 'trip_table.dart';
 
-// TODO: 確認是否需要建立 Foreign Key 關聯 TripTable
 class PollsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get tripId => text().withDefault(const Constant(''))();
+  TextColumn get tripId => text().references(TripsTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get title => text()();
   TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get creatorId => text()();
@@ -29,10 +29,9 @@ class PollsTable extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-// TODO: 確認 PollOption 是否要用獨立表，或是使用 JSON
 class PollOptionsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get pollId => text()();
+  TextColumn get pollId => text().references(PollsTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get textContent => text()(); // Avoid using "text" as it's a keyword in SQLite, mapped from text
   TextColumn get creatorId => text()();
   IntColumn get voteCount => integer().withDefault(const Constant(0))();
@@ -59,7 +58,7 @@ extension PollMapping on Poll {
   PollsTableCompanion toCompanion() {
     return PollsTableCompanion.insert(
       id: id,
-      tripId: Value(tripId),
+      tripId: tripId,
       title: title,
       description: Value(description),
       creatorId: creatorId,

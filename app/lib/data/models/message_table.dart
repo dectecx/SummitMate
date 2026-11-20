@@ -2,11 +2,11 @@ import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/message.dart';
 import 'converters/sync_status_converter.dart';
+import 'trip_table.dart';
 
-// TODO: 確認是否需要建立 Foreign Key 關聯 TripTable (tripId) 或是其他表 (parentId)
 class MessagesTable extends Table {
   TextColumn get id => text()();
-  TextColumn get tripId => text().nullable()();
+  TextColumn get tripId => text().nullable().references(TripsTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get parentId => text().nullable()();
   TextColumn get userId => text().withDefault(const Constant(''))();
   TextColumn get user => text().withDefault(const Constant(''))();

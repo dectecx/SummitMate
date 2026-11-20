@@ -43,7 +43,7 @@ class GroupEventsTable extends Table {
 
 class GroupEventApplicationsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get eventId => text()();
+  TextColumn get eventId => text().references(GroupEventsTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get userId => text()();
   TextColumn get status =>
       text().map(const GroupEventApplicationStatusConverter()).withDefault(const Constant('pending'))();
