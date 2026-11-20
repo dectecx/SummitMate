@@ -457,6 +457,9 @@ func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID stri
 	if err != nil {
 		return nil, err
 	}
+	if tripObj == nil {
+		return nil, apperror.ErrTripNotFound
+	}
 	itinerary, err := s.tripServ.ListItinerary(ctx, *event.LinkedTripID, userID)
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"testing"
+	"time"
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/auth"
@@ -561,3 +562,64 @@ func TestGroupEventService_CancelApplication(t *testing.T) {
 		mockDB.AssertNotCalled(t, "Begin", mock.Anything)
 	})
 }
+
+func TestGroupEventService_UpdateTripSnapshot(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	newSetup := func() (*MockGroupEventRepository, *tripmocks.MockTripService, GroupEventService) {
+		mockRepo := new(MockGroupEventRepository)
+		mockTrip := new(tripmocks.MockTripService)
+		mockAuth := new(authmocks.MockAuthService)
+		mockDB := new(MockBeginner)
+		svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
+		return mockRepo, mockTrip, svc
+	}
+
+	eventID := "event-1"
+	userID := "host-1"
+	tripID := "trip-1"
+
+	t.Run("Given linked trip not found, When UpdateTripSnapshot, Then it returns ErrTripNotFound", func(t *testing.T) {
+		mockRepo, mockTrip, svc := newSetup()
+		event := &GroupEvent{ID: eventID, HostID: userID, LinkedTripID: &tripID}
+
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
+		mockTrip.On("GetTrip", mock.Anything, tripID, userID).Return(nil, nil).Once()
+
+		res, err := svc.UpdateTripSnapshot(context.Background(), eventID, userID)
+
+		assert.Nil(t, res)
+		assert.ErrorIs(t, err, apperror.ErrTripNotFound)
+		mockRepo.AssertExpectations(t)
+		mockTrip.AssertExpectations(t)
+	})
+
+	t.Run("Given valid linked trip, When UpdateTripSnapshot, Then it builds snapshot with itinerary items", func(t *testing.T) {
+		mockRepo, mockTrip, svc := newSetup()
+		event := &GroupEvent{ID: eventID, HostID: userID, LinkedTripID: &tripID}
+		tripObj := &trip.Trip{
+			ID:        tripID,
+			Name:      "Snow Mountain",
+			StartDate: time.Now(),
+		}
+		items := []*trip.ItineraryItem{
+			{ID: "item-1", Name: "Trailhead", Day: "Day 1", EstTime: "07:00", Altitude: 2140},
+		}
+
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
+		mockTrip.On("GetTrip", mock.Anything, tripID, userID).Return(tripObj, nil).Once()
+		mockTrip.On("ListItinerary", mock.Anything, tripID, userID).Return(items, nil).Once()
+		mockRepo.On("UpdateTripSnapshot", mock.Anything, eventID, mock.MatchedBy(func(s *TripSnapshot) bool {
+			return s.Name == "Snow Mountain" && len(s.Itinerary) == 1 && s.Itinerary[0].Name == "Trailhead"
+		}), userID).Return(nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
+
+		res, err := svc.UpdateTripSnapshot(context.Background(), eventID, userID)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, res)
+		mockRepo.AssertExpectations(t)
+		mockTrip.AssertExpectations(t)
+	})
+}
+
