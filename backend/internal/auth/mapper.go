@@ -41,6 +41,10 @@ func ToUserResponse(user *User) api.User {
 }
 
 // ToAuthResponse converts model.User + tokens to api.AuthResponse
+func ToRegisterResponse(user *User) api.RegisterResponse {
+	return api.RegisterResponse{User: ToUserResponse(user)}
+}
+
 func ToAuthResponse(user *User, token, refreshToken string) api.AuthResponse {
 	return api.AuthResponse{
 		Token:        token,

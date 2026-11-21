@@ -81,7 +81,7 @@ func JWTAuth(tokenManager *tokens.TokenManager, tokenBlacklist cache.TokenBlackl
 
 			// 檢查 Token 是否在黑名單中
 			if tokenBlacklist != nil {
-				revoked, blErr := tokenBlacklist.IsRevoked(request.Context(), claims.UserID, tokenStr)
+				revoked, blErr := tokenBlacklist.IsRevoked(request.Context(), claims.UserID, tokenStr, claims.IssuedAtTime())
 				if blErr != nil {
 					// cache 錯誤一律 fail-closed，避免已撤銷的 token 在快取異常時重新生效
 					LoggerFromContext(request.Context()).Error(

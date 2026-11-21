@@ -13,6 +13,7 @@ type blacklistEntry struct {
 type memoryTokenBlacklist struct {
 	mu      sync.RWMutex
 	entries map[string]map[string]blacklistEntry // userID → {digest → entry}
+	cutoffs map[string]time.Time                 // userID → tokens issued at/before this instant are revoked
 }
 
 // NewMemoryTokenBlacklist returns an in-memory TokenBlacklist suitable for
@@ -20,6 +21,7 @@ type memoryTokenBlacklist struct {
 func NewMemoryTokenBlacklist() TokenBlacklist {
 	return &memoryTokenBlacklist{
 		entries: make(map[string]map[string]blacklistEntry),
+		cutoffs: make(map[string]time.Time),
 	}
 }
 
@@ -36,17 +38,17 @@ func (b *memoryTokenBlacklist) Revoke(ctx context.Context, userID, token string,
 	return nil
 }
 
-func (b *memoryTokenBlacklist) IsRevoked(ctx context.Context, userID, token string) (bool, error) {
+func (b *memoryTokenBlacklist) IsRevoked(ctx context.Context, userID, token string, issuedAt time.Time) (bool, error) {
 	digest := tokenDigest(token)
 
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
-	userEntries, ok := b.entries[userID]
-	if !ok {
-		return false, nil
+	if cutoff, ok := b.cutoffs[userID]; ok && !issuedAt.Truncate(time.Second).After(cutoff) {
+		return true, nil
 	}
-	entry, ok := userEntries[digest]
+
+	entry, ok := b.entries[userID][digest]
 	if !ok {
 		return false, nil
 	}
@@ -56,7 +58,7 @@ func (b *memoryTokenBlacklist) IsRevoked(ctx context.Context, userID, token stri
 func (b *memoryTokenBlacklist) RevokeAll(ctx context.Context, userID string) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	delete(b.entries, userID)
+	b.cutoffs[userID] = time.Now().Truncate(time.Second)
 	return nil
 }
 

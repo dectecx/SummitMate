@@ -19,6 +19,14 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// IssuedAtTime 回傳 token 的簽發時間；缺少 iat 時回傳零值，使其被視為最舊的 token。
+func (c *Claims) IssuedAtTime() time.Time {
+	if c.IssuedAt == nil {
+		return time.Time{}
+	}
+	return c.IssuedAt.Time
+}
+
 // TokenManager 負責 JWT Token 的簽發與驗證。
 type TokenManager struct {
 	secret string // HMAC 簽名密鑰

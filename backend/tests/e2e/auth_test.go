@@ -60,16 +60,21 @@ func (s *APITestSuite) TestRegister_Success() {
 
 		s.Require().Equal(http.StatusCreated, resp.StatusCode, "應回傳 201 Created")
 
-		var authResp api.AuthResponse
-		json.NewDecoder(resp.Body).Decode(&authResp)
+		var regResp api.RegisterResponse
+		json.NewDecoder(resp.Body).Decode(&regResp)
 
-		s.NotEmpty(authResp.Token, "Token 不應為空")
-		s.Equal(email, string(authResp.User.Email), "Email 應相符")
-		s.Equal("測試使用者", authResp.User.DisplayName, "顯示名稱應相符")
-		s.Equal("MEMBER", authResp.User.Role, "新註冊使用者角色應預設為 MEMBER")
-		s.NotEmpty(authResp.User.Id.String(), "User ID 不應為空")
+		s.Equal(email, string(regResp.User.Email), "Email 應相符")
+		s.Equal("測試使用者", regResp.User.DisplayName, "顯示名稱應相符")
+		s.Equal("MEMBER", regResp.User.Role, "新註冊使用者角色應預設為 MEMBER")
+		s.NotEmpty(regResp.User.Id.String(), "User ID 不應為空")
 
-		s.T().Logf("✅ 註冊成功: id=%s, email=%s", authResp.User.Id.String(), authResp.User.Email)
+		// 註冊後不發 Token，必須先完成 Email 驗證
+		var raw map[string]any
+		s.Require().NoError(json.Unmarshal(mustMarshal(regResp), &raw))
+		s.NotContains(raw, "token")
+		s.NotContains(raw, "refresh_token")
+
+		s.T().Logf("✅ 註冊成功: id=%s, email=%s", regResp.User.Id.String(), regResp.User.Email)
 	})
 }
 
@@ -87,7 +92,7 @@ func (s *APITestSuite) TestRegister_DuplicateEmail() {
 		// 第一次註冊
 		resp1, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(body))
 		s.Require().NoError(err)
-		var firstResp api.AuthResponse
+		var firstResp api.RegisterResponse
 		json.NewDecoder(resp1.Body).Decode(&firstResp)
 		resp1.Body.Close()
 
@@ -139,6 +144,7 @@ func (s *APITestSuite) TestLogin_Success() {
 		regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
 		s.Require().NoError(err)
 		regResp.Body.Close()
+		s.verifyUser(email)
 
 		// 登入
 		loginPayload, _ := json.Marshal(api.LoginRequest{Email: openapi_types.Email(email), Password: password})
@@ -202,15 +208,8 @@ func (s *APITestSuite) TestGetMe_Success() {
 		email := randomEmail()
 		password := "TokenTestPass1!"
 
-		// 先註冊取得 Token
-		regPayload, _ := json.Marshal(api.RegisterRequest{
-			Email: openapi_types.Email(email), Password: password, DisplayName: "Me 測試者",
-		})
-		regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
-		s.Require().NoError(err)
-		var authResp api.AuthResponse
-		json.NewDecoder(regResp.Body).Decode(&authResp)
-		regResp.Body.Close()
+		// 註冊、驗證 Email 並登入取得 Token
+		authResp := s.registerVerifiedAndLogin(email, password, "Me 測試者")
 
 		// 帶 Token 呼叫 /auth/me
 		req, _ := http.NewRequest("GET", s.baseURL+"/auth/me", nil)
@@ -252,17 +251,10 @@ func (s *APITestSuite) TestRefreshToken_Success() {
 		email := randomEmail()
 		password := "RefreshTest123!"
 
-		// 1. 註冊取得初始 Tokens
-		regPayload, _ := json.Marshal(api.RegisterRequest{
-			Email: openapi_types.Email(email), Password: password, DisplayName: "Refresh 測試者",
-		})
-		regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
-		s.Require().NoError(err)
-		var authResp api.AuthResponse
-		json.NewDecoder(regResp.Body).Decode(&authResp)
-		regResp.Body.Close()
+		// 1. 註冊、驗證 Email 並登入取得初始 Tokens
+		authResp := s.registerVerifiedAndLogin(email, password, "Refresh 測試者")
 
-		s.NotEmpty(authResp.RefreshToken, "註冊後應取得 Refresh Token")
+		s.NotEmpty(authResp.RefreshToken, "登入後應取得 Refresh Token")
 		oldToken := authResp.Token
 
 		// 稍等一下確保時間戳不同 (如果 Token 有包含過期時間)

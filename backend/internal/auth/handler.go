@@ -1,6 +1,9 @@
 package auth
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
@@ -9,6 +12,9 @@ import (
 	"summitmate/internal/common/apiutil"
 	"summitmate/internal/middleware"
 )
+
+// maxLogoutBodyBytes 限制登出請求 body 大小（只會有一個 refresh token）。
+const maxLogoutBodyBytes = 16 << 10
 
 // AuthHandler 處理認證相關的 HTTP 請求。
 type AuthHandler struct {
@@ -28,13 +34,13 @@ func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, accessToken, refreshToken, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName, req.Avatar)
+	user, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName, req.Avatar)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	h.writeAuthResponse(w, http.StatusCreated, user, accessToken, refreshToken)
+	apiutil.SendJSON(w, http.StatusCreated, ToRegisterResponse(user))
 }
 
 // LoginUser 處理 POST /auth/login 請求。
@@ -209,7 +215,20 @@ func (h *AuthHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
 	}
 	tokenStr := strings.TrimSpace(parts[1])
 
-	if err := h.authService.Logout(r.Context(), tokenStr); err != nil {
+	// 請求 body 為選填：提供 refresh_token 時一併註銷
+	var req api.LogoutRequest
+	if raw, err := io.ReadAll(io.LimitReader(r.Body, maxLogoutBodyBytes)); err == nil && len(bytes.TrimSpace(raw)) > 0 {
+		if err := json.Unmarshal(raw, &req); err != nil {
+			apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("請求 body 格式錯誤"))
+			return
+		}
+	}
+	refreshToken := ""
+	if req.RefreshToken != nil {
+		refreshToken = *req.RefreshToken
+	}
+
+	if err := h.authService.Logout(r.Context(), tokenStr, refreshToken); err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
@@ -225,21 +244,13 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 取得當前 token 以進行註銷
-	header := r.Header.Get("Authorization")
-	var tokenStr string
-	parts := strings.SplitN(header, " ", 2)
-	if len(parts) == 2 && strings.ToLower(parts[0]) == "bearer" {
-		tokenStr = strings.TrimSpace(parts[1])
-	}
-
 	var req api.ChangePasswordRequest
 	if err := apiutil.DecodeBody(r, &req); err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	err := h.authService.ChangePassword(r.Context(), userID, req.OldPassword, req.NewPassword, tokenStr)
+	err := h.authService.ChangePassword(r.Context(), userID, req.OldPassword, req.NewPassword)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return

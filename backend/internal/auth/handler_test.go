@@ -69,7 +69,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 	mockService := new(authmocks.MockAuthService)
 	handler := auth.NewAuthHandler(mockService)
 
-	t.Run("Given valid registration info, When registering, Then it returns 201 Created and auth tokens", func(t *testing.T) {
+	t.Run("Given valid registration info, When registering, Then it returns 201 Created without tokens", func(t *testing.T) {
 		reqBody := api.RegisterRequest{
 			Email:       "new@example.com",
 			Password:    "password123",
@@ -78,9 +78,8 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		jsonBody, _ := json.Marshal(reqBody)
 
 		user := &auth.User{ID: "00000000-0000-0000-0000-000000000002", Email: "new@example.com", DisplayName: "New User"}
-		token := "jwt-token"
 
-		mockService.On("Register", mock.Anything, "new@example.com", "password123", "New User", (*string)(nil)).Return(user, token, "refresh-token", nil).Once()
+		mockService.On("Register", mock.Anything, "new@example.com", "password123", "New User", (*string)(nil)).Return(user, nil).Once()
 
 		req := httptest.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()
@@ -98,7 +97,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		mockService.On("Register", mock.Anything, "new@example.com", "short", "", (*string)(nil)).Return((*auth.User)(nil), "", "", apperror.ErrPasswordTooShort).Once()
+		mockService.On("Register", mock.Anything, "new@example.com", "short", "", (*string)(nil)).Return((*auth.User)(nil), apperror.ErrPasswordTooShort).Once()
 
 		req := httptest.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()

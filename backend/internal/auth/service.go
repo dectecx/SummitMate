@@ -5,6 +5,8 @@ import (
 	"errors"
 	"log/slog"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 	"unicode"
 
@@ -18,17 +20,18 @@ import (
 // AuthService 定義認證相關的業務邏輯介面。
 type AuthService interface {
 	// Registration & Verification
-	Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, string, string, error)
+	Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, error)
 	VerifyEmail(ctx context.Context, emailAddr, code string) error
 	ResendVerificationCode(ctx context.Context, emailAddr string) error
 
 	// Session
 	Login(ctx context.Context, email, password string) (*User, string, string, error)
-	Logout(ctx context.Context, token string) error
+	// Logout 註銷 access token；refreshToken 可為空字串，非空時一併註銷。
+	Logout(ctx context.Context, accessToken, refreshToken string) error
 	RefreshToken(ctx context.Context, tokenString string) (*User, string, string, error)
 
 	// Credentials
-	ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string, currentToken string) error
+	ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string) error
 
 	// User Profile
 	GetUserByID(ctx context.Context, id string) (*User, error)
@@ -125,54 +128,56 @@ func NewAuthService(
 //  1. 檢查 Email 是否已被使用
 //  2. 將密碼以 bcrypt 雜湊
 //  3. 寫入資料庫
-//  4. 簽發 JWT Token
+//  4. 寄出 Email 驗證碼
 //
-// 回傳新建的 User、JWT Token、或錯誤。
-func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string, avatar *string) (*User, string, string, error) {
+// 不簽發 Token：使用者必須先完成 Email 驗證才能登入。回傳新建的 User 或錯誤。
+func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string, avatar *string) (*User, error) {
+	emailAddr = normalizeEmail(emailAddr)
+
 	// 驗證 Email 格式
 	if !isValidEmail(emailAddr) {
-		return nil, "", "", apperror.ErrInvalidEmail
+		return nil, apperror.ErrInvalidEmail
 	}
 
 	// 驗證密碼強度
 	if err := validatePasswordStrength(password); err != nil {
-		return nil, "", "", err
+		return nil, err
 	}
 
 	// 檢查 Email 是否已存在
 	_, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err == nil {
 		svc.logger.WarnContext(ctx, "註冊失敗: Email 已存在", "email", emailAddr)
-		return nil, "", "", apperror.ErrEmailExists
+		return nil, apperror.ErrEmailExists
 	}
 	if !errors.Is(err, ErrNotFound) {
 		svc.logger.ErrorContext(ctx, "註冊時資料庫查詢失敗", "email", emailAddr, "error", err)
-		return nil, "", "", err // 資料庫錯誤
+		return nil, err // 資料庫錯誤
 	}
 
 	// 產生驗證碼
 	code, err := GenerateVerificationCode()
 	if err != nil {
-		return nil, "", "", err
+		return nil, err
 	}
 
 	// 存入快取 (10 分鐘)
 	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, svc.durations.VerificationCodeTTL); err != nil {
 		svc.logger.ErrorContext(ctx, "快取寫入失敗", "email", emailAddr, "error", err)
-		return nil, "", "", err
+		return nil, err
 	}
 
 	// 雜湊密碼
 	hash, err := HashPassword(password)
 	if err != nil {
-		return nil, "", "", err
+		return nil, err
 	}
 
 	// 取得預設 MEMBER 角色
 	roleID, err := svc.userRepo.GetRoleIDByCode(ctx, "MEMBER")
 	if err != nil {
 		svc.logger.ErrorContext(ctx, "無法取得預設角色", "error", err)
-		return nil, "", "", err
+		return nil, err
 	}
 
 	// 寫入資料庫
@@ -189,7 +194,7 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 	createdUser, err := svc.userRepo.Create(ctx, newUser)
 	if err != nil {
 		svc.logger.ErrorContext(ctx, "註冊時寫入資料庫失敗", "email", emailAddr, "error", err)
-		return nil, "", "", err
+		return nil, err
 	}
 
 	svc.logger.InfoContext(ctx, "使用者註冊成功", "user_id", createdUser.ID, "email", emailAddr)
@@ -203,24 +208,17 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 			svc.logger.Warn("mail queue full, verification email dropped", "user_id", createdUser.ID)
 		}
 	} else if !svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
-		svc.logger.Info("發送驗證信已停用 (旗標控制)", "email", createdUser.Email, "code", code)
+		svc.logger.Info("發送驗證信已停用 (旗標控制)", "email", createdUser.Email)
 	}
 
-	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
-	accessToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "access", svc.durations.AccessTokenTTL)
-	if err != nil {
-		return nil, "", "", err
-	}
-	refreshToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "refresh", svc.durations.RefreshTokenTTL)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	return createdUser, accessToken, refreshToken, nil
+	// 註冊後不發 Token：必須先完成 Email 驗證才能登入
+	return createdUser, nil
 }
 
 // VerifyEmail 驗證使用者的 Email。
 func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string) error {
+	emailAddr = normalizeEmail(emailAddr)
+
 	// 頻率限制：同一 email 在視窗內最多允許 maxVerifyAttempts 次提交。
 	// 在 DB 查詢之前計數，防止 timing side-channel 洩漏使用者存在與否。
 	// 計數失敗時 fail-open。
@@ -248,7 +246,7 @@ func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string)
 
 	// 檢查旗標是否允許跳過驗證碼校驗
 	if svc.flagService.IsEnabled(ctx, flag.SkipVerificationCode) {
-		svc.logger.Info("驗證碼校驗跳過 (旗標控制)", "email", emailAddr, "input_code", code)
+		svc.logger.Warn("驗證碼校驗跳過 (旗標控制)", "email", emailAddr)
 		if err := svc.userRepo.SetVerified(ctx, user.ID); err != nil {
 			return err
 		}
@@ -280,6 +278,8 @@ func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string)
 
 // ResendVerificationCode 重發驗證碼。
 func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr string) error {
+	emailAddr = normalizeEmail(emailAddr)
+
 	// 頻率限制：同一 email 在視窗內最多允許 maxResendAttempts 次重發。
 	// 在 DB 查詢之前就計數，無論 email 是否存在，防止 timing side-channel 洩漏使用者存在與否。
 	// 計數失敗時 fail-open。
@@ -338,22 +338,20 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 //
 // 回傳 User、JWT Token、或錯誤。
 func (svc *authService) Login(ctx context.Context, email, password string) (*User, string, string, error) {
-	// 頻率限制：同一 email 在視窗內最多允許 maxLoginAttempts 次嘗試。
-	// 計數失敗時 fail-open，避免 Redis 中斷連帶影響登入功能。
-	if svc.authCache != nil {
-		count, err := svc.authCache.Increment(ctx, loginRateKey(email), svc.durations.LoginRateWindow)
-		if err != nil {
-			svc.logger.WarnContext(ctx, "登入頻率限制計數失敗，跳過限制", "email", email, "error", err)
-		} else if count > maxLoginAttempts {
-			svc.logger.WarnContext(ctx, "登入嘗試次數過多", "email", email, "count", count)
-			return nil, "", "", apperror.ErrTooManyRequests
-		}
+	email = normalizeEmail(email)
+
+	// 頻率限制：只計算「失敗」的嘗試，成功登入會清除計數。
+	// 計數讀取失敗時 fail-open，避免 Redis 中斷連帶影響登入功能。
+	if svc.loginLocked(ctx, email) {
+		svc.logger.WarnContext(ctx, "登入嘗試次數過多", "email", email)
+		return nil, "", "", apperror.ErrTooManyRequests
 	}
 
 	// 查詢使用者
 	user, err := svc.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
+			svc.recordLoginFailure(ctx, email)
 			svc.logger.WarnContext(ctx, "登入失敗: 找不到使用者", "email", email)
 			return nil, "", "", apperror.ErrInvalidCredentials
 		}
@@ -363,46 +361,118 @@ func (svc *authService) Login(ctx context.Context, email, password string) (*Use
 
 	// 驗證密碼
 	if !CheckPasswordHash(password, user.PasswordHash) {
+		svc.recordLoginFailure(ctx, email)
 		svc.logger.WarnContext(ctx, "登入失敗: 密碼不正確", "user_id", user.ID, "email", email)
 		return nil, "", "", apperror.ErrInvalidCredentials
 	}
 
+	// 密碼正確後才揭露帳號狀態，避免對沒有密碼的人洩漏帳號資訊
+	if !user.IsActive {
+		svc.logger.WarnContext(ctx, "登入失敗: 帳號已停用", "user_id", user.ID)
+		return nil, "", "", apperror.ErrAccountDisabled
+	}
+	if !user.IsVerified {
+		svc.logger.InfoContext(ctx, "登入被拒: Email 尚未驗證", "user_id", user.ID)
+		return nil, "", "", apperror.ErrEmailNotVerified
+	}
+
+	svc.clearLoginFailures(ctx, email)
 	svc.logger.InfoContext(ctx, "使用者登入成功", "user_id", user.ID, "email", email)
 
-	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
-	accessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", svc.durations.AccessTokenTTL)
+	accessToken, refreshToken, err := svc.issueTokens(user)
 	if err != nil {
 		return nil, "", "", err
 	}
-	refreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", svc.durations.RefreshTokenTTL)
-	if err != nil {
-		return nil, "", "", err
-	}
-
 	return user, accessToken, refreshToken, nil
 }
 
-// Logout 註銷指定 Token，將其加入黑名單。
-func (svc *authService) Logout(ctx context.Context, tokenStr string) error {
-	claims, err := svc.tokenManager.ParseToken(tokenStr)
+// issueTokens 簽發一組 access (預設 1 小時) 與 refresh (預設 14 天) token。
+func (svc *authService) issueTokens(user *User) (string, string, error) {
+	accessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", svc.durations.AccessTokenTTL)
 	if err != nil {
-		// Token 已經無效或過期，不需要再加入黑名單
-		return nil
+		return "", "", err
 	}
-
-	expiration := claims.ExpiresAt.Time
-	if time.Until(expiration) <= 0 {
-		return nil
+	refreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", svc.durations.RefreshTokenTTL)
+	if err != nil {
+		return "", "", err
 	}
+	return accessToken, refreshToken, nil
+}
 
-	if svc.tokenBlacklist != nil {
-		if err := svc.tokenBlacklist.Revoke(ctx, claims.UserID, tokenStr, expiration); err != nil {
-			svc.logger.ErrorContext(ctx, "寫入 Token 黑名單失敗", "error", err)
-			return err
+// loginLocked 回傳該 email 的失敗次數是否已達上限。
+func (svc *authService) loginLocked(ctx context.Context, email string) bool {
+	if svc.authCache == nil {
+		return false
+	}
+	raw, err := svc.authCache.Get(ctx, loginRateKey(email))
+	if err != nil {
+		if !errors.Is(err, cache.ErrKeyNotFound) {
+			svc.logger.WarnContext(ctx, "讀取登入頻率限制失敗，跳過限制", "error", err)
+		}
+		return false
+	}
+	failures, err := strconv.ParseInt(raw, 10, 64)
+	return err == nil && failures >= maxLoginAttempts
+}
+
+// recordLoginFailure 累加登入失敗次數；失敗時只記錄日誌（fail-open）。
+func (svc *authService) recordLoginFailure(ctx context.Context, email string) {
+	if svc.authCache == nil {
+		return
+	}
+	if _, err := svc.authCache.Increment(ctx, loginRateKey(email), svc.durations.LoginRateWindow); err != nil {
+		svc.logger.WarnContext(ctx, "登入頻率限制計數失敗，跳過限制", "error", err)
+	}
+}
+
+// clearLoginFailures 在成功登入後清除失敗計數。
+func (svc *authService) clearLoginFailures(ctx context.Context, email string) {
+	if svc.authCache == nil {
+		return
+	}
+	_ = svc.authCache.Delete(ctx, loginRateKey(email))
+}
+
+// Logout 註銷 access token，並在提供 refreshToken 時一併註銷，
+// 避免登出後仍可用 refresh token 換出新的 token。
+func (svc *authService) Logout(ctx context.Context, accessToken, refreshToken string) error {
+	var firstErr error
+	for _, tokenStr := range []string{accessToken, refreshToken} {
+		if tokenStr == "" {
+			continue
+		}
+		if err := svc.revokeToken(ctx, tokenStr); err != nil && firstErr == nil {
+			firstErr = err
 		}
 	}
+	return firstErr
+}
 
+// revokeToken 將單一 token 加入黑名單。無效或已過期的 token 不需處理。
+func (svc *authService) revokeToken(ctx context.Context, tokenStr string) error {
+	claims, err := svc.tokenManager.ParseToken(tokenStr)
+	if err != nil {
+		return nil
+	}
+	expiration := claims.ExpiresAt.Time
+	if time.Until(expiration) <= 0 || svc.tokenBlacklist == nil {
+		return nil
+	}
+	if err := svc.tokenBlacklist.Revoke(ctx, claims.UserID, tokenStr, expiration); err != nil {
+		svc.logger.ErrorContext(ctx, "寫入 Token 黑名單失敗", "error", err)
+		return err
+	}
 	return nil
+}
+
+// revokeAllSessions 使該使用者目前所有已簽發的 token 失效。
+func (svc *authService) revokeAllSessions(ctx context.Context, userID string) {
+	if svc.tokenBlacklist == nil {
+		return
+	}
+	if err := svc.tokenBlacklist.RevokeAll(ctx, userID); err != nil {
+		svc.logger.ErrorContext(ctx, "撤銷使用者所有 Token 失敗", "user_id", userID, "error", err)
+	}
 }
 
 // RefreshToken 解析現有的 Refresh Token 並簽發新的 JWT Tokens。
@@ -419,7 +489,7 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 
 	// 檢查 refresh token 是否已被撤銷（黑名單）
 	if svc.tokenBlacklist != nil {
-		revoked, blErr := svc.tokenBlacklist.IsRevoked(ctx, claims.UserID, tokenString)
+		revoked, blErr := svc.tokenBlacklist.IsRevoked(ctx, claims.UserID, tokenString, claims.IssuedAtTime())
 		if blErr != nil {
 			svc.logger.ErrorContext(ctx, "refresh token 黑名單檢查失敗，fail-closed 拒絕請求", "error", blErr)
 			return nil, "", "", apperror.ErrUnauthorized.WithMessage("服務暫時無法使用，請稍後再試")
@@ -440,12 +510,11 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 	if !user.IsActive {
 		return nil, "", "", apperror.ErrUnauthorized.WithMessage("帳號已停用")
 	}
-
-	newAccessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", svc.durations.AccessTokenTTL)
-	if err != nil {
-		return nil, "", "", err
+	if !user.IsVerified {
+		return nil, "", "", apperror.ErrEmailNotVerified
 	}
-	newRefreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", svc.durations.RefreshTokenTTL)
+
+	newAccessToken, newRefreshToken, err := svc.issueTokens(user)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -463,7 +532,7 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 }
 
 // ChangePassword 修改使用者密碼，並將當前使用的 Token 註銷。
-func (svc *authService) ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string, currentToken string) error {
+func (svc *authService) ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string) error {
 	// 驗證密碼強度
 	if err := validatePasswordStrength(newPassword); err != nil {
 		return err
@@ -494,12 +563,8 @@ func (svc *authService) ChangePassword(ctx context.Context, userID string, oldPa
 		return err
 	}
 
-	// 註銷當前使用的 Token
-	if currentToken != "" {
-		if err := svc.Logout(ctx, currentToken); err != nil {
-			svc.logger.WarnContext(ctx, "修改密碼後註銷當前 Token 失敗", "error", err)
-		}
-	}
+	// 密碼已變更：註銷此使用者所有裝置上的 access / refresh token
+	svc.revokeAllSessions(ctx, userID)
 
 	return nil
 }
@@ -511,7 +576,7 @@ func (svc *authService) GetUserByID(ctx context.Context, id string) (*User, erro
 
 // SearchUserByEmail 透過 Email 搜尋使用者。
 func (svc *authService) SearchUserByEmail(ctx context.Context, emailAddr string) (*User, error) {
-	return svc.userRepo.GetByEmail(ctx, emailAddr)
+	return svc.userRepo.GetByEmail(ctx, normalizeEmail(emailAddr))
 }
 
 // UpdateProfile 更新使用者的個人資料 (display_name, avatar)。
@@ -535,16 +600,23 @@ func (svc *authService) DeleteAccount(ctx context.Context, userID string) error 
 		}
 		return err
 	}
+	// 帳號停用後，立即讓既有 token 失效
+	svc.revokeAllSessions(ctx, userID)
 	return nil
 }
 
 // --- Validation Helpers ---
 
+// emailPattern 是簡單的 Email 格式檢查，於套件載入時編譯一次。
+var emailPattern = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
 func isValidEmail(email string) bool {
-	// 簡單的 Email 正則表達式
-	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	match, _ := regexp.MatchString(pattern, email)
-	return match
+	return emailPattern.MatchString(email)
+}
+
+// normalizeEmail 去除前後空白並轉為小寫，讓 Email 的比對、唯一性與限流計數不受大小寫影響。
+func normalizeEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
 }
 
 func validatePasswordStrength(password string) error {

@@ -23,12 +23,9 @@ import (
 	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"summitmate/api"
 	"summitmate/internal/app"
 	"summitmate/internal/config"
 	"summitmate/internal/database"
-
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // APITestSuite 定義了 E2E 測試的 Suite
@@ -42,6 +39,8 @@ type APITestSuite struct {
 
 // SetupSuite 在所有測試開始前執行一次（初始化 TestContainers, DB, Server）
 func (s *APITestSuite) SetupSuite() {
+	// 設定檔不再提供預設的 JWT 密鑰，測試必須自行指定
+	s.T().Setenv("JWT_SECRET", "e2e-test-jwt-secret-0123456789abcdef")
 	cfg := config.Load()
 
 	ctx := context.Background()
@@ -140,25 +139,9 @@ func (s *APITestSuite) SetupTest() {
 
 // --- Shared Helpers ---
 
-// registerAndLogin 註冊並登入，回傳 token 及 userID
+// registerAndLogin 註冊、驗證 Email 並登入，回傳 token 及 userID
 func (s *APITestSuite) registerAndLogin(displayName string) (token string, userID string) {
-	email := randomEmail()
-	password := "TestPassword123!"
-	// 註冊取得 token
-	regPayload, _ := json.Marshal(api.RegisterRequest{
-		Email:       openapi_types.Email(email),
-		Password:    password,
-		DisplayName: displayName,
-	})
-	regResp, _ := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
-	defer regResp.Body.Close()
-
-	if regResp.StatusCode != http.StatusCreated {
-		s.T().Fatalf("測試用註冊失敗: %d", regResp.StatusCode)
-	}
-	var authResp api.AuthResponse
-	json.NewDecoder(regResp.Body).Decode(&authResp)
-
+	authResp := s.registerVerifiedAndLogin(randomEmail(), "TestPassword123!", displayName)
 	return authResp.Token, authResp.User.Id.String()
 }
 

@@ -60,11 +60,11 @@ paths:
               $ref: "#/components/schemas/RegisterRequest"
       responses:
         "201":
-          description: 註冊成功
+          description: 註冊成功。不會簽發 Token，需先以驗證碼完成 Email 驗證後再登入
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: "#/components/schemas/RegisterResponse"
         "400":
           description: 無效的請求 (例如 Email 格式錯誤或已存在)
           content:
@@ -94,6 +94,18 @@ paths:
                 $ref: "#/components/schemas/AuthResponse"
         "401":
           description: 帳號或密碼錯誤
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: 帳號已停用 (account_disabled)，或 Email 尚未驗證 (email_not_verified)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: 登入失敗次數過多
           content:
             application/json:
               schema:
@@ -244,12 +256,18 @@ paths:
   /auth/logout:
     post:
       summary: User Logout
-      description: 登出並將 JWT Token 加入黑名單
+      description: 登出並將 JWT Token 加入黑名單。若提供 refresh_token 會一併註銷，避免登出後仍能換發新的 Token
       operationId: logoutUser
       tags:
         - auth
       security:
         - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutRequest"
       responses:
         "200":
           description: 登出成功
@@ -3056,6 +3074,21 @@ components:
           type: string
           format: uuid
           nullable: true
+
+    RegisterResponse:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+
+    LogoutRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          description: 要一併註銷的 Refresh Token
 
     RegisterRequest:
       type: object

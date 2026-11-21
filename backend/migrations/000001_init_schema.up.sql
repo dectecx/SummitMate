@@ -32,7 +32,7 @@ CREATE TABLE role_permissions (
 
 CREATE TABLE users (
     id                  UUID PRIMARY KEY DEFAULT uuidv7(),
-    email               VARCHAR(255) NOT NULL UNIQUE,
+    email               VARCHAR(255) NOT NULL UNIQUE CHECK (email = LOWER(email)),
     password_hash       TEXT         NOT NULL,
     display_name        VARCHAR(100) NOT NULL,
     avatar              VARCHAR(255) NOT NULL DEFAULT '🐻',

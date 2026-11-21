@@ -22,17 +22,17 @@ func (_m *MockAuthService) EXPECT() *MockAuthService_Expecter {
 	return &MockAuthService_Expecter{mock: &_m.Mock}
 }
 
-// ChangePassword provides a mock function with given fields: ctx, userID, oldPassword, newPassword, currentToken
-func (_m *MockAuthService) ChangePassword(ctx context.Context, userID string, oldPassword string, newPassword string, currentToken string) error {
-	ret := _m.Called(ctx, userID, oldPassword, newPassword, currentToken)
+// ChangePassword provides a mock function with given fields: ctx, userID, oldPassword, newPassword
+func (_m *MockAuthService) ChangePassword(ctx context.Context, userID string, oldPassword string, newPassword string) error {
+	ret := _m.Called(ctx, userID, oldPassword, newPassword)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ChangePassword")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
-		r0 = rf(ctx, userID, oldPassword, newPassword, currentToken)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, userID, oldPassword, newPassword)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -50,14 +50,13 @@ type MockAuthService_ChangePassword_Call struct {
 //   - userID string
 //   - oldPassword string
 //   - newPassword string
-//   - currentToken string
-func (_e *MockAuthService_Expecter) ChangePassword(ctx interface{}, userID interface{}, oldPassword interface{}, newPassword interface{}, currentToken interface{}) *MockAuthService_ChangePassword_Call {
-	return &MockAuthService_ChangePassword_Call{Call: _e.mock.On("ChangePassword", ctx, userID, oldPassword, newPassword, currentToken)}
+func (_e *MockAuthService_Expecter) ChangePassword(ctx interface{}, userID interface{}, oldPassword interface{}, newPassword interface{}) *MockAuthService_ChangePassword_Call {
+	return &MockAuthService_ChangePassword_Call{Call: _e.mock.On("ChangePassword", ctx, userID, oldPassword, newPassword)}
 }
 
-func (_c *MockAuthService_ChangePassword_Call) Run(run func(ctx context.Context, userID string, oldPassword string, newPassword string, currentToken string)) *MockAuthService_ChangePassword_Call {
+func (_c *MockAuthService_ChangePassword_Call) Run(run func(ctx context.Context, userID string, oldPassword string, newPassword string)) *MockAuthService_ChangePassword_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string), args[4].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -67,7 +66,7 @@ func (_c *MockAuthService_ChangePassword_Call) Return(_a0 error) *MockAuthServic
 	return _c
 }
 
-func (_c *MockAuthService_ChangePassword_Call) RunAndReturn(run func(context.Context, string, string, string, string) error) *MockAuthService_ChangePassword_Call {
+func (_c *MockAuthService_ChangePassword_Call) RunAndReturn(run func(context.Context, string, string, string) error) *MockAuthService_ChangePassword_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -252,17 +251,17 @@ func (_c *MockAuthService_Login_Call) RunAndReturn(run func(context.Context, str
 	return _c
 }
 
-// Logout provides a mock function with given fields: ctx, token
-func (_m *MockAuthService) Logout(ctx context.Context, token string) error {
-	ret := _m.Called(ctx, token)
+// Logout provides a mock function with given fields: ctx, accessToken, refreshToken
+func (_m *MockAuthService) Logout(ctx context.Context, accessToken string, refreshToken string) error {
+	ret := _m.Called(ctx, accessToken, refreshToken)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Logout")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = rf(ctx, token)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, accessToken, refreshToken)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -277,14 +276,15 @@ type MockAuthService_Logout_Call struct {
 
 // Logout is a helper method to define mock.On call
 //   - ctx context.Context
-//   - token string
-func (_e *MockAuthService_Expecter) Logout(ctx interface{}, token interface{}) *MockAuthService_Logout_Call {
-	return &MockAuthService_Logout_Call{Call: _e.mock.On("Logout", ctx, token)}
+//   - accessToken string
+//   - refreshToken string
+func (_e *MockAuthService_Expecter) Logout(ctx interface{}, accessToken interface{}, refreshToken interface{}) *MockAuthService_Logout_Call {
+	return &MockAuthService_Logout_Call{Call: _e.mock.On("Logout", ctx, accessToken, refreshToken)}
 }
 
-func (_c *MockAuthService_Logout_Call) Run(run func(ctx context.Context, token string)) *MockAuthService_Logout_Call {
+func (_c *MockAuthService_Logout_Call) Run(run func(ctx context.Context, accessToken string, refreshToken string)) *MockAuthService_Logout_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -294,7 +294,7 @@ func (_c *MockAuthService_Logout_Call) Return(_a0 error) *MockAuthService_Logout
 	return _c
 }
 
-func (_c *MockAuthService_Logout_Call) RunAndReturn(run func(context.Context, string) error) *MockAuthService_Logout_Call {
+func (_c *MockAuthService_Logout_Call) RunAndReturn(run func(context.Context, string, string) error) *MockAuthService_Logout_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -373,7 +373,7 @@ func (_c *MockAuthService_RefreshToken_Call) RunAndReturn(run func(context.Conte
 }
 
 // Register provides a mock function with given fields: ctx, email, password, displayName, avatar
-func (_m *MockAuthService) Register(ctx context.Context, email string, password string, displayName string, avatar *string) (*auth.User, string, string, error) {
+func (_m *MockAuthService) Register(ctx context.Context, email string, password string, displayName string, avatar *string) (*auth.User, error) {
 	ret := _m.Called(ctx, email, password, displayName, avatar)
 
 	if len(ret) == 0 {
@@ -381,10 +381,8 @@ func (_m *MockAuthService) Register(ctx context.Context, email string, password 
 	}
 
 	var r0 *auth.User
-	var r1 string
-	var r2 string
-	var r3 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, *string) (*auth.User, string, string, error)); ok {
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, *string) (*auth.User, error)); ok {
 		return rf(ctx, email, password, displayName, avatar)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, *string) *auth.User); ok {
@@ -395,25 +393,13 @@ func (_m *MockAuthService) Register(ctx context.Context, email string, password 
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, *string) string); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, *string) error); ok {
 		r1 = rf(ctx, email, password, displayName, avatar)
 	} else {
-		r1 = ret.Get(1).(string)
+		r1 = ret.Error(1)
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, string, string, string, *string) string); ok {
-		r2 = rf(ctx, email, password, displayName, avatar)
-	} else {
-		r2 = ret.Get(2).(string)
-	}
-
-	if rf, ok := ret.Get(3).(func(context.Context, string, string, string, *string) error); ok {
-		r3 = rf(ctx, email, password, displayName, avatar)
-	} else {
-		r3 = ret.Error(3)
-	}
-
-	return r0, r1, r2, r3
+	return r0, r1
 }
 
 // MockAuthService_Register_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Register'
@@ -438,12 +424,12 @@ func (_c *MockAuthService_Register_Call) Run(run func(ctx context.Context, email
 	return _c
 }
 
-func (_c *MockAuthService_Register_Call) Return(_a0 *auth.User, _a1 string, _a2 string, _a3 error) *MockAuthService_Register_Call {
-	_c.Call.Return(_a0, _a1, _a2, _a3)
+func (_c *MockAuthService_Register_Call) Return(_a0 *auth.User, _a1 error) *MockAuthService_Register_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockAuthService_Register_Call) RunAndReturn(run func(context.Context, string, string, string, *string) (*auth.User, string, string, error)) *MockAuthService_Register_Call {
+func (_c *MockAuthService_Register_Call) RunAndReturn(run func(context.Context, string, string, string, *string) (*auth.User, error)) *MockAuthService_Register_Call {
 	_c.Call.Return(run)
 	return _c
 }

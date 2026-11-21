@@ -11,8 +11,7 @@ import (
 
 // maxBlacklistKeyTTL is the safety-net TTL placed on each per-user blacklist
 // key. It is set to slightly longer than the maximum refresh token lifetime
-// (14 days) so the key is eventually reclaimed by Redis even if RevokeAll is
-// never called.
+// (14 days) so keys are eventually reclaimed by Redis.
 const maxBlacklistKeyTTL = 15 * 24 * time.Hour
 
 type redisTokenBlacklist struct {
@@ -27,6 +26,10 @@ func NewRedisTokenBlacklist(client *redis.Client) TokenBlacklist {
 
 func (b *redisTokenBlacklist) userKey(userID string) string {
 	return fmt.Sprintf("summitmate:auth:blacklist:user:%s", userID)
+}
+
+func (b *redisTokenBlacklist) cutoffKey(userID string) string {
+	return fmt.Sprintf("summitmate:auth:blacklist:cutoff:%s", userID)
 }
 
 func tokenDigest(token string) string {
@@ -53,13 +56,21 @@ func (b *redisTokenBlacklist) Revoke(ctx context.Context, userID, token string, 
 	return nil
 }
 
-// IsRevoked returns true when the token digest is present in the sorted set
-// and its expiry score is still in the future.
-func (b *redisTokenBlacklist) IsRevoked(ctx context.Context, userID, token string) (bool, error) {
-	key := b.userKey(userID)
-	digest := tokenDigest(token)
+// IsRevoked returns true when the token was issued at or before the user's
+// RevokeAll cutoff, or when its digest is present in the sorted set and its
+// expiry score is still in the future.
+func (b *redisTokenBlacklist) IsRevoked(ctx context.Context, userID, token string, issuedAt time.Time) (bool, error) {
+	cutoff, err := b.client.Get(ctx, b.cutoffKey(userID)).Int64()
+	switch {
+	case err == nil:
+		if issuedAt.Unix() <= cutoff {
+			return true, nil
+		}
+	case err != redis.Nil:
+		return false, fmt.Errorf("blacklist: read cutoff: %w", err)
+	}
 
-	score, err := b.client.ZScore(ctx, key, digest).Result()
+	score, err := b.client.ZScore(ctx, b.userKey(userID), tokenDigest(token)).Result()
 	if err == redis.Nil {
 		return false, nil
 	}
@@ -67,14 +78,13 @@ func (b *redisTokenBlacklist) IsRevoked(ctx context.Context, userID, token strin
 		return false, fmt.Errorf("blacklist: is-revoked: %w", err)
 	}
 
-	expiresAt := time.Unix(int64(score), 0)
-	return time.Now().Before(expiresAt), nil
+	return time.Now().Before(time.Unix(int64(score), 0)), nil
 }
 
-// RevokeAll deletes the entire per-user blacklist key, effectively revoking
-// all outstanding tokens for that user at once.
+// RevokeAll stores "now" as the user's cutoff; every token issued at or before
+// it is rejected. The key expires after the longest possible token lifetime.
 func (b *redisTokenBlacklist) RevokeAll(ctx context.Context, userID string) error {
-	if err := b.client.Del(ctx, b.userKey(userID)).Err(); err != nil {
+	if err := b.client.Set(ctx, b.cutoffKey(userID), time.Now().Unix(), maxBlacklistKeyTTL).Err(); err != nil {
 		return fmt.Errorf("blacklist: revoke-all: %w", err)
 	}
 	return nil

@@ -13,6 +13,8 @@ var (
 	ErrInvalidVerificationCode = New(http.StatusBadRequest, TypeBusinessLogic, "invalid_verification_code", "驗證碼錯誤")
 	ErrVerificationCodeExpired = New(http.StatusBadRequest, TypeBusinessLogic, "verification_code_expired", "驗證碼已過期，請重新發送")
 	ErrTooManyRequests         = New(http.StatusTooManyRequests, TypeAuth, "too_many_requests", "請求次數過多，請稍後再試")
+	ErrEmailNotVerified        = New(http.StatusForbidden, TypeAuth, "email_not_verified", "Email 尚未驗證，請先完成信箱驗證")
+	ErrAccountDisabled         = New(http.StatusForbidden, TypeAuth, "account_disabled", "帳號已停用")
 )
 
 // Trip 相關

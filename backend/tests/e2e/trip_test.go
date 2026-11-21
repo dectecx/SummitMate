@@ -11,8 +11,6 @@ import (
 	"time"
 
 	"summitmate/api"
-
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Helper: 註冊並取得一個帶有 Token 且準備好可以呼叫需要 Auth API 的 Client 資訊
@@ -26,20 +24,8 @@ func (s *APITestSuite) setupTestUser() testClientConfig {
 	email := randomEmail()
 	password := "TestUserPass123!"
 
-	// 註冊
-	regPayload, _ := json.Marshal(api.RegisterRequest{
-		Email:       openapi_types.Email(email),
-		Password:    password,
-		DisplayName: "Trip 測試者",
-	})
-	regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
-	s.Require().NoError(err)
-	defer regResp.Body.Close()
-
-	s.Require().Equal(http.StatusCreated, regResp.StatusCode)
-
-	var authResp api.AuthResponse
-	json.NewDecoder(regResp.Body).Decode(&authResp)
+	// 註冊、驗證 Email 並登入
+	authResp := s.registerVerifiedAndLogin(email, password, "Trip 測試者")
 
 	s.Require().NotEmpty(authResp.Token)
 	s.Require().NotEmpty(authResp.User.Id.String())

@@ -25,7 +25,7 @@ func (f *failingBlacklist) Revoke(context.Context, string, string, time.Time) er
 	return f.err
 }
 
-func (f *failingBlacklist) IsRevoked(context.Context, string, string) (bool, error) {
+func (f *failingBlacklist) IsRevoked(context.Context, string, string, time.Time) (bool, error) {
 	return false, f.err
 }
 
