@@ -10,7 +10,7 @@ import 'package:summitmate/presentation/cubits/auth/auth_cubit.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
-import 'package:summitmate/presentation/screens/trip_list_screen.dart';
+import 'package:summitmate/presentation/screens/trip/trip_list_screen.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/core/theme.dart';

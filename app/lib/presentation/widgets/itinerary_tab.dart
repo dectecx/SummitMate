@@ -15,7 +15,7 @@ import 'itinerary_edit_result.dart';
 import 'itinerary/itinerary_day_selector.dart';
 import 'itinerary/itinerary_list_view.dart';
 import 'itinerary/itinerary_day_side_selector.dart';
-import '../screens/group_event_detail_screen.dart';
+import '../screens/group_event/group_event_detail_screen.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import 'responsive_layout.dart';
 import '../cubits/tutorial/tutorial_cubit.dart';

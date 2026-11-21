@@ -24,7 +24,7 @@ import 'presentation/cubits/favorites/group_event/group_event_favorites_cubit.da
 import 'presentation/cubits/app_error/app_error_cubit.dart';
 import 'presentation/cubits/tutorial/tutorial_cubit.dart';
 import 'presentation/cubits/connectivity/connectivity_cubit.dart';
-import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/home/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
 
 import 'presentation/widgets/dev_tools/dev_tools_overlay.dart';

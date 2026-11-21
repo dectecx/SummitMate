@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/zoomable_image.dart';
+import '../../widgets/zoomable_image.dart';
 
 /// 地圖檢視器 - 使用統一的 ImageViewerDialog
 class MapViewerScreen {

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../cubits/poll/poll_cubit.dart';
-import '../cubits/poll/poll_state.dart';
-import '../cubits/base/toast_notification.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
+import '../../cubits/poll/poll_cubit.dart';
+import '../../cubits/poll/poll_state.dart';
+import '../../cubits/base/toast_notification.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../widgets/common/summit_app_bar.dart';
-import '../widgets/buttons/summit_destructive_button.dart';
+import '../../widgets/common/summit_app_bar.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
 
 /// 投票詳情畫面
 ///

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../cubits/group_event/group_event_cubit.dart';
-import '../cubits/group_event/group_event_state.dart';
-import '../cubits/base/toast_notification.dart';
-import '../cubits/trip/trip_cubit.dart';
-import '../cubits/trip/trip_state.dart';
+import '../../cubits/group_event/group_event_cubit.dart';
+import '../../cubits/group_event/group_event_state.dart';
+import '../../cubits/base/toast_notification.dart';
+import '../../cubits/trip/trip_cubit.dart';
+import '../../cubits/trip/trip_state.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
-import '../../domain/enums/group_event_category.dart';
+import '../../../domain/enums/group_event_category.dart';
 
 /// 建立揪團畫面
 class CreateGroupEventScreen extends StatefulWidget {

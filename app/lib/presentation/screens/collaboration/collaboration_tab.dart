@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'message_list_screen.dart';
 import 'poll_list_screen.dart';
-import '../widgets/responsive_layout.dart';
-import '../widgets/cloud_guard.dart';
+import '../../widgets/responsive_layout.dart';
+import '../../widgets/cloud_guard.dart';
 
 /// 協作頁面 (Tab 3)
 ///

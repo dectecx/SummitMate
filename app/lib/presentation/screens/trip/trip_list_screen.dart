@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubits/trip/trip_cubit.dart';
-import '../cubits/trip/trip_state.dart';
-import '../cubits/group_event/group_event_cubit.dart';
-import '../cubits/group_event/group_event_state.dart';
+import '../../cubits/trip/trip_cubit.dart';
+import '../../cubits/trip/trip_state.dart';
+import '../../cubits/group_event/group_event_cubit.dart';
+import '../../cubits/group_event/group_event_state.dart';
 import 'member_management_screen.dart';
 import 'package:summitmate/core/core.dart';
-import '../cubits/auth/auth_cubit.dart';
-import '../cubits/auth/auth_state.dart';
+import '../../cubits/auth/auth_cubit.dart';
+import '../../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
-import '../widgets/common/modern_sliver_app_bar.dart';
-import '../widgets/trip/trip_card.dart';
-import '../widgets/trip/create_trip_dialog.dart';
-import '../widgets/trip/cloud_sync_bar.dart';
-import '../widgets/responsive_layout.dart';
+import '../../widgets/common/modern_sliver_app_bar.dart';
+import '../../widgets/trip/trip_card.dart';
+import '../../widgets/trip/create_trip_dialog.dart';
+import '../../widgets/trip/cloud_sync_bar.dart';
+import '../../widgets/responsive_layout.dart';
 
 /// 行程列表畫面
 /// 管理多個登山計畫

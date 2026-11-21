@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
-import '../screens/trip_list_screen.dart';
+import '../screens/trip/trip_list_screen.dart';
 
 /// 行程選擇器 Widget
 /// 顯示在 AppBar 或其他位置，點擊可切換行程

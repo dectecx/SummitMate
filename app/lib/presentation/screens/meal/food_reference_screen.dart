@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/zoomable_image.dart';
+import '../../widgets/zoomable_image.dart';
 
 /// 乾燥飯比較參考 - 使用統一的 ImageViewerDialog
 class FoodReferenceScreen {

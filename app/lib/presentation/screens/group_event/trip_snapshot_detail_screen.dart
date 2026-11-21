@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
-import '../widgets/itinerary/itinerary_list_view.dart';
+import '../../widgets/itinerary/itinerary_list_view.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 class TripSnapshotDetailScreen extends StatefulWidget {

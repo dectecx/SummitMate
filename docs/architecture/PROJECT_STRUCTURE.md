@@ -63,9 +63,19 @@ lib/
     │   ├── sync/                      # 同步 (SyncCubit)
     │   ├── trip/                      # 行程 (TripCubit)
     │   └── ...                        # 其他模組
-    ├── screens/                       # 畫面元件
-    │   ├── main_navigation_screen.dart
-    │   └── ...
+    ├── screens/                       # 畫面元件（依功能分資料夾）
+    │   ├── auth/                      # 登入、註冊、驗證、改密碼
+    │   ├── home/                      # 首頁、新手引導
+    │   ├── trip/                      # 行程列表、雲端行程、成員管理
+    │   ├── gear/                      # 裝備庫、雲端裝備
+    │   ├── meal/                      # 糧食計畫、食物參考
+    │   ├── collaboration/             # 協作分頁、留言、投票
+    │   ├── group_event/               # 揪團與行程快照
+    │   ├── map/                       # 地圖與離線圖資
+    │   ├── info/                      # 山岳資訊
+    │   ├── beginner_peaks/            # 新手山岳
+    │   ├── main_navigation/           # 主導覽
+    │   └── common/                    # 共用畫面（錯誤頁）
     └── widgets/                       # 可重用 UI 元件
 ```
 

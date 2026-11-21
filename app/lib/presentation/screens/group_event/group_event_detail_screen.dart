@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/domain/domain.dart';
-import '../cubits/group_event/group_event_state.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
-import '../cubits/connectivity/connectivity_state.dart';
-import '../widgets/common/offline_gate.dart';
-import '../cubits/group_event/group_event_cubit.dart';
-import '../cubits/base/toast_notification.dart';
+import '../../cubits/group_event/group_event_state.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
+import '../../cubits/connectivity/connectivity_state.dart';
+import '../../widgets/common/offline_gate.dart';
+import '../../cubits/group_event/group_event_cubit.dart';
+import '../../cubits/base/toast_notification.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
-import '../cubits/favorites/group_event/group_event_favorites_state.dart';
+import '../../cubits/favorites/group_event/group_event_favorites_cubit.dart';
+import '../../cubits/favorites/group_event/group_event_favorites_state.dart';
 import 'group_event_review_screen.dart';
 
-import '../widgets/group_event/detail/description_section.dart';
-import '../widgets/group_event/detail/trip_section.dart';
-import '../widgets/group_event/detail/comments_section.dart';
-import '../widgets/group_event/detail/info_grid.dart';
-import '../widgets/group_event/detail/organizer_section.dart';
-import '../widgets/group_event/detail/private_message_section.dart';
-import '../widgets/group_event/detail/status_widgets.dart';
+import '../../widgets/group_event/detail/description_section.dart';
+import '../../widgets/group_event/detail/trip_section.dart';
+import '../../widgets/group_event/detail/comments_section.dart';
+import '../../widgets/group_event/detail/info_grid.dart';
+import '../../widgets/group_event/detail/organizer_section.dart';
+import '../../widgets/group_event/detail/private_message_section.dart';
+import '../../widgets/group_event/detail/status_widgets.dart';
 
 class GroupEventDetailScreen extends StatefulWidget {
   final GroupEvent event;

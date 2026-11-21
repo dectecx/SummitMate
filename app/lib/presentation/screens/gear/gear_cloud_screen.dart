@@ -2,28 +2,28 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../core/di/injection.dart';
-import '../../core/error/result.dart';
+import '../../../core/di/injection.dart';
+import '../../../core/error/result.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
-import '../widgets/common/offline_gate.dart';
+import '../../cubits/settings/settings_cubit.dart';
+import '../../cubits/settings/settings_state.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
+import '../../widgets/common/offline_gate.dart';
 
-import '../cubits/meal/meal_cubit.dart';
-import '../cubits/meal/meal_state.dart';
-import '../cubits/gear/gear_cubit.dart';
-import '../cubits/gear/gear_state.dart';
-import '../cubits/gear_library/gear_library_cubit.dart';
-import '../cubits/trip/trip_cubit.dart';
-import '../cubits/trip/trip_state.dart';
-import '../widgets/gear_upload_dialog.dart';
-import '../widgets/gear_cloud_management_dialog.dart';
-import '../widgets/gear_key_download_dialog.dart';
-import '../widgets/gear_preview_dialog.dart';
-import '../widgets/common/summit_app_bar.dart';
-import '../widgets/responsive_layout.dart';
+import '../../cubits/meal/meal_cubit.dart';
+import '../../cubits/meal/meal_state.dart';
+import '../../cubits/gear/gear_cubit.dart';
+import '../../cubits/gear/gear_state.dart';
+import '../../cubits/gear_library/gear_library_cubit.dart';
+import '../../cubits/trip/trip_cubit.dart';
+import '../../cubits/trip/trip_state.dart';
+import '../../widgets/gear_upload_dialog.dart';
+import '../../widgets/gear_cloud_management_dialog.dart';
+import '../../widgets/gear_key_download_dialog.dart';
+import '../../widgets/gear_preview_dialog.dart';
+import '../../widgets/common/summit_app_bar.dart';
+import '../../widgets/responsive_layout.dart';
 
 /// 雲端裝備庫畫面
 class GearCloudScreen extends StatefulWidget {

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../utils/gear_utils.dart';
+import '../../utils/gear_utils.dart';
 
 import 'package:summitmate/domain/domain.dart';
 
-import '../cubits/gear_library/gear_library_cubit.dart';
-import '../cubits/gear_library/gear_library_state.dart';
-import '../widgets/ads/banner_ad_widget.dart';
-import '../widgets/buttons/summit_destructive_button.dart';
-import '../widgets/common/summit_app_bar.dart';
-import '../widgets/responsive_layout.dart';
-import '../widgets/gear/dialogs/gear_library_item_dialog.dart';
-import '../widgets/gear/dialogs/gear_library_cloud_sync_dialog.dart';
+import '../../cubits/gear_library/gear_library_cubit.dart';
+import '../../cubits/gear_library/gear_library_state.dart';
+import '../../widgets/ads/banner_ad_widget.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
+import '../../widgets/common/summit_app_bar.dart';
+import '../../widgets/responsive_layout.dart';
+import '../../widgets/gear/dialogs/gear_library_item_dialog.dart';
+import '../../widgets/gear/dialogs/gear_library_cloud_sync_dialog.dart';
 
 /// 我的裝備庫畫面
 ///

@@ -4,10 +4,10 @@ import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../cubits/group_event/group_event_cubit.dart';
-import '../cubits/group_event/group_event_state.dart';
-import '../cubits/base/toast_notification.dart';
-import '../widgets/common/summit_app_bar.dart';
+import '../../cubits/group_event/group_event_cubit.dart';
+import '../../cubits/group_event/group_event_state.dart';
+import '../../cubits/base/toast_notification.dart';
+import '../../widgets/common/summit_app_bar.dart';
 import 'group_event_detail_screen.dart';
 
 /// 「我的揪團」畫面 — 包含主辦 / 報名 / 喜歡 三個 Tab

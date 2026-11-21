@@ -29,7 +29,7 @@ import '../../cubits/gear/gear_cubit.dart';
 import '../../cubits/meal/meal_cubit.dart';
 
 import '../map/map_screen.dart';
-import '../collaboration_tab.dart';
+import '../collaboration/collaboration_tab.dart';
 
 import '../../widgets/info_tab.dart';
 import '../../widgets/itinerary_tab.dart';

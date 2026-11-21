@@ -5,13 +5,13 @@ import 'package:intl/intl.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../cubits/trip/trip_cubit.dart';
-import '../cubits/trip/trip_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
-import '../widgets/ads/banner_ad_widget.dart';
-import '../widgets/responsive_layout.dart';
-import '../widgets/buttons/summit_destructive_button.dart';
+import '../../cubits/trip/trip_cubit.dart';
+import '../../cubits/trip/trip_state.dart';
+import '../../cubits/settings/settings_cubit.dart';
+import '../../cubits/settings/settings_state.dart';
+import '../../widgets/ads/banner_ad_widget.dart';
+import '../../widgets/responsive_layout.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
 
 /// 雲端行程同步畫面
 class TripCloudScreen extends StatefulWidget {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
-import '../cubits/auth/auth_cubit.dart';
-import '../cubits/auth/auth_state.dart';
-import 'auth/login_screen.dart';
+import '../../cubits/settings/settings_cubit.dart';
+import '../../cubits/settings/settings_state.dart';
+import '../../cubits/auth/auth_cubit.dart';
+import '../../cubits/auth/auth_state.dart';
+import '../auth/login_screen.dart';
 import 'onboarding_screen.dart';
-import 'main_navigation/main_navigation_screen.dart';
+import '../main_navigation/main_navigation_screen.dart';
 
 /// 主頁面入口
 /// 流程: 登入/註冊 → 教學引導 → 主畫面

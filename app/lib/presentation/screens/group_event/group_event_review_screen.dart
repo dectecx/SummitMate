@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/di/injection.dart';
+import '../../../../core/di/injection.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../cubits/group_event/review/group_event_review_cubit.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
-import '../widgets/common/offline_gate.dart';
-import '../widgets/buttons/summit_destructive_button.dart';
+import '../../cubits/group_event/review/group_event_review_cubit.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
+import '../../widgets/common/offline_gate.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
 
 
 class GroupEventReviewScreen extends StatelessWidget {

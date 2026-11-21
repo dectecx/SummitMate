@@ -5,9 +5,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:summitmate/core/core.dart';
 import '../../cubits/settings/settings_cubit.dart';
 import '../../cubits/settings/settings_state.dart';
-import '../../screens/gear_cloud_screen.dart';
-import '../../screens/gear_library_screen.dart';
-import '../../screens/meal_planner_screen.dart';
+import '../../screens/gear/gear_cloud_screen.dart';
+import '../../screens/gear/gear_library_screen.dart';
+import '../../screens/meal/meal_planner_screen.dart';
 import 'package:summitmate/domain/domain.dart';
 
 /// 快速連結按鈕列 (官方清單、雲端庫、我的庫)

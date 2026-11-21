@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubits/settings/settings_cubit.dart';
+import '../../cubits/settings/settings_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// Onboarding 畫面 (新手引導)

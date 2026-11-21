@@ -6,13 +6,13 @@ import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'create_poll_screen.dart';
 import 'poll_detail_screen.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
-import '../cubits/connectivity/connectivity_state.dart';
-import '../cubits/poll/poll_cubit.dart';
-import '../cubits/poll/poll_state.dart';
-import '../cubits/base/toast_notification.dart';
-import '../widgets/responsive_layout.dart';
-import '../widgets/common/offline_gate.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
+import '../../cubits/connectivity/connectivity_state.dart';
+import '../../cubits/poll/poll_cubit.dart';
+import '../../cubits/poll/poll_state.dart';
+import '../../cubits/base/toast_notification.dart';
+import '../../widgets/responsive_layout.dart';
+import '../../widgets/common/offline_gate.dart';
 
 
 /// 投票列表畫面

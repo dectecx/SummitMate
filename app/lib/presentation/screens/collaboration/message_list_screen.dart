@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubits/sync/sync_cubit.dart';
-import '../cubits/sync/sync_state.dart';
-import '../cubits/message/message_cubit.dart';
-import '../cubits/message/message_state.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
-import '../cubits/connectivity/connectivity_state.dart';
-import '../cubits/auth/auth_cubit.dart';
-import '../cubits/auth/auth_state.dart';
+import '../../cubits/sync/sync_cubit.dart';
+import '../../cubits/sync/sync_state.dart';
+import '../../cubits/message/message_cubit.dart';
+import '../../cubits/message/message_state.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
+import '../../cubits/connectivity/connectivity_state.dart';
+import '../../cubits/auth/auth_cubit.dart';
+import '../../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../core/services/permission_service.dart';
-import '../../core/di/injection.dart';
-import '../widgets/common/offline_gate.dart';
-import '../widgets/buttons/summit_destructive_button.dart';
+import '../../../core/services/permission_service.dart';
+import '../../../core/di/injection.dart';
+import '../../widgets/common/offline_gate.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
 
 /// 留言板畫面 (Tab 3 - 協作)
 ///

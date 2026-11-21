@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubits/poll/poll_cubit.dart';
+import '../../cubits/poll/poll_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../widgets/common/summit_app_bar.dart';
+import '../../widgets/common/summit_app_bar.dart';
 
 /// 建立投票畫面
 ///

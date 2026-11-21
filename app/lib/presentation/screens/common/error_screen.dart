@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/buttons/summit_destructive_button.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
 
 /// 應用程式錯誤畫面
 ///

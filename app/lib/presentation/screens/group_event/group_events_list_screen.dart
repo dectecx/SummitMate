@@ -3,20 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
-import '../cubits/connectivity/connectivity_state.dart';
-import '../cubits/group_event/group_event_cubit.dart';
-import '../cubits/group_event/group_event_state.dart';
-import '../cubits/base/toast_notification.dart';
-import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
-import '../cubits/favorites/group_event/group_event_favorites_state.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
+import '../../cubits/connectivity/connectivity_state.dart';
+import '../../cubits/group_event/group_event_cubit.dart';
+import '../../cubits/group_event/group_event_state.dart';
+import '../../cubits/base/toast_notification.dart';
+import '../../cubits/favorites/group_event/group_event_favorites_cubit.dart';
+import '../../cubits/favorites/group_event/group_event_favorites_state.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';
-import '../widgets/common/summit_app_bar.dart';
-import '../widgets/common/offline_gate.dart';
+import '../../widgets/common/summit_app_bar.dart';
+import '../../widgets/common/offline_gate.dart';
 
-import '../widgets/responsive_layout.dart';
+import '../../widgets/responsive_layout.dart';
 
 /// 揪團列表畫面
 ///

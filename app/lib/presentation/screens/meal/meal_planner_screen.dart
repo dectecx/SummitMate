@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/domain.dart';
-import '../cubits/meal/meal_cubit.dart';
-import '../cubits/meal/meal_state.dart';
+import '../../../domain/domain.dart';
+import '../../cubits/meal/meal_cubit.dart';
+import '../../cubits/meal/meal_state.dart';
 import 'food_reference_screen.dart';
-import '../widgets/responsive_layout.dart';
-import '../utils/meal_utils.dart';
-import '../widgets/meal/meal_day_management_dialog.dart';
-import '../cubits/tutorial/tutorial_cubit.dart';
-import '../cubits/tutorial/tutorial_state.dart';
-import '../widgets/tutorial/tutorial_aware_builder.dart';
-import '../widgets/meal/add_meal_dialog.dart';
-import '../widgets/buttons/summit_destructive_button.dart';
+import '../../widgets/responsive_layout.dart';
+import '../../utils/meal_utils.dart';
+import '../../widgets/meal/meal_day_management_dialog.dart';
+import '../../cubits/tutorial/tutorial_cubit.dart';
+import '../../cubits/tutorial/tutorial_state.dart';
+import '../../widgets/tutorial/tutorial_aware_builder.dart';
+import '../../widgets/meal/add_meal_dialog.dart';
+import '../../widgets/buttons/summit_destructive_button.dart';
 
 /// 糧食計畫畫面
 ///

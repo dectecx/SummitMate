@@ -5,7 +5,7 @@ import 'package:summitmate/domain/domain.dart';
 import '../../../cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../cubits/trip/trip_cubit.dart';
-import '../../../screens/trip_snapshot_detail_screen.dart';
+import '../../../screens/group_event/trip_snapshot_detail_screen.dart';
 
 class TripSection extends StatelessWidget {
   final GroupEvent event;
