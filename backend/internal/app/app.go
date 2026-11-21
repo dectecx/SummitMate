@@ -38,10 +38,10 @@ import (
 )
 
 type App struct {
-	Config       *config.Config
-	Logger       *slog.Logger
-	Pool         *pgxpool.Pool
-	Server       *http.Server
+	Config         *config.Config
+	Logger         *slog.Logger
+	Pool           *pgxpool.Pool
+	Server         *http.Server
 	AuthCache      cache.Cache[string]
 	TokenBlacklist cache.TokenBlacklist
 	EmailService   *email.EmailService
@@ -72,6 +72,9 @@ func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	return app, nil
 }
 
+// apiBaseURL 為 REST API 的掛載前綴，需與 OpenAPI servers 設定一致。
+const apiBaseURL = "/api/v1"
+
 func (a *App) InitRouter() (*chi.Mux, error) {
 	apiServer, err := a.initializeAPI()
 	if err != nil {
@@ -86,11 +89,17 @@ func (a *App) InitRouter() (*chi.Mux, error) {
 	router.Use(chiMiddleware.Timeout(a.Config.HTTPRequestTimeout))
 	router.Use(chiMiddleware.Recoverer)
 
-	// API Handler
+	// API Handler：是否需要認證由 OpenAPI spec 的 security 設定決定
+	swagger, err := api.GetSwagger()
+	if err != nil {
+		return nil, err
+	}
+	authPolicy := middleware.NewSpecAuthPolicy(swagger, apiBaseURL)
+
 	apiHandler := api.HandlerWithOptions(apiServer, api.ChiServerOptions{
-		BaseURL: "/api/v1",
+		BaseURL: apiBaseURL,
 		Middlewares: []api.MiddlewareFunc{
-			middleware.JWTAuth(apiServer.TokenManager, apiServer.TokenBlacklist),
+			middleware.JWTAuth(apiServer.TokenManager, apiServer.TokenBlacklist, authPolicy),
 		},
 	})
 	router.Mount("/", apiHandler)

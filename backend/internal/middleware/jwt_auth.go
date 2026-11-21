@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"summitmate/api"
 	"summitmate/internal/auth/tokens"
 	"summitmate/pkg/cache"
 )
@@ -18,15 +17,14 @@ type contextKey string
 const UserIDKey contextKey = "user_id"
 
 // JWTAuth 目標：
-// 1. 自動偵測 oapi-codegen 注入的 BearerAuthScopes (Context Key)
-// 2. 如果不存在，表示為公開路徑，直接放行。
-// 3. 如果存在，執行 Bearer Token 驗證並注入 UserID。
-func JWTAuth(tokenManager *tokens.TokenManager, tokenBlacklist cache.TokenBlacklist) func(http.Handler) http.Handler {
+// 1. 由 AuthPolicy (依 OpenAPI spec 的 security 設定) 判斷該請求是否必須認證。
+// 2. 公開路徑且未提供 Token，直接放行。
+// 3. 必須認證，或有提供 Token 時，執行 Bearer Token 驗證並注入 UserID。
+func JWTAuth(tokenManager *tokens.TokenManager, tokenBlacklist cache.TokenBlacklist, policy AuthPolicy) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			// 檢查 oapi-codegen 注入的 Security Scopes
-			// api.BearerAuthScopes 是 gen.go 中自動定義的常量 "bearerAuth.Scopes"
-			_, required := request.Context().Value(api.BearerAuthScopes).([]string)
+			// 依 OpenAPI spec 判斷此端點是否必須認證
+			required := policy(request)
 
 			// 取得 Authorization header
 			header := request.Header.Get("Authorization")

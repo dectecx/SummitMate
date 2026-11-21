@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
-	"summitmate/api"
 	"summitmate/internal/auth/tokens"
 	"summitmate/pkg/cache"
 
@@ -35,10 +35,15 @@ func (f *failingBlacklist) RevokeAll(context.Context, string) error {
 
 func (f *failingBlacklist) Close() error { return nil }
 
+// privatePathPolicy 模擬 spec 設定：只有 /private 開頭的路徑必須認證。
+func privatePathPolicy(r *http.Request) bool {
+	return strings.HasPrefix(r.URL.Path, "/private")
+}
+
 func TestJWTAuth_Middleware(t *testing.T) {
 	secret := "super_secret_test_key_12345"
 	tokenManager := tokens.NewTokenManager(secret)
-	middleware := JWTAuth(tokenManager, nil)
+	middleware := JWTAuth(tokenManager, nil, privatePathPolicy)
 
 	// 一個簡單的測試 handler，如果成功讀取到 user_id 就回傳 200 OK + UserID，否則回傳 200 + Empty
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -66,9 +71,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 	t.Run("Given required route and no token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/private", nil)
-		// 注入 BearerAuthScopes 模擬私有路徑
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		w := httptest.NewRecorder()
 
 		handlerToTest.ServeHTTP(w, req)
@@ -79,8 +81,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 	t.Run("Given invalid token format, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/private", nil)
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		req.Header.Set("Authorization", "invalid_format_token")
 		w := httptest.NewRecorder()
 
@@ -92,8 +92,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 	t.Run("Given empty bearer token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/private", nil)
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		req.Header.Set("Authorization", "Bearer ")
 		w := httptest.NewRecorder()
 
@@ -122,8 +120,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest("GET", "/private", nil)
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		req.Header.Set("Authorization", "Bearer "+tokenStr)
 		w := httptest.NewRecorder()
 
@@ -140,8 +136,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest("GET", "/private", nil)
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		req.Header.Set("Authorization", "Bearer "+tokenStr)
 		w := httptest.NewRecorder()
 
@@ -153,7 +147,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 	t.Run("Given blacklisted token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		memoryBlacklist := cache.NewMemoryTokenBlacklist()
-		middlewareWithCache := JWTAuth(tokenManager, memoryBlacklist)
+		middlewareWithCache := JWTAuth(tokenManager, memoryBlacklist, privatePathPolicy)
 		handlerToTestWithCache := middlewareWithCache(nextHandler)
 
 		userID := "user-12345-uuid"
@@ -166,8 +160,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest("GET", "/private", nil)
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		req.Header.Set("Authorization", "Bearer "+tokenStr)
 		w := httptest.NewRecorder()
 
@@ -179,7 +171,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 	t.Run("Given non-blacklisted token with cache, When executing middleware, Then it passes successfully", func(t *testing.T) {
 		memoryBlacklist := cache.NewMemoryTokenBlacklist()
-		middlewareWithCache := JWTAuth(tokenManager, memoryBlacklist)
+		middlewareWithCache := JWTAuth(tokenManager, memoryBlacklist, privatePathPolicy)
 		handlerToTestWithCache := middlewareWithCache(nextHandler)
 
 		userID := "user-12345-uuid"
@@ -188,8 +180,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest("GET", "/private", nil)
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		req.Header.Set("Authorization", "Bearer "+tokenStr)
 		w := httptest.NewRecorder()
 
@@ -201,7 +191,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 	t.Run("Given cache failure during blacklist check, When executing middleware, Then it fails closed with 503", func(t *testing.T) {
 		brokenCache := &failingBlacklist{err: errors.New("redis connection refused")}
-		middlewareWithCache := JWTAuth(tokenManager, brokenCache)
+		middlewareWithCache := JWTAuth(tokenManager, brokenCache, privatePathPolicy)
 		handlerToTestWithCache := middlewareWithCache(nextHandler)
 
 		userID := "user-12345-uuid"
@@ -210,8 +200,6 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest("GET", "/private", nil)
-		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
-		req = req.WithContext(ctx)
 		req.Header.Set("Authorization", "Bearer "+tokenStr)
 		w := httptest.NewRecorder()
 
