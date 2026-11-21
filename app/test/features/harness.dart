@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/app/app.dart';
@@ -20,7 +21,7 @@ class AppHarness {
   final MemoryTokenStore tokens;
   final ProviderContainer container;
 
-  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed}) async {
+  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed, List<Override> overrides = const []}) async {
     final db = memoryDb();
     final api = FakeAuthApi();
     seed?.call(api);
@@ -31,6 +32,7 @@ class AppHarness {
         tokenStoreProvider.overrideWithValue(tokens),
         authApiProvider.overrideWithValue(api),
         connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
+        ...overrides,
       ],
     );
     await tester.runAsync(() async {
@@ -64,6 +66,20 @@ Future<void> settle(WidgetTester tester) async {
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 15)));
     await tester.pump(const Duration(milliseconds: 60));
   }
+}
+
+/// Starts [action] (database writes while the UI is watching) and lets real time pass until it is done.
+/// Running such writes inside `runAsync` can deadlock with Drift's stream updates, which are scheduled
+/// on the test's fake clock.
+Future<T> act<T>(WidgetTester tester, Future<T> Function() action) async {
+  final result = action();
+  for (var i = 0; i < 40; i++) {
+    var done = false;
+    result.whenComplete(() => done = true);
+    await settle(tester);
+    if (done) break;
+  }
+  return result;
 }
 
 /// Runs [action] on real time (for direct database or repository calls inside a widget test).
