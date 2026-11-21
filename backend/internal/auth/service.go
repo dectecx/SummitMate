@@ -35,9 +35,6 @@ type AuthService interface {
 	SearchUserByEmail(ctx context.Context, emailAddr string) (*User, error)
 	UpdateProfile(ctx context.Context, userID string, displayName, avatar *string) (*User, error)
 	DeleteAccount(ctx context.Context, userID string) error
-
-	// Debug / Admin
-	ClearRateLimit(ctx context.Context, email string) error
 }
 
 // maxLoginAttempts is the maximum number of failed login attempts allowed
@@ -538,18 +535,6 @@ func (svc *authService) DeleteAccount(ctx context.Context, userID string) error 
 		}
 		return err
 	}
-	return nil
-}
-
-// ClearRateLimit 清除指定 email 的所有 rate limit 計數器。
-// 僅供開發/測試環境使用，用於重置 rate limit 狀態以便重新測試。
-func (svc *authService) ClearRateLimit(ctx context.Context, email string) error {
-	if svc.authCache == nil {
-		return nil
-	}
-	_ = svc.authCache.Delete(ctx, loginRateKey(email))
-	_ = svc.authCache.Delete(ctx, resendRateKey(email))
-	_ = svc.authCache.Delete(ctx, verifyRateKey(email))
 	return nil
 }
 

@@ -329,7 +329,7 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	weatherHandler := weather.NewWeatherHandler(weatherService)
 	logHandler := log.NewLogHandler(logService)
 	heartbeatHandler := heartbeat.NewHeartbeatHandler(heartbeatService)
-	flagHandler := flag.NewFlagHandler(flagService)
+	flagHandler := flag.NewFlagHandler(flagService, auth.NewAdminChecker(authRepo), cfg.Env != "production")
 	gearSetHandler := gearset.NewGearSetHandler(gearSetService)
 
 	return appapi.NewServer(

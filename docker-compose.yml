@@ -31,6 +31,7 @@ services:
       DB_NAME: summitmate
       DB_SSLMODE: disable
       ENV: development
+      JWT_SECRET: dev_jwt_secret_change_in_production_min_16_chars
     depends_on:
       - db
 
