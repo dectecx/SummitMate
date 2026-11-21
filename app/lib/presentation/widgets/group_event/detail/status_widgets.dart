@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../../../domain/enums/group_event_status.dart';
 import '../../../../domain/enums/group_event_application_status.dart';
 

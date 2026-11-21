@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ErrorSnackbar {
   static void show(BuildContext context, {required String message, bool isPersistent = false, VoidCallback? onRetry}) {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 裝備搜尋欄
 class GearSearchBar extends StatelessWidget {

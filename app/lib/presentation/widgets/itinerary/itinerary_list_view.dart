@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../../domain/entities/itinerary_item.dart';
 
 /// 行程列表視圖

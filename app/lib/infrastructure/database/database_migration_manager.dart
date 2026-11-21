@@ -200,7 +200,7 @@ class DatabaseMigrationManager {
       onProgress?.call(0.85, '完成資料導入，正在進行安全檢查與清理...');
 
       // 4. 關閉資料庫連線，釋放檔案鎖
-      oldDb.dispose();
+      oldDb.close();
       oldDb = null;
       await newDb.close();
 
@@ -216,7 +216,7 @@ class DatabaseMigrationManager {
     } catch (e) {
       // 確保資源釋放
       try {
-        oldDb?.dispose();
+        oldDb?.close();
       } catch (_) {}
       try {
         await newDb.close();

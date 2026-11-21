@@ -65,6 +65,7 @@ dependencies:
   injectable: ^3.0.0
   meta: ^1.17.0
   rxdart: ^0.28.0
+  material_ui: ^1.11.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

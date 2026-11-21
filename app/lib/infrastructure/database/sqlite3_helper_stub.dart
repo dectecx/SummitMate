@@ -1,5 +1,5 @@
 class SqliteDbWrapper {
-  void dispose() {
+  void close() {
     throw UnsupportedError('SQLite is not supported on this platform.');
   }
 

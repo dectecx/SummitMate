@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Toast 訊息服務介面 (方便測試時 Mock)
 abstract class IToastService {

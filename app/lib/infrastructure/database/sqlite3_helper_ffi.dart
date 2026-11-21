@@ -4,8 +4,8 @@ class SqliteDbWrapper {
   final sqlite.Database _db;
   SqliteDbWrapper(this._db);
 
-  void dispose() {
-    _db.dispose();
+  void close() {
+    _db.close();
   }
 
   List<Map<String, dynamic>> select(String sql, [List<Object?> parameters = const []]) {

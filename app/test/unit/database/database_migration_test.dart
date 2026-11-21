@@ -72,7 +72,7 @@ void main() {
     ''',
       ['trip_123', 'user_abc', '舊行程名稱', 1775563200, 1, '這是舊版專有欄位資料', 1775563200, 'user_abc', 1775563200, 'user_abc'],
     );
-    db.dispose();
+    db.close();
   }
 
   group('DatabaseMigrationManager 遷移整合測試', () {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'message_list_screen.dart';
 import 'poll_list_screen.dart';
 import '../../widgets/responsive_layout.dart';

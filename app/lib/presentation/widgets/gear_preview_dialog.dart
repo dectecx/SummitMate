@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/presentation/utils/gear_utils.dart';

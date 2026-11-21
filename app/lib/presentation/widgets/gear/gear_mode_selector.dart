@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 裝備列表檢視模式
 enum GearListMode { view, edit, sort }

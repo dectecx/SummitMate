@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../screens/beginner_peaks/beginner_peaks_screen.dart';
 

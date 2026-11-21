@@ -2,7 +2,7 @@
 // 注意：完整的 Widget 測試需要 Mock 依賴注入
 // 此處僅提供基礎架構測試範例
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'peak_data.dart';
 
 /// 頁面內容基類，用於 PageView 的多型顯示

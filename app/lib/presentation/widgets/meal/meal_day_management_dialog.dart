@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/meal_plan_day.dart';
 import '../../cubits/meal/meal_cubit.dart';

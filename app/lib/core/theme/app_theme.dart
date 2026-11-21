@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'theme_types.dart';
 import 'i_theme_strategy.dart';
 import 'strategies/nature_theme_strategy.dart';

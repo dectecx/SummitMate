@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 可點擊放大的圖片元件
 /// 點擊後以滿版彈窗形式顯示，支援雙指縮放和拖曳

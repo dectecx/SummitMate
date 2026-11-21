@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 現代化風格的 SliverAppBar (包含動態標題縮排效果)
 class ModernSliverAppBar extends StatelessWidget {

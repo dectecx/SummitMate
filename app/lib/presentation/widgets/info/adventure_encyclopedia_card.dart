@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../screens/info/mountain_list_screen.dart';
 
 class AdventureEncyclopediaCard extends StatelessWidget {

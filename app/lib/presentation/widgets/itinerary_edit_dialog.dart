@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../domain/entities/itinerary_item.dart';
 import 'buttons/summit_destructive_button.dart';
 import 'itinerary_edit_result.dart';

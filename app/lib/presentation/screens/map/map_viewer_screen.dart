@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../widgets/zoomable_image.dart';
 
 /// 地圖檢視器 - 使用統一的 ImageViewerDialog
