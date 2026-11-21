@@ -45,7 +45,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     LogService.info('initState: Requesting store initialization...', source: 'MapScreen');
-    // 確保 Store 已初始化 (MapCubit initLocation is called in app.dart)
+    // 進入地圖畫面時才初始化圖資與定位（避免 App 啟動時就詢問定位權限）
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<OfflineMapCubit>().initStore();
       context.read<MapCubit>().initLocation();

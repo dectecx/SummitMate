@@ -49,7 +49,7 @@ class SummitMateApp extends StatelessWidget {
         BlocProvider(create: (_) => getIt<MessageCubit>()..loadMessages()),
         BlocProvider(create: (_) => getIt<PollCubit>()..loadPolls()),
         BlocProvider(create: (_) => getIt<MealCubit>()),
-        BlocProvider(create: (_) => getIt<MapCubit>()..initLocation()),
+        BlocProvider(create: (_) => getIt<MapCubit>()),
         BlocProvider(create: (_) => getIt<OfflineMapCubit>()),
         BlocProvider(create: (_) => getIt<GroupEventCubit>()),
         BlocProvider(create: (_) => getIt<SettingsCubit>()..loadSettings()),
