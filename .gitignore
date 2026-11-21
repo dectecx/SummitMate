@@ -143,3 +143,34 @@ docker-compose.override.yml
 # Test Outputs
 app/test_output*.txt
 app/test_output*.xml
+
+# legacy app (moved from app/)
+legacy/app_legacy/.dart_tool/
+legacy/app_legacy/.flutter-plugins
+legacy/app_legacy/.flutter-plugins-dependencies
+legacy/app_legacy/.packages
+legacy/app_legacy/.pub-cache/
+legacy/app_legacy/.pub/
+legacy/app_legacy/devtools_options.yaml
+legacy/app_legacy/lib/core/di/injection.config.dart
+legacy/app_legacy/android/.gradle/
+legacy/app_legacy/android/build/
+legacy/app_legacy/android/app/debug/
+legacy/app_legacy/android/app/profile/
+legacy/app_legacy/android/app/release/
+legacy/app_legacy/android/local.properties
+legacy/app_legacy/ios/.symlinks/
+legacy/app_legacy/ios/Pods/
+legacy/app_legacy/ios/Podfile.lock
+legacy/app_legacy/ios/.cocoapods/
+legacy/app_legacy/ios/Runner.xcworkspace/
+legacy/app_legacy/ios/Flutter/Flutter.framework/
+legacy/app_legacy/ios/Flutter/Flutter.podspec
+legacy/app_legacy/ios/Flutter/AdMobLocal.xcconfig
+legacy/app_legacy/web/.dart_tool/
+legacy/app_legacy/web/drift_worker.js*
+legacy/app_legacy/coverage/
+legacy/app_legacy/.test_coverage.dart
+legacy/app_legacy/test_output*.txt
+legacy/app_legacy/test_output*.xml
+!legacy/app_legacy/pubspec.lock
