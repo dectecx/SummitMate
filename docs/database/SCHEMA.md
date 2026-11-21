@@ -2,7 +2,7 @@
 
 ## 1. 概述 (Overview)
 
-本專案後端採用 **PostgreSQL 18** 作為正式資料庫。
+本專案後端採用 **PostgreSQL 19** 作為正式資料庫。
 前端 App 使用 **Drift (SQLite)** 作為本地快取庫 (Offline-First)。
 
 > [!NOTE]

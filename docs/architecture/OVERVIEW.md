@@ -78,7 +78,7 @@ graph LR
 | Tutorial System    | TutorialCubit + Memory Mock Injection             |
 | API Layer (FE)     | Retrofit + Dio + Freezed (Code-Gen)               |
 | DI / Service Loc.  | Injectable + GetIt                                |
-| Backend            | Go 1.26 + Chi v5 + PostgreSQL                     |
+| Backend            | Go 1.27 + Chi v5 + PostgreSQL                     |
 | API Style          | OpenAPI 3.0 (Code-Gen via oapi-codegen)           |
 | Authentication     | JWT (Access 1h + Refresh 14d) + Token 黑名單      |
 | Cache              | 可抽換 (Memory / Redis，`CACHE_TYPE` 切換)        |

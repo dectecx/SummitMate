@@ -16,9 +16,9 @@ SummitMate is an **Offline-First** mountain trekking and trip management system 
   - **Networking & Serialization**: Retrofit, Dio, Freezed, JSON Serializable
   - **Dependency Injection**: Injectable & GetIt
 - **Backend (`backend/`)**:
-  - **Language & Runtime**: Go 1.26
+  - **Language & Runtime**: Go 1.27
   - **Web Framework**: Chi Router
-  - **Database & Storage**: PostgreSQL 18 with `pgx` connection pooling
+  - **Database & Storage**: PostgreSQL 19 with `pgx` connection pooling
   - **Architecture**: Domain-Driven Design (DDD) (`internal/<domain>/`: Handler -> Service -> Repository)
   - **API Specification**: OpenAPI 3.0.3 Spec-First (`backend/api/openapi.yaml`) with `oapi-codegen`
 
