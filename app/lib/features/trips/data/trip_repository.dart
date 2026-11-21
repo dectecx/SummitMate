@@ -112,6 +112,55 @@ class TripRepository {
       await item(1, '向陽山屋', 12 * 60, 2850, 2.2, note: '午餐、整理裝備。');
       await item(2, '向陽山屋', 6 * 60, 2850, 0);
       await item(2, '向陽登山口', 10 * 60, 2300, 4.3, note: '下山，記得帶走垃圾。');
+
+      // A small packing list and meal plan so the other tabs are not empty (all local, like the rest).
+      var order = 0;
+      Future<void> gear(String name, double grams, String category, {int quantity = 1, bool packed = false}) =>
+          _db.into(_db.gearItems).insert(
+            GearItemsCompanion.insert(
+              id: _uuid.v7(),
+              tripId: id,
+              name: Value(name),
+              weight: Value(grams),
+              category: Value(category),
+              quantity: Value(quantity),
+              isChecked: Value(packed),
+              sortOrder: Value(order++),
+            ),
+          );
+      await gear('睡袋', 900, 'sleep', packed: true);
+      await gear('睡墊', 450, 'sleep');
+      await gear('爐頭與瓦斯', 380, 'cook');
+      await gear('保暖外套', 520, 'clothing', packed: true);
+      await gear('頭燈', 90, 'electronics');
+      await gear('急救包', 250, 'safety');
+
+      Future<String> day(int index) async {
+        final dayId = _uuid.v7();
+        await _db.into(_db.mealPlanDays).insert(MealPlanDaysCompanion.insert(id: dayId, tripId: id, name: Value('D$index'), dayIndex: Value(index)));
+        return dayId;
+      }
+
+      Future<void> meal(String dayId, String type, String name, double grams, double kcal, {int quantity = 1}) =>
+          _db.into(_db.mealItems).insert(
+            MealItemsCompanion.insert(
+              id: _uuid.v7(),
+              tripId: id,
+              mealPlanDayId: dayId,
+              mealType: Value(type),
+              name: Value(name),
+              weight: Value(grams),
+              calories: Value(kcal),
+              quantity: Value(quantity),
+            ),
+          );
+      final d1 = await day(1);
+      await meal(d1, 'lunch', '飯糰', 180, 320, quantity: 2);
+      await meal(d1, 'dinner', '泡麵加蛋', 120, 450);
+      await meal(d1, 'snack', '能量棒', 50, 220, quantity: 3);
+      final d2 = await day(2);
+      await meal(d2, 'breakfast', '燕麥粥', 80, 300);
+      await meal(d2, 'snack', '堅果', 40, 250);
     });
     return id;
   }

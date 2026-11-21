@@ -4,6 +4,10 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../shared/coming_soon.dart';
+import '../../gear/ui/gear_form_sheet.dart';
+import '../../gear/ui/gear_view.dart';
+import '../../meals/ui/meal_form_sheet.dart';
+import '../../meals/ui/meals_view.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
 import 'itinerary_view.dart';
@@ -22,6 +26,7 @@ class TripDetailPage extends ConsumerStatefulWidget {
 class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTickerProviderStateMixin {
   late final TabController _tabs = TabController(length: 4, vsync: this)..addListener(() => setState(() {}));
   int? _day;
+  int _mealDay = 1;
 
   @override
   void dispose() {
@@ -48,7 +53,6 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
     }
     final role = ref.watch(myRoleProvider(trip.id)) ?? TripRole.member;
     final day = _day ?? _initialDay(trip);
-    final onItinerary = _tabs.index == 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -76,18 +80,30 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
         controller: _tabs,
         children: [
           ItineraryView(trip: trip, role: role, day: day, onDayChanged: (d) => setState(() => _day = d)),
-          const ComingSoon(icon: Icons.checklist, message: '裝備清單即將推出'),
-          const ComingSoon(icon: Icons.restaurant, message: '餐食規劃即將推出'),
+          GearView(tripId: trip.id),
+          MealsView(trip: trip, day: _mealDay, onDayChanged: (d) => setState(() => _mealDay = d)),
           const ComingSoon(icon: Icons.group_outlined, message: '成員與天氣即將推出'),
         ],
       ),
-      floatingActionButton: onItinerary && role.canEditShared
-          ? FloatingActionButton.extended(
-              onPressed: () => showItemFormSheet(context, trip: trip, initialDay: day),
-              icon: const Icon(Icons.add_location_alt_outlined),
-              label: const Text('新增節點'),
-            )
-          : null,
+      floatingActionButton: switch (_tabs.index) {
+        0 when role.canEditShared => FloatingActionButton.extended(
+          onPressed: () => showItemFormSheet(context, trip: trip, initialDay: day),
+          icon: const Icon(Icons.add_location_alt_outlined),
+          label: const Text('新增節點'),
+        ),
+        // Gear and meals are the person's own data: everyone may edit them.
+        1 => FloatingActionButton.extended(
+          onPressed: () => showGearFormSheet(context, tripId: trip.id),
+          icon: const Icon(Icons.add),
+          label: const Text('新增裝備'),
+        ),
+        2 => FloatingActionButton.extended(
+          onPressed: () => showMealFormSheet(context, tripId: trip.id, dayIndex: _mealDay),
+          icon: const Icon(Icons.add),
+          label: const Text('新增餐點'),
+        ),
+        _ => null,
+      },
     );
   }
 
