@@ -48,7 +48,7 @@ All API additions or modifications must adhere to the Spec-First workflow:
    - Update Repository interface and SQL implementation.
    - Update Service interface and business logic.
    - Update Handler to bind request and invoke Service.
-4. **Register Router**: Ensure new endpoints are mounted in `backend/internal/app/api/`.
+4. **Register Router**: Ensure new endpoints are mounted in the router in `backend/internal/` (see `docs/architecture/DATA_SYNC_AUTH.md`).
 5. **Write Unit Tests**: Cover Service and Repository layers with automated tests.
 
 ## Initial Development Phase Database Convention

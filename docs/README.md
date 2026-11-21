@@ -1,87 +1,19 @@
-# SummitMate 文件索引
+# SummitMate 文件索引（重建版）
 
-> SummitMate 是一款 **Offline-First** 登山行程管理應用 (Flutter)，搭配 Go + PostgreSQL 後端。
->
-> **單一可信源 (Single Source of Truth)**：
-> - 資料庫結構以 `backend/migrations/` 為準，並由 [Schema](./database/SCHEMA.md) 同步說明。
-> - API 端點以 `backend/api/openapi.yaml` 為準，並由 [API Contract](./api/CONTRACT.md) 同步說明。
->
-> _最後校對：2026-06_
+> 專案正在重建。舊版文件與 skill 保存在 `legacy/docs/`、`legacy/skills/`，僅作參考，內容可能與新設計不一致。
 
-## 架構
+## 目前有效的文件
 
-| 文件                                            | 說明                        |
-| :---------------------------------------------- | :-------------------------- |
-| [系統概覽](./architecture/OVERVIEW.md)          | 資料流、技術堆疊            |
-| [專案結構](./architecture/PROJECT_STRUCTURE.md) | Frontend + Backend 目錄結構 |
-| [模組關聯圖](./architecture/MODULE_DIAGRAM.md)  | 分層架構圖                  |
-| [離線架構](./architecture/OFFLINE.md)           | Offline-First 設計          |
-| [認證架構](./architecture/AUTH.md)              | JWT、RBAC、登入流程         |
+| 文件 | 說明 |
+| :-- | :-- |
+| [重建盤點](./project/REBUILD_INVENTORY.md) | 舊系統功能盤點與取捨決策 |
+| [技術決策](./project/TECH_DECISIONS.md) | 前後端技術選型 |
+| [新手引導與導覽](./ui/ONBOARDING_NAVIGATION.md) | 導覽結構、歡迎頁、情境提示 |
+| [資料庫、同步與 Auth](./architecture/DATA_SYNC_AUTH.md) | 資料表、Outbox 同步、認證與訪客模式 |
+| [隱私權政策](./security/PRIVACY_POLICY.md) | |
 
----
+## 單一可信源（SSOT）
 
-## 資料庫
-
-| 文件                           | 說明             |
-| :----------------------------- | :--------------- |
-| [Schema](./database/SCHEMA.md) | 資料表定義       |
-| [同步機制](./database/SYNC.md) | 同步流程、狀態機 |
-
----
-
-## API
-
-| 文件                          | 說明              |
-| :---------------------------- | :---------------- |
-| [API 合約](./api/CONTRACT.md) | 所有 API 端點規格 |
-
----
-
-## 安全與權限
-
-| 文件                                     | 說明               |
-| :--------------------------------------- | :----------------- |
-| [權限規格](./security/PERMISSIONS.md)    | RBAC、行程成員角色 |
-| [隱私政策](./security/PRIVACY_POLICY.md) | 隱私權聲明         |
-
----
-
-## UI 設計
-
-| 文件                                  | 說明               |
-| :------------------------------------ | :----------------- |
-| [導航流程](./ui/NAVIGATION.md)        | 畫面導航圖         |
-| [畫面設計](./ui/SCREENS.md)           | 關鍵畫面 Wireframe |
-| [設計準則](./ui/DESIGN_GUIDELINES.md) | 色彩、間距、元件   |
-
----
-
-## 部署
-
-| 文件                                       | 說明                      |
-| :----------------------------------------- | :------------------------ |
-| [部署指南](./deployment/GUIDE.md)          | Go Backend + Flutter 部署 |
-| [廣告整合](./deployment/AD_INTEGRATION.md) | AdMob 設定                |
-
----
-
-## 專案管理
-
-| 文件                               | 說明           |
-| :--------------------------------- | :------------- |
-| [開發路線圖](./project/ROADMAP.md) | 開發進度與規劃 |
-
----
-
-## 快速連結
-
-```mermaid
-graph LR
-    A[README] --> B[architecture/]
-    A --> C[database/]
-    A --> D[api/]
-    A --> E[security/]
-    A --> F[ui/]
-    A --> G[deployment/]
-    A --> H[project/]
-```
+- 資料庫結構：`backend/migrations/000001_init_schema.up.sql`
+- API 契約：`backend/api/openapi.yaml`
+- 設計與決策：上表文件（程式碼完成後，會補上對應的結構說明）
