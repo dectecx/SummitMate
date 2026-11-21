@@ -11,6 +11,7 @@ Future<String?> showTripFormSheet(BuildContext context, {Trip? trip}) {
   return showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     showDragHandle: true,
     builder: (_) => TripFormSheet(trip: trip),
   );

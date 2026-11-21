@@ -12,6 +12,7 @@ Future<void> showItemFormSheet(BuildContext context, {required Trip trip, Itiner
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     showDragHandle: true,
     builder: (_) => ItemFormSheet(trip: trip, item: item, initialDay: initialDay, readOnly: readOnly),
   );
