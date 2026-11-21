@@ -103,30 +103,12 @@ class MapCubit extends Cubit<MapState> with SafeEmitMixin<MapState> {
         safeEmit((state as MapLoaded).copyWith(isLoading: true));
       }
 
-      // Web 必須使用 withData: true
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['gpx'],
-        withData: true,
-      );
+      // file_picker 13+：以 pickFile 選檔，內容由 PlatformFile.readAsBytes() 讀取（Web 與行動裝置皆適用）
+      final PlatformFile? file = await FilePicker.pickFile(type: FileType.custom, allowedExtensions: ['gpx']);
 
-      if (result != null && (result.files.single.bytes != null || result.files.single.path != null)) {
-        final Uint8List? bytes = result.files.single.bytes;
-        String xmlString = '';
-
-        if (bytes != null) {
-          xmlString = utf8.decode(bytes);
-        } else if (!kIsWeb && result.files.single.path != null) {
-          // 備案: 若 Mobile 未取得 bytes (雖然 withData: true 應該要有)，則從路徑讀取
-          // 但為了完全避免 dart:io，我們應該優先信任 bytes。
-          // 這裡我們假設 withData: true 運作正常。
-          // 如果真的需要讀取路徑，必須封裝到 PlatformService。
-          LogService.warning(
-            'GPX bytes are null, but path is available. withData: true might be failing.',
-            source: 'MapCubit',
-          );
-          // xmlString = await File(result.files.single.path!).readAsString(); // <-- Still problematic if we want to remove dart:io import
-        }
+      if (file != null) {
+        final Uint8List bytes = await file.readAsBytes();
+        final String xmlString = utf8.decode(bytes);
 
         if (xmlString.isEmpty) {
           throw Exception('無法讀取檔案內容 (Empty content)');
