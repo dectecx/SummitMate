@@ -19,8 +19,9 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.11.1" apply false
-    id("org.jetbrains.kotlin.android") version "2.2.20" apply false
+    id("com.android.application") version "9.3.1" apply false
+    // Pins the Kotlin Gradle plugin used by third-party plugins that still apply KGP (e.g. objectbox_flutter_libs)
+    id("org.jetbrains.kotlin.android") version "2.4.20" apply false
 }
 
 include(":app")
