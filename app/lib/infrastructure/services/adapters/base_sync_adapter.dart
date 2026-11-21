@@ -16,6 +16,10 @@ abstract class BaseSyncAdapter<T extends SyncableEntity> implements ISyncAdapter
   /// 本地資料庫，供通用的 `markAsSynced`／`markAsError` 與 ID 遷移 transaction。
   AppDatabase get db;
 
+  /// 繼承 Base 的 adapter 都以 `syncStatus` 管理 pending，資料表必有 `sync_status` 欄位。
+  @override
+  bool get tracksSyncStatus => true;
+
   // ──────────────────────────────────────────
   // Push hooks
   // ──────────────────────────────────────────

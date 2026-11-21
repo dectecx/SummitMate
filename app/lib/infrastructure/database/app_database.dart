@@ -60,6 +60,9 @@ class AppDatabase extends _$AppDatabase {
 
   AppDatabase() : super(_openConnection());
 
+  /// 測試用：以指定的 executor（例如記憶體資料庫）建立。
+  AppDatabase.forTesting(super.executor);
+
   @override
   int get schemaVersion => 1;
 

@@ -20,6 +20,10 @@ class MealSyncAdapter implements ISyncAdapter {
   @override
   String get tableName => 'meal_plan_days_table';
 
+  /// 糧食天數為遠端權威，資料表沒有 `sync_status` 欄位。
+  @override
+  bool get tracksSyncStatus => false;
+
   // ── Push (no-op) ──
 
   @override

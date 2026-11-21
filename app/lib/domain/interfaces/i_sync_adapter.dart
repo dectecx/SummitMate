@@ -7,6 +7,12 @@ abstract interface class ISyncAdapter {
   /// 對應的 Drift 資料表名稱（供待同步計數與 `markAsSynced`／`markAsError`）。
   String get tableName;
 
+  /// 對應資料表是否有 `sync_status` 欄位。
+  ///
+  /// 遠端權威的 Pull-only 資料表（例如糧食天數）不會有待同步項目，也沒有該欄位，
+  /// 此時應回傳 false，引擎不會對它查詢待同步計數。
+  bool get tracksSyncStatus;
+
   /// 推送本地所有待同步項目（`syncStatus != synced`）到遠端。
   ///
   /// 負責讀取 pending、依狀態 push、處理 ID 遷移與標記 synced/error，

@@ -320,7 +320,7 @@ class SyncEngine implements ISyncEngine {
   Stream<int> watchPendingSyncCount() {
     // 依已註冊 adapter 的表名動態組成單一 UNION ALL 查詢，
     // 避免多個獨立 Stream 造成並發查詢風暴。
-    final names = _adapters.map((a) => a.tableName).toList();
+    final names = _adapters.where((a) => a.tracksSyncStatus).map((a) => a.tableName).toList();
     final union = names
         .map((n) => "SELECT COUNT(*) AS cnt FROM $n WHERE sync_status != 'synced'")
         .join('\n        UNION ALL\n        ');
@@ -334,6 +334,11 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Stream<SyncStatus> watchSyncStatus(String table) {
+    final untracked = _adapters.any((a) => a.tableName == table && !a.tracksSyncStatus);
+    if (untracked) {
+      // 沒有 sync_status 欄位的資料表只會有「同步中」或「已同步」
+      return _syncingTables.stream.map((syncing) => syncing.contains(table) ? SyncStatus.syncing : SyncStatus.synced);
+    }
     return Rx.combineLatest2(
       _syncingTables.stream,
       _db.customSelect('''

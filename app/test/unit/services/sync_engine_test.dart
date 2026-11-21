@@ -47,6 +47,7 @@ void main() {
     mockSettings = MockSettings();
 
     when(() => mockAdapter.tableName).thenReturn('mock_table');
+    when(() => mockAdapter.tracksSyncStatus).thenReturn(true);
     when(() => mockSettingsRepo.watchSettings()).thenAnswer((_) => const Stream.empty());
     when(() => mockSettings.autoSyncIntervalMinutes).thenReturn(15);
     when(() => mockSettingsRepo.getSettings()).thenAnswer((_) async => mockSettings);
