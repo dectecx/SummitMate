@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:injectable/injectable.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../../infrastructure/tools/log_service.dart';
@@ -25,6 +27,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
       await _localDataSource.saveEmail(user.email);
       await _localDataSource.saveUsername(user.displayName);
       await _localDataSource.saveAvatar(user.avatar);
+      await _localDataSource.saveProfileJson(jsonEncode(user.toJson()));
       if (refreshToken != null) {
         await _localDataSource.saveRefreshToken(refreshToken);
       }
@@ -73,6 +76,12 @@ class AuthSessionRepository implements IAuthSessionRepository {
   @override
   Future<UserProfile?> getUserProfile() async {
     try {
+      // 優先使用完整資料（含角色、權限、驗證狀態）
+      final profileJson = await _localDataSource.getProfileJson();
+      if (profileJson != null) {
+        return UserProfile.fromJson(jsonDecode(profileJson) as Map<String, dynamic>);
+      }
+
       final userId = await _localDataSource.getUserId();
       final email = await _localDataSource.getEmail();
       final username = await _localDataSource.getUsername();

@@ -37,7 +37,32 @@ Map<String, dynamic> createUserJson({
   String name = 'Test User',
   String avatar = '🐻',
 }) {
-  return {'id': id, 'email': email, 'display_name': name, 'avatar': avatar};
+  return {
+    'id': id,
+    'email': email,
+    'display_name': name,
+    'avatar': avatar,
+    'role_id': 'role-1',
+    'role': 'guide',
+    'permissions': ['trip.view', 'trip.edit'],
+    'is_verified': true,
+  };
+}
+
+/// 後端的結構化錯誤回應，例如 {"error": {"type": "auth_error", "code": "...", "message": "..."}}
+DioException apiError({required int status, required String type, required String code, required String message}) {
+  final options = RequestOptions(path: '/test');
+  return DioException(
+    requestOptions: options,
+    type: DioExceptionType.badResponse,
+    response: Response(
+      requestOptions: options,
+      statusCode: status,
+      data: {
+        'error': {'type': type, 'code': code, 'message': message},
+      },
+    ),
+  );
 }
 
 class FakeUserProfile extends Fake implements UserProfile {}
@@ -73,20 +98,15 @@ void main() {
 
   group('AuthService.register', () {
     test(
-      'Given valid registration, When calling AuthService.register, Then returns success and saves session',
+      'Given valid registration, When calling AuthService.register, Then it requires verification and stores no session',
       () async {
-        final userJson = createUserJson();
-        final responseData = {'user': userJson, 'token': 'test-token'};
-
         when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/auth/register'),
-            data: responseData,
+            data: {'user': createUserJson(), 'token': 'must-be-ignored'},
             statusCode: 201,
           ),
         );
-
-        when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
 
         final result = await authService.register(
           email: 'test@example.com',
@@ -95,53 +115,112 @@ void main() {
         );
 
         expect(result.isSuccess, isTrue);
+        expect(result.requiresVerification, isTrue);
         expect(result.user?.id, 'test-uuid');
-        expect(result.accessToken, 'test-token');
-        verify(() => mockSessionRepo.saveSession('test-token', any())).called(1);
+        expect(result.accessToken, isNull);
+        verifyNever(() => mockSessionRepo.saveSession(any(), any(), refreshToken: any(named: 'refreshToken')));
       },
     );
 
-    test('Given API error, When calling AuthService.register, Then returns failure', () async {
+    test(
+      'Given a duplicate email, When calling AuthService.register, Then it returns the backend error code',
+      () async {
+        when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenThrow(
+          apiError(status: 409, type: 'business_logic_error', code: 'email_already_exists', message: '此 Email 已經被註冊'),
+        );
+
+        final result = await authService.register(
+          email: 'test@example.com',
+          password: 'password123',
+          displayName: 'Test',
+        );
+
+        expect(result.isSuccess, isFalse);
+        expect(result.errorCode, 'email_already_exists');
+        expect(result.errorMessage, '此 Email 已經被註冊');
+      },
+    );
+
+    test('Given an unexpected status, When calling AuthService.register, Then it returns a generic failure', () async {
       when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/register'),
-          data: {'error': 'Email already exists'},
-          statusCode: 400,
+          data: {'oops': true},
+          statusCode: 202,
         ),
       );
 
       final result = await authService.register(
         email: 'test@example.com',
         password: 'password123',
-        displayName: 'Test User',
+        displayName: 'Test',
       );
 
       expect(result.isSuccess, isFalse);
-      expect(result.errorMessage, contains('Email already exists'));
+      expect(result.errorCode, 'REGISTRATION_FAILED');
     });
   });
 
   group('AuthService.login', () {
-    test('Given valid login, When calling AuthService.login, Then returns success and saves session', () async {
-      final userJson = createUserJson();
-      final responseData = {'user': userJson, 'token': 'login-token'};
-
+    test('Given valid login, When calling AuthService.login, Then it saves the session with both tokens', () async {
       when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/login'),
-          data: responseData,
+          data: {'user': createUserJson(), 'token': 'login-token', 'refresh_token': 'login-refresh'},
           statusCode: 200,
         ),
       );
-
-      when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
+      when(
+        () => mockSessionRepo.saveSession(any(), any(), refreshToken: any(named: 'refreshToken')),
+      ).thenAnswer((_) async {});
 
       final result = await authService.login(email: 'test@example.com', password: 'password123');
 
       expect(result.isSuccess, isTrue);
       expect(result.user?.email, 'test@example.com');
       expect(result.accessToken, 'login-token');
-      verify(() => mockSessionRepo.saveSession('login-token', any())).called(1);
+      verify(() => mockSessionRepo.saveSession('login-token', any(), refreshToken: 'login-refresh')).called(1);
+    });
+
+    test('Given a login response, When parsing it, Then role, permissions and verification are kept', () async {
+      when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/auth/login'),
+          data: {'user': createUserJson(), 'token': 't', 'refresh_token': 'r'},
+          statusCode: 200,
+        ),
+      );
+      when(
+        () => mockSessionRepo.saveSession(any(), any(), refreshToken: any(named: 'refreshToken')),
+      ).thenAnswer((_) async {});
+
+      final result = await authService.login(email: 'test@example.com', password: 'password123');
+
+      expect(result.user?.role, 'guide');
+      expect(result.user?.permissions, ['trip.view', 'trip.edit']);
+      expect(result.user?.isVerified, isTrue);
+    });
+
+    test('Given an unverified account, When logging in, Then it surfaces the email_not_verified code', () async {
+      when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenThrow(
+        apiError(status: 403, type: 'auth_error', code: 'email_not_verified', message: 'Email 尚未驗證，請先完成信箱驗證'),
+      );
+
+      final result = await authService.login(email: 'test@example.com', password: 'password123');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, 'email_not_verified');
+      verifyNever(() => mockSessionRepo.saveSession(any(), any(), refreshToken: any(named: 'refreshToken')));
+    });
+
+    test('Given a disabled account, When logging in, Then it surfaces the account_disabled code', () async {
+      when(
+        () => mockApiClient.post(any(), data: any(named: 'data')),
+      ).thenThrow(apiError(status: 403, type: 'auth_error', code: 'account_disabled', message: '帳號已停用'));
+
+      final result = await authService.login(email: 'test@example.com', password: 'password123');
+
+      expect(result.errorCode, 'account_disabled');
     });
   });
 
@@ -238,17 +317,19 @@ void main() {
       when(() => mockApiClient.post('/auth/refresh', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/refresh'),
-          data: {'token': 'new-token', 'user': createUserJson()},
+          data: {'token': 'new-token', 'refresh_token': 'new-refresh', 'user': createUserJson()},
           statusCode: 200,
         ),
       );
-      when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
+      when(
+        () => mockSessionRepo.saveSession(any(), any(), refreshToken: any(named: 'refreshToken')),
+      ).thenAnswer((_) async {});
 
       final result = await authService.refreshToken();
 
       expect(result.isSuccess, isTrue);
       expect(result.accessToken, 'new-token');
-      verify(() => mockSessionRepo.saveSession('new-token', any())).called(1);
+      verify(() => mockSessionRepo.saveSession('new-token', any(), refreshToken: 'new-refresh')).called(1);
     });
   });
 

@@ -9,6 +9,9 @@ import 'package:summitmate/domain/domain.dart';
 import 'jwt_token_validator.dart';
 import '../tools/log_service.dart';
 import 'package:dio/dio.dart';
+import '../../data/api/mappers/user_api_mapper.dart';
+import '../../data/api/models/auth_api_models.dart';
+import '../../data/api/models/user_api_models.dart';
 import '../database/app_database.dart';
 
 /// 認證服務
@@ -93,41 +96,16 @@ class AuthService implements IAuthService {
 
       final response = await _apiClient.post(
         '/auth/register',
-        data: {'email': email, 'password': password, 'display_name': displayName},
+        data: RegisterRequest(email: email, password: password, displayName: displayName, avatar: avatar).toJson(),
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         LogService.info('註冊成功', source: _source);
-
-        final data = response.data as Map<String, dynamic>;
-
-        // AuthResponse 回傳 { "token": "...", "user": {...} }
-        if (data['user'] != null) {
-          final userData = data['user'] as Map<String, dynamic>;
-          // Map backend User struct fields to App UserProfile
-          final user = UserProfile(
-            id: userData['id'] ?? '',
-            email: userData['email'] ?? email,
-            displayName: userData['display_name'] ?? displayName,
-            avatar: userData['avatar'] ?? avatar ?? '',
-          );
-          final accessToken = data['token'] as String?;
-          final refreshToken = data['refresh_token'] as String?;
-
-          if (accessToken != null) {
-            await _sessionRepo.saveSession(accessToken, user, refreshToken: refreshToken);
-            _notifyAuthState(user);
-            return AuthResult.success(user: user, accessToken: accessToken);
-          }
-          return AuthResult.success(user: user);
-        }
-
-        return AuthResult.success(user: null);
-      } else {
-        // ErrorResponse { "error": "msg" }
-        final msg = response.data is Map ? response.data['error'] : 'Unknown Error';
-        return AuthResult.failure(errorCode: 'REGISTRATION_FAILED', errorMessage: msg ?? '註冊失敗');
+        final registered = RegisterResponse.fromJson(response.data as Map<String, dynamic>);
+        // 註冊不會簽發 Token：必須先以 Email 驗證碼完成驗證，之後才能登入
+        return AuthResult.requiresVerification(user: UserApiMapper.fromResponse(registered.user));
       }
+      return AuthResult.failure(errorCode: 'REGISTRATION_FAILED', errorMessage: '註冊失敗');
     } on DioException catch (e) {
       final apiError = AppErrorHandler.parseApiException(e);
       return AuthResult.failure(
@@ -146,34 +124,22 @@ class AuthService implements IAuthService {
       LogService.info('嘗試登入: $email', source: _source);
       _isOfflineMode = false;
 
-      final response = await _apiClient.post('/auth/login', data: {'email': email, 'password': password});
+      final response = await _apiClient.post(
+        '/auth/login',
+        data: LoginRequest(email: email, password: password).toJson(),
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data as Map<String, dynamic>;
+        final auth = AuthResponse.fromJson(response.data as Map<String, dynamic>);
+        final user = UserApiMapper.fromResponse(auth.user);
 
-        if (data['user'] == null || data['token'] == null) {
-          return AuthResult.failure(errorCode: 'DATA_ERROR', errorMessage: '伺服器回傳資料異常');
-        }
-
-        final userData = data['user'] as Map<String, dynamic>;
-        final user = UserProfile(
-          id: userData['id'] ?? '',
-          email: userData['email'] ?? email,
-          displayName: userData['display_name'] ?? '',
-          avatar: userData['avatar'] ?? '',
-        );
-        final accessToken = data['token'] as String;
-        final refreshToken = data['refresh_token'] as String?;
-
-        await _sessionRepo.saveSession(accessToken, user, refreshToken: refreshToken);
+        await _sessionRepo.saveSession(auth.token, user, refreshToken: auth.refreshToken);
         _notifyAuthState(user);
 
         LogService.info('登入成功: ${user.email}', source: _source);
-        return AuthResult.success(user: user, accessToken: accessToken);
-      } else {
-        final msg = response.data is Map ? response.data['error'] : 'Unknown Error';
-        return AuthResult.failure(errorCode: 'LOGIN_FAILED', errorMessage: msg ?? '登入失敗');
+        return AuthResult.success(user: user, accessToken: auth.token, refreshToken: auth.refreshToken);
       }
+      return AuthResult.failure(errorCode: 'LOGIN_FAILED', errorMessage: '登入失敗');
     } on OfflineException {
       return await _tryOfflineLogin(email);
     } on DioException catch (e) {
@@ -221,7 +187,10 @@ class AuthService implements IAuthService {
   Future<AuthResult> verifyEmail({required String email, required String code}) async {
     // TODO: 待後端實作 SMTP 或其他發信驗證邏輯後，再正式串接。目前後端僅開啟了介面 (Stub)，尚未實作內容。
     try {
-      final response = await _apiClient.post('/auth/verify-email', data: {'email': email, 'code': code});
+      final response = await _apiClient.post(
+        '/auth/verify-email',
+        data: VerifyEmailRequest(email: email, code: code).toJson(),
+      );
 
       if (response.statusCode == 200) {
         return AuthResult.success();
@@ -246,7 +215,10 @@ class AuthService implements IAuthService {
   Future<AuthResult> resendVerificationCode({required String email}) async {
     // TODO: 待後端實作 SMTP 或其他發信驗證邏輯後，再正式串接。目前後端僅開啟了介面 (Stub)，尚未實作內容。
     try {
-      final response = await _apiClient.post('/auth/resend-verification', data: {'email': email});
+      final response = await _apiClient.post(
+        '/auth/resend-verification',
+        data: ResendVerificationRequest(email: email).toJson(),
+      );
 
       if (response.statusCode == 200) {
         return AuthResult.success();
@@ -278,13 +250,7 @@ class AuthService implements IAuthService {
       final response = await _apiClient.get('/auth/me');
 
       if (response.statusCode == 200) {
-        final userData = response.data as Map<String, dynamic>;
-        final user = UserProfile(
-          id: userData['id'] ?? '',
-          email: userData['email'] ?? '',
-          displayName: userData['display_name'] ?? '',
-          avatar: userData['avatar'] ?? '',
-        );
+        final user = UserApiMapper.fromResponse(UserResponse.fromJson(response.data as Map<String, dynamic>));
 
         await _sessionRepo.saveSession(token, user);
         _notifyAuthState(user);
@@ -329,27 +295,20 @@ class AuthService implements IAuthService {
     _ongoingRefreshFuture = completer.future;
 
     try {
-      final response = await _apiClient.post('/auth/refresh', data: {'refresh_token': currentRefreshToken});
+      final response = await _apiClient.post(
+        '/auth/refresh',
+        data: RefreshTokenRequest(refreshToken: currentRefreshToken).toJson(),
+      );
 
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        final newAccessToken = data['token'] as String?;
-        final newRefreshToken = data['refresh_token'] as String?;
-        final userData = data['user'] as Map<String, dynamic>?;
+        final auth = AuthResponse.fromJson(response.data as Map<String, dynamic>);
+        final user = UserApiMapper.fromResponse(auth.user);
 
-        if (newAccessToken != null && userData != null) {
-          final user = UserProfile(
-            id: userData['id'] ?? '',
-            email: userData['email'] ?? '',
-            displayName: userData['display_name'] ?? '',
-            avatar: userData['avatar'] ?? '',
-          );
-          await _sessionRepo.saveSession(newAccessToken, user, refreshToken: newRefreshToken);
-          _notifyAuthState(user);
-          final res = AuthResult.success(user: user, accessToken: newAccessToken);
-          completer.complete(res);
-          return res;
-        }
+        await _sessionRepo.saveSession(auth.token, user, refreshToken: auth.refreshToken);
+        _notifyAuthState(user);
+        final res = AuthResult.success(user: user, accessToken: auth.token);
+        completer.complete(res);
+        return res;
       }
 
       await logout();
@@ -405,34 +364,24 @@ class AuthService implements IAuthService {
   @override
   Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
     try {
-      final data = <String, dynamic>{};
-      if (displayName != null) data['display_name'] = displayName;
-      if (avatar != null) data['avatar'] = avatar;
+      if (displayName == null && avatar == null) return AuthResult.success();
 
-      if (data.isEmpty) return AuthResult.success();
-
-      final response = await _apiClient.put('/auth/me', data: data);
+      final response = await _apiClient.put(
+        '/auth/me',
+        data: UserUpdateRequest(displayName: displayName, avatar: avatar).toJson(),
+      );
 
       if (response.statusCode == 200) {
-        final userData = response.data as Map<String, dynamic>;
+        final updated = UserResponse.fromJson(response.data as Map<String, dynamic>);
 
-        // Update cached profile
-        final oldUser = await getCachedUserProfile();
-        if (oldUser != null) {
-          final newUser = UserProfile(
-            id: oldUser.id,
-            email: oldUser.email,
-            displayName: userData['display_name'] ?? oldUser.displayName,
-            avatar: userData['avatar'] ?? oldUser.avatar,
-          );
-          final token = await getAccessToken();
-          if (token != null) {
-            await _sessionRepo.saveSession(token, newUser);
-          }
-          _notifyAuthState(newUser);
-          return AuthResult.success(user: newUser, accessToken: token);
+        // 以伺服器回傳的資料為準，更新快取的使用者資料
+        final newUser = UserApiMapper.fromResponse(updated);
+        final token = await getAccessToken();
+        if (token != null) {
+          await _sessionRepo.saveSession(token, newUser);
         }
-        return AuthResult.success();
+        _notifyAuthState(newUser);
+        return AuthResult.success(user: newUser, accessToken: token);
       }
       return AuthResult.failure(errorCode: 'UPDATE_FAILED', errorMessage: '更新資料失敗');
     } on DioException catch (e) {
@@ -458,9 +407,10 @@ class AuthService implements IAuthService {
     try {
       final token = await _sessionRepo.getAccessToken();
       if (token != null) {
-        // 0. 通知後端註銷 Token (發送登出請求)
+        // 0. 通知後端註銷 Token (連同 refresh token，避免登出後仍可換發新 Token)
         try {
-          await _apiClient.post('/auth/logout');
+          final refreshToken = await _sessionRepo.getRefreshToken();
+          await _apiClient.post('/auth/logout', data: LogoutRequest(refreshToken: refreshToken).toJson());
           LogService.info('後端 Token 註銷成功', source: _source);
         } catch (e) {
           // 離線或伺服器異常時，僅記錄 Log，本地端仍繼續執行登出
@@ -494,16 +444,14 @@ class AuthService implements IAuthService {
       LogService.info('嘗試修改密碼', source: _source);
       final response = await _apiClient.post(
         '/auth/change-password',
-        data: {'old_password': oldPassword, 'new_password': newPassword},
+        data: ChangePasswordRequest(oldPassword: oldPassword, newPassword: newPassword).toJson(),
       );
 
       if (response.statusCode == 200) {
         LogService.info('密碼修改成功', source: _source);
         return AuthResult.success();
-      } else {
-        final msg = response.data is Map ? response.data['error'] : 'Unknown Error';
-        return AuthResult.failure(errorCode: 'PASSWORD_CHANGE_FAILED', errorMessage: msg ?? '修改密碼失敗');
       }
+      return AuthResult.failure(errorCode: 'PASSWORD_CHANGE_FAILED', errorMessage: '修改密碼失敗');
     } on DioException catch (e) {
       final apiError = AppErrorHandler.parseApiException(e);
       return AuthResult.failure(

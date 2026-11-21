@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 
+import '../../../core/error/app_error_codes.dart';
 import '../../../core/error/app_error_handler.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -114,10 +115,10 @@ class AuthCubit extends Cubit<AuthState> with SafeEmitMixin<AuthState> {
       final result = await _authService.login(email: email, password: password);
 
       if (result.isSuccess) {
-        if (result.user != null && !result.user!.isVerified) {
-          safeEmit(AuthRequiresVerification(email));
-        }
         // 成功路徑會經由 Stream 自動發送 AuthAuthenticated
+      } else if (result.errorCode == AppErrorCodes.emailNotVerified) {
+        // 後端不會替未驗證的帳號簽發 Token，導向驗證畫面
+        safeEmit(AuthRequiresVerification(email));
       } else {
         safeEmit(AuthError(result.errorMessage ?? '登入失敗'));
       }

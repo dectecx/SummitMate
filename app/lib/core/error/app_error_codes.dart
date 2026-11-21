@@ -10,6 +10,10 @@ class AppErrorCodes {
   static const String tokenExpired = 'token_expired';
   static const String invalidVerificationCode = 'invalid_verification_code';
   static const String verificationCodeExpired = 'verification_code_expired';
+  static const String emailNotVerified = 'email_not_verified';
+  static const String accountDisabled = 'account_disabled';
+  static const String tooManyRequests = 'too_many_requests';
+  static const String payloadTooLarge = 'payload_too_large';
 
   // --- Trip Related ---
   static const String tripNotFound = 'trip_not_found';

@@ -43,6 +43,14 @@ abstract interface class IAuthSessionLocalDataSource {
   /// 回傳: 使用者電子郵件，若不存在則回傳 null
   Future<String?> getEmail();
 
+  /// 儲存完整的使用者資料（JSON），包含角色、權限與信箱驗證狀態
+  ///
+  /// 離線時的權限判斷需要這些欄位；只存 id／email／名稱會讓權限全部消失。
+  Future<void> saveProfileJson(String profileJson);
+
+  /// 取得完整的使用者資料（JSON），不存在時回傳 null
+  Future<String?> getProfileJson();
+
   /// 儲存用戶名稱
   ///
   /// [username] 使用者顯示名稱

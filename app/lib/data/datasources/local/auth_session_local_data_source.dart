@@ -11,6 +11,7 @@ class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
   static const String _keyEmail = 'user_email';
   static const String _keyUsername = 'username';
   static const String _keyAvatar = 'user_avatar';
+  static const String _keyProfile = 'user_profile';
 
   final FlutterSecureStorage _secureStorage;
 
@@ -68,6 +69,16 @@ class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
   }
 
   @override
+  Future<void> saveProfileJson(String profileJson) async {
+    await _secureStorage.write(key: _keyProfile, value: profileJson);
+  }
+
+  @override
+  Future<String?> getProfileJson() async {
+    return await _secureStorage.read(key: _keyProfile);
+  }
+
+  @override
   Future<void> saveAvatar(String avatar) async {
     await _secureStorage.write(key: _keyAvatar, value: avatar);
   }
@@ -85,6 +96,7 @@ class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
     await _secureStorage.delete(key: _keyEmail);
     await _secureStorage.delete(key: _keyUsername);
     await _secureStorage.delete(key: _keyAvatar);
+    await _secureStorage.delete(key: _keyProfile);
   }
 
   @override

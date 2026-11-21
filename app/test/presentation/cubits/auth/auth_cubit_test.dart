@@ -35,14 +35,6 @@ void main() {
     isVerified: true,
   );
 
-  final unverifiedUser = UserProfile(
-    id: 'unverified-uuid',
-    email: 'unverified@example.com',
-    displayName: 'Unverified User',
-    role: RoleConstants.member,
-    isVerified: false,
-  );
-
   setUp(() async {
     await getIt.reset();
     mockAuthService = MockAuthService();
@@ -131,11 +123,11 @@ void main() {
     );
 
     blocTest<AuthCubit, AuthState>(
-      'login emits AuthLoading then AuthRequiresVerification if user not verified',
+      'login emits AuthLoading then AuthRequiresVerification when the backend reports email_not_verified',
       build: () {
         when(
           () => mockAuthService.login(email: 'email', password: 'password'),
-        ).thenAnswer((_) async => AuthResult.success(user: unverifiedUser));
+        ).thenAnswer((_) async => AuthResult.failure(errorCode: 'email_not_verified', errorMessage: 'Email 尚未驗證'));
         return authCubit;
       },
       act: (cubit) => cubit.login('email', 'password'),
