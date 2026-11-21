@@ -15,6 +15,16 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+// objectbox_flutter_libs (via flutter_map_tile_caching) declares compileSdk 31, which is too low for its
+// androidx dependencies. Raise it for Android library subprojects (must run before evaluationDependsOn below).
+subprojects {
+    if (name == "objectbox_flutter_libs") {
+        // Registered before the Android plugin is applied, so it runs before AGP locks compileSdk.
+        afterEvaluate {
+            extensions.configure<com.android.build.gradle.LibraryExtension> { compileSdkVersion(36) }
+        }
+    }
+}
 subprojects {
     project.evaluationDependsOn(":app")
 }
