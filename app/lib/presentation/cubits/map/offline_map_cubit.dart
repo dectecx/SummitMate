@@ -5,7 +5,6 @@ import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get_it/get_it.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -63,9 +62,8 @@ class OfflineMapCubit extends Cubit<OfflineMapState> with SafeEmitMixin<OfflineM
     required int maxZoom,
     String? name,
   }) async {
-    final hasConnection = await InternetConnectionChecker.createInstance().hasConnection;
-
-    if (!kIsWeb && !hasConnection) {
+    // 沿用全域的連線判斷（含使用者手動開啟的離線模式），不再各自建立檢查器
+    if (!kIsWeb && GetIt.I<IConnectivityService>().isOffline) {
       throw Exception('無網路連線，無法下載地圖。');
     }
 

@@ -23,6 +23,15 @@ class EnvConfig {
   // 取得目前有效的 API 網址 (自訂優先)
   static String get apiBaseUrl => _customApiBaseUrl ?? _defaultApiBaseUrl;
 
+  /// 後端健康檢查網址 (`/health`，掛在 API 前綴之外)，用來判斷後端是否可連線。
+  ///
+  /// 連線判斷改用自己的後端，而不是第三方測試 API：不會把使用者的連線資訊送給無關的服務，
+  /// 也不會因為第三方服務故障或 CORS 限制（Web）而被誤判為離線。
+  static Uri get healthCheckUri {
+    final base = Uri.parse(apiBaseUrl);
+    return Uri(scheme: base.scheme, host: base.host, port: base.hasPort ? base.port : null, path: '/health');
+  }
+
   // 初始化自訂網址 (通常於 DI 初始化時由 SharedPreferences 載入)
   static void initCustomApiUrl(String? customUrl) {
     _customApiBaseUrl = customUrl;

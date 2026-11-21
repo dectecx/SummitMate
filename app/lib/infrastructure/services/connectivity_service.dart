@@ -31,8 +31,8 @@ class ConnectivityService implements IConnectivityService {
   // 公開串流 (合併後的最終狀態: true=Online, false=Offline)
   final StreamController<bool> _onlineController = StreamController<bool>.broadcast();
 
-  ConnectivityService({InternetConnectionChecker? checker, ISettingsRepository? settingsRepo})
-    : _checker = checker ?? InternetConnectionChecker.createInstance(),
+  ConnectivityService({required InternetConnectionChecker checker, ISettingsRepository? settingsRepo})
+    : _checker = checker,
       _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>() {
     _init();
   }

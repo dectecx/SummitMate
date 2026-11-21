@@ -43,7 +43,8 @@ abstract class RegisterModule {
   FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
 
   @lazySingleton
-  InternetConnectionChecker get internetConnectionChecker => InternetConnectionChecker.createInstance();
+  InternetConnectionChecker get internetConnectionChecker =>
+      InternetConnectionChecker.createInstance(addresses: [AddressCheckOption(uri: EnvConfig.healthCheckUri)]);
 
   @lazySingleton
   AppDatabase get appDatabase => AppDatabase();

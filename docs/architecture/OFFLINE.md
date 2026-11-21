@@ -58,7 +58,7 @@ flowchart TB
 
 統一的離線判斷服務，作為離線狀態的單一可信源（Source of Truth），整合：
 
-- **網路狀態**: `InternetConnectionChecker`（配有 2 秒的 Debounce 防抖動機制）
+- **網路狀態**: `InternetConnectionChecker`，以自己後端的 `/health` 判斷是否可連線（不再對第三方測試 API 發請求），配有 2 秒的 Debounce 防抖動機制
 - **App 離線設定**: `settings.isOfflineMode`（儲存於 SQLite 本地資料庫）
 
 在服務層中，離線狀態定義如下：
