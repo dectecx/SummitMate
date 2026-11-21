@@ -141,15 +141,16 @@ if (tokenAge < OfflineConfig.offlineGracePeriod) {
 | -------- | ------------------------------------------------------------ |
 | 線上模式 | A/B 先讀本地快取背景刷新；C 背景 push + pull                  |
 | 離線模式 | 只讀本地 Drift；A/B 寫入回 `OfflineException`，C 寫本地排 pending |
-| 恢復連線 | 自動觸發同步 (有 5 分鐘節流)                                 |
+| 恢復連線 | 若上次同步因離線失敗，自動觸發同步                           |
 
-### 同步節流
+### 自動同步間隔
 
-同步節流間隔也定義於 `OfflineConfig`：
+自動同步為 `SyncEngine` 的定時器，間隔由使用者設定，範圍限制定義於 `OfflineConfig`：
 
 ```dart
-static const int syncThrottleMinutes = 5;
-static const Duration syncThrottleDuration = Duration(minutes: syncThrottleMinutes);
+static const int autoSyncMinIntervalMinutes = 5;      // 下限（DevTools 模式為 1）
+static const int autoSyncMaxIntervalMinutes = 10080;  // 上限（7 天）
+static const int autoSyncDefaultIntervalMinutes = 5;  // 預設；設為 0 代表關閉
 ```
 
 ---

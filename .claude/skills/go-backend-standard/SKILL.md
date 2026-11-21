@@ -55,7 +55,7 @@ All API additions or modifications must adhere to the Spec-First workflow:
 
 - During the initial development phase, do **NOT** create new incremental migration files (e.g., `000002_...`).
 - All schema modifications (tables, columns, indexes, foreign keys) must be applied directly to `backend/migrations/000001_init_schema.up.sql` (and `.down.sql`).
-- Apply migrations locally using: `go run cmd/migrate/main.go -action up`.
+- Apply migrations locally using: `go run ./cmd/migrate up` (run inside `backend/`).
 
 ## Testing Standards
 

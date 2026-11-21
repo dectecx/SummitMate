@@ -16,7 +16,7 @@ SummitMate is an **Offline-First** mountain trekking and trip management system 
   - **Networking & Serialization**: Retrofit, Dio, Freezed, JSON Serializable
   - **Dependency Injection**: Injectable & GetIt
 - **Backend (`backend/`)**:
-  - **Language & Runtime**: Go 1.25
+  - **Language & Runtime**: Go 1.26
   - **Web Framework**: Chi Router
   - **Database & Storage**: PostgreSQL 18 with `pgx` connection pooling
   - **Architecture**: Domain-Driven Design (DDD) (`internal/<domain>/`: Handler -> Service -> Repository)
@@ -37,13 +37,7 @@ SummitMate is an **Offline-First** mountain trekking and trip management system 
 1. **No Autonomous Decision-Making**:
    - Do not make unilateral architectural choices, breaking schema updates, or trade-off decisions.
    - Always request clarification and obtain explicit confirmation before proceeding with architectural or design changes.
-2. **Git Commit Workflow**:
-   - **Never run `git commit` directly**.
-   - Output only the suggested commit command and commit message for manual execution by the user.
-   - **Message Format**: Conventional Commits standard (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-   - **Language**: English only (unless explicitly requested otherwise).
-   - **No Task Identifiers**: Do not include temporary task numbers or internal tracking IDs in commit messages.
-3. **Initial Development Phase Conventions**:
+2. **Initial Development Phase Conventions**:
    - The project is in active initial development (First Version).
    - **Backend SQL Migrations**: Do **NOT** create incremental migration files (e.g., `000002_*.sql`). All schema adjustments (new columns, foreign keys, table modifications) must be made directly in `backend/migrations/000001_init_schema.up.sql`.
    - **Drift SQLite Schema**: Do **NOT** increment `schemaVersion` or write incremental `onUpgrade` migrations. Directly modify Drift Table definitions in `app/lib/data/models/*_table.dart` and rebuild.
@@ -89,8 +83,8 @@ All UI and Cubit operations **must** call the feature's `Repository`. Cubits mus
 - **Run API server**: `go run cmd/api/main.go`
 - **Run unit & integration tests**: `go test ./...`
 - **Generate OpenAPI code**: `go generate ./...`
-- **Apply local database migrations**: `go run cmd/migrate/main.go -action up`
-- **Rollback database migrations**: `go run cmd/migrate/main.go -action down`
+- **Apply local database migrations**: `go run ./cmd/migrate up` (run inside `backend/`)
+- **Rollback database migrations**: `go run ./cmd/migrate down` (run inside `backend/`)
 
 ---
 
@@ -98,7 +92,6 @@ All UI and Cubit operations **must** call the feature's `Repository`. Cubits mus
 
 Reusable engineering guidelines and review standards are maintained under `.claude/skills/` (and mirrored via junction to `.agents/skills/`):
 
-- **`git-commit`**: Conventional Commits generation and Git change analysis.
 - **`flutter-offline-first-sync`**: Three sync modes and background sync engine architecture.
 - **`drift-database-management`**: SQLite table modeling, initial dev conventions, and production migration policies.
 - **`flutter-api-layer`**: Retrofit, Freezed DTOs, UTC datetime converters, and domain mappers.

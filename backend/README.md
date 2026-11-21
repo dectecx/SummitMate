@@ -8,7 +8,7 @@ SummitMate 後端 API 服務，為行動端 (Flutter) 提供 RESTful API。採�
 
 | 項目      | 技術               | 說明                                  |
 | :-------- | :----------------- | :------------------------------------ |
-| 語言      | **Go 1.25**        | 高效能、低記憶體                      |
+| 語言      | **Go 1.26**        | 高效能、低記憶體                      |
 | Web 框架  | **Chi**            | 輕量、相容 stdlib                     |
 | 資料庫    | **PostgreSQL 18**  | 關聯式資料、ACID                      |
 | DB Driver | **pgx**            | 高效能 PostgreSQL driver + 連線池     |
@@ -59,7 +59,7 @@ backend/
 
 ### 前置需求
 
-- Go 1.25+
+- Go 1.26+
 - Docker & Docker Compose (用於 PostgreSQL)
 
 ### 首次設定

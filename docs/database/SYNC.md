@@ -82,7 +82,7 @@ stateDiagram-v2
 | :------- | :---------------------------------------------- |
 | 線上     | A/B：先讀 cache 背景刷新；C：背景 push + pull    |
 | 離線     | A/B 寫入回 `OfflineException`；C 寫本地排入 pending |
-| 恢復連線 | 自動觸發 `runSyncCycle` (5 分鐘節流)            |
+| 恢復連線 | 若上次同步因離線失敗，自動觸發 `runSyncCycle` |
 
 ---
 
