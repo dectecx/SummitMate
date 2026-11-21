@@ -18,8 +18,9 @@ class FavoriteDao extends DatabaseAccessor<AppDatabase> with _$FavoriteDaoMixin 
 
   @override
   Future<List<Favorite>> getFavorites() async {
-    final rows = await (select(favoritesTable)..where((t) => t.syncStatus.equals(SyncStatus.pendingDelete.name).not()))
-        .get();
+    final rows = await (select(
+      favoritesTable,
+    )..where((t) => t.syncStatus.equals(SyncStatus.pendingDelete.name).not())).get();
     return rows.map(_mapToDomain).toList();
   }
 

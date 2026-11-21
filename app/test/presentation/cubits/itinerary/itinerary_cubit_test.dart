@@ -221,12 +221,13 @@ void main() {
         build: () => cubit,
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1'], selectedDay: 'D1'),
         setUp: () {
-           when(() => mockItineraryDayService.renameDay(any(), any(), any()))
-              .thenAnswer((_) async => const Success(null));
+          when(
+            () => mockItineraryDayService.renameDay(any(), any(), any()),
+          ).thenAnswer((_) async => const Success(null));
         },
         act: (cubit) => cubit.renameDay('D1', 'Day 1'),
         verify: (_) {
-           verify(() => mockItineraryDayService.renameDay('trip_1', 'D1', 'Day 1')).called(1);
+          verify(() => mockItineraryDayService.renameDay('trip_1', 'D1', 'Day 1')).called(1);
         },
       );
 
@@ -236,8 +237,9 @@ void main() {
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1', 'D2'], selectedDay: 'D1'),
         setUp: () {
           testTrip = testTrip.copyWith(dayNames: ['D1', 'D2']); // Setup for remove
-          when(() => mockItineraryDayService.removeDay(any(), any(), confirmUnlink: any(named: 'confirmUnlink')))
-              .thenAnswer((_) async => const Success(null));
+          when(
+            () => mockItineraryDayService.removeDay(any(), any(), confirmUnlink: any(named: 'confirmUnlink')),
+          ).thenAnswer((_) async => const Success(null));
         },
         act: (cubit) => cubit.removeDay('D2'),
         verify: (_) {

@@ -152,11 +152,7 @@ class _GearCategorySectionState extends State<GearCategorySection> {
         onReorderItem: _onReorderItem,
         itemBuilder: (context, index) {
           final item = _localItems[index];
-          return ReorderableDelayedDragStartListener(
-            key: ValueKey(item.id),
-            index: index,
-            child: _buildTile(item),
-          );
+          return ReorderableDelayedDragStartListener(key: ValueKey(item.id), index: index, child: _buildTile(item));
         },
       );
     }

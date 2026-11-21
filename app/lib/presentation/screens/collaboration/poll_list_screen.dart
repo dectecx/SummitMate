@@ -14,7 +14,6 @@ import '../../cubits/base/toast_notification.dart';
 import '../../widgets/responsive_layout.dart';
 import '../../widgets/common/offline_gate.dart';
 
-
 /// 投票列表畫面
 ///
 /// 顯示所有投票活動，支援篩選 (進行中、已結束、我的)。
@@ -132,10 +131,14 @@ class _PollListScreenState extends State<PollListScreen> {
         final n = state.notification;
         if (n == null) return;
         switch (n.type) {
-          case ToastType.success: ToastService.success(n.message);
-          case ToastType.warning: ToastService.warning(n.message);
-          case ToastType.error: ToastService.error(n.message);
-          case ToastType.info: ToastService.info(n.message);
+          case ToastType.success:
+            ToastService.success(n.message);
+          case ToastType.warning:
+            ToastService.warning(n.message);
+          case ToastType.error:
+            ToastService.error(n.message);
+          case ToastType.info:
+            ToastService.info(n.message);
         }
         context.read<PollCubit>().clearNotification();
       },

@@ -83,14 +83,9 @@ class MockTripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<void, Exception>> transferOwnership(
-    String tripId,
-    String targetUserId,
-    String currentOwnerRole,
-  ) async {
+  Future<Result<void, Exception>> transferOwnership(String tripId, String targetUserId, String currentOwnerRole) async {
     return const Success(null);
   }
-
 
   @override
   Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
@@ -172,13 +167,7 @@ class MockTripRepository implements ITripRepository {
     double calories, {
     String? note,
   }) async {
-    return Success(MealItem(
-      id: 'mock-meal-item-1',
-      name: name,
-      weight: weight,
-      calories: calories,
-      note: note,
-    ));
+    return Success(MealItem(id: 'mock-meal-item-1', name: name, weight: weight, calories: calories, note: note));
   }
 
   @override

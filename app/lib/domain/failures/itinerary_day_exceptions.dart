@@ -1,4 +1,4 @@
-﻿/// 行程天數操作的特定例外類型
+/// 行程天數操作的特定例外類型
 library;
 
 /// 糧食計畫天數綁定例外
@@ -10,10 +10,7 @@ class MealPlanDayLinkedToItineraryException implements Exception {
   final String dayName;
   final String mealPlanDayId;
 
-  const MealPlanDayLinkedToItineraryException({
-    required this.dayName,
-    required this.mealPlanDayId,
-  });
+  const MealPlanDayLinkedToItineraryException({required this.dayName, required this.mealPlanDayId});
 
   @override
   String toString() =>

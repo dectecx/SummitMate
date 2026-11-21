@@ -284,10 +284,7 @@ class _DevPanelContentState extends State<DevPanelContent> {
                   const Divider(),
                   const Text('Rate Limit 工具', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 4),
-                  const Text(
-                    '清除指定 Email 的登入/重發驗證碼頻率限制（僅限開發環境）',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
+                  const Text('清除指定 Email 的登入/重發驗證碼頻率限制（僅限開發環境）', style: TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -318,11 +315,7 @@ class _DevPanelContentState extends State<DevPanelContent> {
                       ),
                       const SizedBox(width: 8),
                       _clearingRateLimit
-                          ? const SizedBox(
-                              width: 36,
-                              height: 36,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                          ? const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 2))
                           : ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.orange[700],

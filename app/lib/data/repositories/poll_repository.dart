@@ -71,10 +71,6 @@ class PollRepository with RepositoryRemoteAccess implements IPollRepository {
 
   @override
   Future<Result<void, Exception>> delete(String tripId, String pollId) {
-    return online(
-      'deletePoll',
-      () => _remote.deletePoll(tripId, pollId),
-      cache: (_) => _local.deletePoll(pollId),
-    );
+    return online('deletePoll', () => _remote.deletePoll(tripId, pollId), cache: (_) => _local.deletePoll(pollId));
   }
 }

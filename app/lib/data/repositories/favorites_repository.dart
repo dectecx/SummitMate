@@ -15,11 +15,9 @@ class FavoritesRepository implements IFavoritesRepository {
   final IFavoritesLocalDataSource _localDataSource;
   final IAuthService _authService;
 
-  FavoritesRepository({
-    required IFavoritesLocalDataSource localDataSource,
-    required IAuthService authService,
-  }) : _localDataSource = localDataSource,
-       _authService = authService;
+  FavoritesRepository({required IFavoritesLocalDataSource localDataSource, required IAuthService authService})
+    : _localDataSource = localDataSource,
+      _authService = authService;
 
   @override
   Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({int? page, int? limit}) async {

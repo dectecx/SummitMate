@@ -63,11 +63,7 @@ class MainTabScaffold extends StatelessWidget {
       ),
       body: ResponsiveLayout(
         mobile: _MobileBody(currentIndex: currentIndex, buildTabContent: buildTabContent),
-        desktop: _DesktopBody(
-          currentIndex: currentIndex,
-          onTabChanged: onTabChanged,
-          buildTabContent: buildTabContent,
-        ),
+        desktop: _DesktopBody(currentIndex: currentIndex, onTabChanged: onTabChanged, buildTabContent: buildTabContent),
         tablet: _TabletBody(
           scaffoldKey: scaffoldKey,
           currentIndex: currentIndex,
@@ -76,17 +72,11 @@ class MainTabScaffold extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: ResponsiveLayout(
-        mobile: MainBottomNavigationBar(
-          currentIndex: currentIndex,
-          onDestinationSelected: onTabChanged,
-        ),
+        mobile: MainBottomNavigationBar(currentIndex: currentIndex, onDestinationSelected: onTabChanged),
         desktop: const SizedBox.shrink(),
       ),
       floatingActionButton: (currentIndex == 0 && isEditMode)
-          ? FloatingActionButton(
-              onPressed: onAddItinerary,
-              child: const Icon(Icons.add),
-            )
+          ? FloatingActionButton(onPressed: onAddItinerary, child: const Icon(Icons.add))
           : null,
     );
   }
@@ -122,21 +112,13 @@ class _DesktopBody extends StatelessWidget {
   final ValueChanged<int> onTabChanged;
   final Widget Function(int) buildTabContent;
 
-  const _DesktopBody({
-    required this.currentIndex,
-    required this.onTabChanged,
-    required this.buildTabContent,
-  });
+  const _DesktopBody({required this.currentIndex, required this.onTabChanged, required this.buildTabContent});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        AppDrawerContent(
-          isSidebar: true,
-          currentIndex: currentIndex,
-          onTabSelected: onTabChanged,
-        ),
+        AppDrawerContent(isSidebar: true, currentIndex: currentIndex, onTabSelected: onTabChanged),
         const VerticalDivider(thickness: 1, width: 1),
         Expanded(
           child: Column(
@@ -186,11 +168,7 @@ class _TabletBody extends StatelessWidget {
             ],
           ),
           destinations: const [
-            NavigationRailDestination(
-              icon: Icon(Icons.hiking),
-              selectedIcon: Icon(Icons.hiking),
-              label: Text('行程'),
-            ),
+            NavigationRailDestination(icon: Icon(Icons.hiking), selectedIcon: Icon(Icons.hiking), label: Text('行程')),
             NavigationRailDestination(
               icon: Icon(Icons.backpack_outlined),
               selectedIcon: Icon(Icons.backpack),

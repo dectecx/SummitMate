@@ -161,8 +161,7 @@ void main() {
     blocTest<TripCubit, TripState>(
       'uploadFullTrip: Given sync success, When calling uploadFullTrip, Then reloads and returns true',
       build: () {
-        when(() => mockSyncEngine.syncTrip(any(), any()))
-            .thenAnswer((_) async => SyncResult.success());
+        when(() => mockSyncEngine.syncTrip(any(), any())).thenAnswer((_) async => SyncResult.success());
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
@@ -179,8 +178,7 @@ void main() {
     blocTest<TripCubit, TripState>(
       'uploadFullTrip: Given sync failure, When calling uploadFullTrip, Then emits TripError and returns false',
       build: () {
-        when(() => mockSyncEngine.syncTrip(any(), any()))
-            .thenAnswer((_) async => SyncResult.failure('同步失敗'));
+        when(() => mockSyncEngine.syncTrip(any(), any())).thenAnswer((_) async => SyncResult.failure('同步失敗'));
         return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
       },
       act: (cubit) async {
@@ -193,8 +191,7 @@ void main() {
     blocTest<TripCubit, TripState>(
       'downloadFullTrip: Given sync success, When calling downloadFullTrip, Then reloads and returns true',
       build: () {
-        when(() => mockSyncEngine.syncTrip(any(), any()))
-            .thenAnswer((_) async => SyncResult.success());
+        when(() => mockSyncEngine.syncTrip(any(), any())).thenAnswer((_) async => SyncResult.success());
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
@@ -211,8 +208,7 @@ void main() {
     blocTest<TripCubit, TripState>(
       'downloadFullTrip: Given sync failure, When calling downloadFullTrip, Then emits TripError and returns false',
       build: () {
-        when(() => mockSyncEngine.syncTrip(any(), any()))
-            .thenAnswer((_) async => SyncResult.failure('下載失敗'));
+        when(() => mockSyncEngine.syncTrip(any(), any())).thenAnswer((_) async => SyncResult.failure('下載失敗'));
         return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
       },
       act: (cubit) async {

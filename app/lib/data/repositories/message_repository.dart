@@ -50,11 +50,7 @@ class MessageRepository with RepositoryRemoteAccess implements IMessageRepositor
   }
 
   @override
-  Future<Result<String, Exception>> addMessage({
-    required String tripId,
-    required String content,
-    String? replyToId,
-  }) {
+  Future<Result<String, Exception>> addMessage({required String tripId, required String content, String? replyToId}) {
     return online('addMessage', () => _remote.addMessage(tripId: tripId, content: content, replyToId: replyToId));
   }
 

@@ -15,10 +15,7 @@ class SummitDestructiveButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return FilledButton(
       onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: colorScheme.error,
-        foregroundColor: colorScheme.onError,
-      ),
+      style: FilledButton.styleFrom(backgroundColor: colorScheme.error, foregroundColor: colorScheme.onError),
       child: child,
     );
   }

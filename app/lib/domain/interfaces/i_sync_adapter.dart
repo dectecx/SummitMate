@@ -73,7 +73,8 @@ class SyncPushResult {
   }
 
   @override
-  String toString() => 'SyncPushResult(pushed: $pushedCount, idMigrations: $idMigrationsCount, errors: ${errors.length})';
+  String toString() =>
+      'SyncPushResult(pushed: $pushedCount, idMigrations: $idMigrationsCount, errors: ${errors.length})';
 }
 
 /// 合併結果統計

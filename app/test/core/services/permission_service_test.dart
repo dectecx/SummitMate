@@ -184,26 +184,32 @@ void main() {
         expect(await permissionService.canManageMembers(myTrip), isTrue);
       });
 
-      test('Given no permission but is Owner, When calling canManageMembers(), Then Owner can manage members', () async {
-        final ownerUser = UserProfile(
-          id: 'owner-id',
-          email: '',
-          displayName: '',
-          role: RoleConstants.member,
-          permissions: [], // No permissions
-        );
-        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => ownerUser);
-        when(() => myTrip.userId).thenReturn('owner-id');
+      test(
+        'Given no permission but is Owner, When calling canManageMembers(), Then Owner can manage members',
+        () async {
+          final ownerUser = UserProfile(
+            id: 'owner-id',
+            email: '',
+            displayName: '',
+            role: RoleConstants.member,
+            permissions: [], // No permissions
+          );
+          when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => ownerUser);
+          when(() => myTrip.userId).thenReturn('owner-id');
 
-        expect(await permissionService.canManageMembers(myTrip), isTrue);
-      });
+          expect(await permissionService.canManageMembers(myTrip), isTrue);
+        },
+      );
 
-      test('Given no permission and is not Owner, When calling canManageMembers(), Then cannot manage members', () async {
-        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => memberUser);
-        when(() => myTrip.userId).thenReturn('owner-id'); // memberUser.id is 'member-id'
+      test(
+        'Given no permission and is not Owner, When calling canManageMembers(), Then cannot manage members',
+        () async {
+          when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => memberUser);
+          when(() => myTrip.userId).thenReturn('owner-id'); // memberUser.id is 'member-id'
 
-        expect(await permissionService.canManageMembers(myTrip), isFalse);
-      });
+          expect(await permissionService.canManageMembers(myTrip), isFalse);
+        },
+      );
     });
   });
 }

@@ -66,9 +66,9 @@ class GroupEventDao extends DatabaseAccessor<AppDatabase>
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
-    await into(syncMetaDataTable).insertOnConflictUpdate(
-      SyncMetaDataTableCompanion.insert(key: 'group_events', lastSyncTime: Value(time)),
-    );
+    await into(
+      syncMetaDataTable,
+    ).insertOnConflictUpdate(SyncMetaDataTableCompanion.insert(key: 'group_events', lastSyncTime: Value(time)));
   }
 
   @override

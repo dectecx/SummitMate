@@ -1,4 +1,4 @@
-﻿import '../../core/error/result.dart';
+import '../../core/error/result.dart';
 
 /// 行程天數跨聚合協調服務介面 (Domain Service)
 ///
@@ -28,9 +28,5 @@ abstract interface class IItineraryDayService {
   /// [tripId] 行程 ID
   /// [name] 天數名稱
   /// [confirmUnlink] 是否確認解除糧食計畫綁定
-  Future<Result<void, Exception>> removeDay(
-    String tripId,
-    String name, {
-    bool confirmUnlink = false,
-  });
+  Future<Result<void, Exception>> removeDay(String tripId, String name, {bool confirmUnlink = false});
 }

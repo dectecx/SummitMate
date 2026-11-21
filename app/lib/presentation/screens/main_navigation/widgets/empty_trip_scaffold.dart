@@ -38,16 +38,8 @@ class EmptyTripScaffold extends StatelessWidget {
         ),
         title: const Text('SummitMate 山友'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            tooltip: '歡迎訊息 / 教學',
-            onPressed: onWelcomePressed,
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: onSettingsPressed,
-            tooltip: '設定',
-          ),
+          IconButton(icon: const Icon(Icons.info_outline), tooltip: '歡迎訊息 / 教學', onPressed: onWelcomePressed),
+          IconButton(icon: const Icon(Icons.settings), onPressed: onSettingsPressed, tooltip: '設定'),
         ],
       ),
       drawer: const AppDrawer(),
@@ -61,10 +53,7 @@ class EmptyTripScaffold extends StatelessWidget {
                 children: [
                   const Icon(Icons.hiking, size: 80, color: Colors.grey),
                   const SizedBox(height: 16),
-                  const Text(
-                    '歡迎使用 SummitMate',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
+                  const Text('歡迎使用 SummitMate', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
                   const SizedBox(height: 32),

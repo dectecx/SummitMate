@@ -66,7 +66,10 @@ class AuthInterceptor extends Interceptor {
 
       // /auth/login 的 401 代表帳號不存在或密碼錯誤，屬於正常業務回應，直接透傳錯誤給呼叫端處理
       if (path.contains('/auth/login')) {
-        LogService.warning('[AuthInterceptor] 401 on login endpoint ($path). Passing through (invalid credentials).', source: _source);
+        LogService.warning(
+          '[AuthInterceptor] 401 on login endpoint ($path). Passing through (invalid credentials).',
+          source: _source,
+        );
         return handler.next(err);
       }
 

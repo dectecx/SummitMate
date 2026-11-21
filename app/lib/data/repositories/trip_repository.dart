@@ -22,11 +22,7 @@ class TripRepository with RepositoryRemoteAccess implements ITripRepository {
 
   final _tripUpdateController = StreamController<String>.broadcast();
 
-  TripRepository(
-    this._localDataSource,
-    this._remoteDataSource,
-    this.connectivity,
-  );
+  TripRepository(this._localDataSource, this._remoteDataSource, this.connectivity);
 
   @override
   Stream<String> get tripUpdateStream => _tripUpdateController.stream;
@@ -148,11 +144,7 @@ class TripRepository with RepositoryRemoteAccess implements ITripRepository {
   }
 
   @override
-  Future<Result<void, Exception>> transferOwnership(
-    String tripId,
-    String targetUserId,
-    String currentOwnerRole,
-  ) async {
+  Future<Result<void, Exception>> transferOwnership(String tripId, String targetUserId, String currentOwnerRole) async {
     final result = await online<Trip>(
       'transferOwnership',
       () => _remoteDataSource.transferOwnership(tripId, targetUserId, currentOwnerRole),
@@ -250,9 +242,7 @@ class TripRepository with RepositoryRemoteAccess implements ITripRepository {
     try {
       final days = await _localDataSource.getMealPlanDays(tripId);
       final itemsByDay = await _localDataSource.getMealItemsForTrip(tripId);
-      final plans = days
-          .map((day) => DailyMealPlan(dayInfo: day, meals: itemsByDay[day.id] ?? {}))
-          .toList();
+      final plans = days.map((day) => DailyMealPlan(dayInfo: day, meals: itemsByDay[day.id] ?? {})).toList();
       return Success(plans);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -271,13 +261,7 @@ class TripRepository with RepositoryRemoteAccess implements ITripRepository {
     String? note,
   }) async {
     try {
-      final item = MealItem(
-        id: const Uuid().v7(),
-        name: name,
-        weight: weight,
-        calories: calories,
-        note: note,
-      );
+      final item = MealItem(id: const Uuid().v7(), name: name, weight: weight, calories: calories, note: note);
       await _localDataSource.saveMealItem(dayId, mealType, item);
       return Success(item);
     } catch (e) {

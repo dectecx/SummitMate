@@ -271,10 +271,14 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
             final n = state.notification;
             if (n == null) return;
             switch (n.type) {
-              case ToastType.success: ToastService.success(n.message);
-              case ToastType.warning: ToastService.warning(n.message);
-              case ToastType.error: ToastService.error(n.message);
-              case ToastType.info: ToastService.info(n.message);
+              case ToastType.success:
+                ToastService.success(n.message);
+              case ToastType.warning:
+                ToastService.warning(n.message);
+              case ToastType.error:
+                ToastService.error(n.message);
+              case ToastType.info:
+                ToastService.info(n.message);
             }
             context.read<GroupEventCubit>().clearNotification();
           },
@@ -581,10 +585,8 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                   : OfflineGate(
                       onOfflineTap: () => ToastService.warning('離線模式無法建立揪團'),
                       child: FloatingActionButton.extended(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CreateGroupEventScreen()),
-                        ),
+                        onPressed: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateGroupEventScreen())),
                         icon: const Icon(Icons.add),
                         label: const Text('建立揪團'),
                       ),

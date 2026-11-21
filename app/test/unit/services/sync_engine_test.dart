@@ -140,46 +140,38 @@ void main() {
       expect(result.errorMessage, contains('訪客或未登入狀態'));
     });
 
-    test(
-      'Given upload direction, When calling syncTrip, Then calls pushPendingForTrip on adapter',
-      () async {
-        when(() => mockConnectivity.isOffline).thenReturn(false);
-        when(() => mockAdapter.pushPendingForTrip(any())).thenAnswer((_) async => const SyncPushResult());
+    test('Given upload direction, When calling syncTrip, Then calls pushPendingForTrip on adapter', () async {
+      when(() => mockConnectivity.isOffline).thenReturn(false);
+      when(() => mockAdapter.pushPendingForTrip(any())).thenAnswer((_) async => const SyncPushResult());
 
-        final result = await engine.syncTrip(tripId, SyncDirection.upload);
+      final result = await engine.syncTrip(tripId, SyncDirection.upload);
 
-        expect(result.isSuccess, isTrue);
-        verify(() => mockAdapter.pushPendingForTrip(tripId)).called(1);
-        verifyNever(() => mockAdapter.pullRemoteForTrip(any()));
-      },
-    );
+      expect(result.isSuccess, isTrue);
+      verify(() => mockAdapter.pushPendingForTrip(tripId)).called(1);
+      verifyNever(() => mockAdapter.pullRemoteForTrip(any()));
+    });
 
-    test(
-      'Given download direction, When calling syncTrip, Then calls pullRemoteForTrip on adapter',
-      () async {
-        when(() => mockConnectivity.isOffline).thenReturn(false);
-        when(() => mockAdapter.pullRemoteForTrip(any())).thenAnswer((_) async => const SyncMergeResult());
+    test('Given download direction, When calling syncTrip, Then calls pullRemoteForTrip on adapter', () async {
+      when(() => mockConnectivity.isOffline).thenReturn(false);
+      when(() => mockAdapter.pullRemoteForTrip(any())).thenAnswer((_) async => const SyncMergeResult());
 
-        final result = await engine.syncTrip(tripId, SyncDirection.download);
+      final result = await engine.syncTrip(tripId, SyncDirection.download);
 
-        expect(result.isSuccess, isTrue);
-        verify(() => mockAdapter.pullRemoteForTrip(tripId)).called(1);
-        verifyNever(() => mockAdapter.pushPendingForTrip(any()));
-      },
-    );
+      expect(result.isSuccess, isTrue);
+      verify(() => mockAdapter.pullRemoteForTrip(tripId)).called(1);
+      verifyNever(() => mockAdapter.pushPendingForTrip(any()));
+    });
 
-    test(
-      'Given adapter push errors, When calling syncTrip upload, Then result is not successful',
-      () async {
-        when(() => mockConnectivity.isOffline).thenReturn(false);
-        when(() => mockAdapter.pushPendingForTrip(any()))
-            .thenAnswer((_) async => const SyncPushResult(errors: ['push error']));
+    test('Given adapter push errors, When calling syncTrip upload, Then result is not successful', () async {
+      when(() => mockConnectivity.isOffline).thenReturn(false);
+      when(
+        () => mockAdapter.pushPendingForTrip(any()),
+      ).thenAnswer((_) async => const SyncPushResult(errors: ['push error']));
 
-        final result = await engine.syncTrip(tripId, SyncDirection.upload);
+      final result = await engine.syncTrip(tripId, SyncDirection.upload);
 
-        expect(result.isSuccess, isFalse);
-        expect(result.errors, contains('push error'));
-      },
-    );
+      expect(result.isSuccess, isFalse);
+      expect(result.errors, contains('push error'));
+    });
   });
 }

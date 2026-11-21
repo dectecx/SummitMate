@@ -60,10 +60,14 @@ class _MyGroupEventsScreenState extends State<MyGroupEventsScreen> with SingleTi
         final n = s.notification;
         if (n == null) return;
         switch (n.type) {
-          case ToastType.success: ToastService.success(n.message);
-          case ToastType.warning: ToastService.warning(n.message);
-          case ToastType.error: ToastService.error(n.message);
-          case ToastType.info: ToastService.info(n.message);
+          case ToastType.success:
+            ToastService.success(n.message);
+          case ToastType.warning:
+            ToastService.warning(n.message);
+          case ToastType.error:
+            ToastService.error(n.message);
+          case ToastType.info:
+            ToastService.info(n.message);
         }
         ctx.read<GroupEventCubit>().clearNotification();
       },
@@ -278,7 +282,10 @@ class _EventCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.people, size: 13, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text('${event.applicationCount}/${event.maxMembers == 0 ? '不限' : event.maxMembers}', style: theme.textTheme.bodySmall),
+                  Text(
+                    '${event.applicationCount}/${event.maxMembers == 0 ? '不限' : event.maxMembers}',
+                    style: theme.textTheme.bodySmall,
+                  ),
                   const Spacer(),
                   if (type == 'apply' && event.myApplicationStatus != null)
                     _AppStatusBadge(status: event.myApplicationStatus!),

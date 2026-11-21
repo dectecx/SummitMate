@@ -236,11 +236,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
           ),
           child: Row(
             children: [
-              UserAvatar(
-                radius: 24,
-                avatar: _searchResult!.avatar,
-                fallbackText: _searchResult!.displayName,
-              ),
+              UserAvatar(radius: 24, avatar: _searchResult!.avatar, fallbackText: _searchResult!.displayName),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -332,10 +328,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         if (_errorMsg != null)
           Padding(
             padding: const EdgeInsets.only(top: 10),
-            child: Text(
-              _errorMsg!,
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
-            ),
+            child: Text(_errorMsg!, style: textTheme.bodySmall?.copyWith(color: colorScheme.error)),
           ),
       ],
     );

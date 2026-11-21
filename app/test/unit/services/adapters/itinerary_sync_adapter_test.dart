@@ -116,18 +116,21 @@ void main() {
       verify(() => mockLocal.addItem(any())).called(1);
     });
 
-    test('Given remote deleted and local pending (wasEverSynced), When pullRemote, Then it deletes local item', () async {
-      final localItem = defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate);
-      when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
-      when(() => mockRemote.getItinerary('trip1')).thenAnswer((_) async => []);
-      when(() => mockLocal.getByTripId(any())).thenAnswer((_) async => [localItem]);
-      when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
+    test(
+      'Given remote deleted and local pending (wasEverSynced), When pullRemote, Then it deletes local item',
+      () async {
+        final localItem = defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate);
+        when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
+        when(() => mockRemote.getItinerary('trip1')).thenAnswer((_) async => []);
+        when(() => mockLocal.getByTripId(any())).thenAnswer((_) async => [localItem]);
+        when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
 
-      final result = await adapter.pullRemote();
+        final result = await adapter.pullRemote();
 
-      expect(result.conflictCount, 1);
-      verify(() => mockLocal.deleteById('item1')).called(1);
-    });
+        expect(result.conflictCount, 1);
+        verify(() => mockLocal.deleteById('item1')).called(1);
+      },
+    );
 
     test('Given local synced and remote updated, When pullRemote, Then it overwrites local', () async {
       final remoteItem = defaultItem.copyWith(name: 'Remote updated', updatedAt: DateTime(2026, 6, 6, 12, 1, 0));

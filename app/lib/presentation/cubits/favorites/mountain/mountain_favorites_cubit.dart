@@ -20,10 +20,7 @@ class MountainFavoritesCubit extends Cubit<MountainFavoritesState> with SafeEmit
 
     switch (result) {
       case Success(value: final list):
-        final ids = list.items
-            .where((f) => f.type == FavoriteType.mountain)
-            .map((f) => f.targetId)
-            .toList();
+        final ids = list.items.where((f) => f.type == FavoriteType.mountain).map((f) => f.targetId).toList();
         safeEmit(MountainFavoritesLoaded(ids));
       case Failure(exception: final e):
         safeEmit(MountainFavoritesError(AppErrorHandler.getUserMessage(e)));

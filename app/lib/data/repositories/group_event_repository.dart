@@ -91,11 +91,7 @@ class GroupEventRepository with RepositoryRemoteAccess implements IGroupEventRep
   }
 
   @override
-  Future<Result<PaginatedList<GroupEvent>, Exception>> syncMyEvents({
-    required String type,
-    int? page,
-    int? limit,
-  }) {
+  Future<Result<PaginatedList<GroupEvent>, Exception>> syncMyEvents({required String type, int? page, int? limit}) {
     return online<PaginatedList<GroupEvent>>(
       'syncMyEvents',
       () => _remoteDataSource.getMyEvents(type: type, page: page, limit: limit),
@@ -172,10 +168,7 @@ class GroupEventRepository with RepositoryRemoteAccess implements IGroupEventRep
 
   @override
   Future<Result<void, Exception>> cancelApplication({String? eventId, required String applicationId}) async {
-    final result = await online<void>(
-      'cancelApplication',
-      () => _remoteDataSource.cancelApplication(applicationId),
-    );
+    final result = await online<void>('cancelApplication', () => _remoteDataSource.cancelApplication(applicationId));
     if (result is Success<void, Exception> && eventId != null) {
       await syncEventById(eventId);
     }

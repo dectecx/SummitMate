@@ -11,9 +11,7 @@ class TutorialScreen extends StatefulWidget {
   const TutorialScreen({super.key});
 
   static void show(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(PageRouteBuilder(opaque: false, pageBuilder: (_, _, _) => const TutorialScreen()));
+    Navigator.of(context).push(PageRouteBuilder(opaque: false, pageBuilder: (_, _, _) => const TutorialScreen()));
   }
 
   @override

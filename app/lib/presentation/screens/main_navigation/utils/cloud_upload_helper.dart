@@ -20,9 +20,9 @@ class CloudUploadHelper {
     if (activeTrip != null) {
       final permissionService = getIt<PermissionService>();
       if (!permissionService.canEditTripSync(user, activeTrip)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⚠️ 您沒有權限上傳或修改此行程'), backgroundColor: Colors.red),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('⚠️ 您沒有權限上傳或修改此行程'), backgroundColor: Colors.red));
         return;
       }
     }

@@ -314,9 +314,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       floatingActionButton: _hasFetched && _gearSets.isNotEmpty
           ? OfflineGate(
               onOfflineTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('⚠️ 離線模式下無法同步抓取資料'), backgroundColor: Colors.red),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法同步抓取資料'), backgroundColor: Colors.red));
               },
               child: FloatingActionButton.extended(
                 onPressed: _isLoading ? null : () => _fetchGearSets(forceRefresh: true),
@@ -442,9 +442,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     final isBusy = _busyGearSetId == gearSet.id;
     return OfflineGate(
       onOfflineTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⚠️ 離線模式下無法下載或查看雲端裝備'), backgroundColor: Colors.red),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法下載或查看雲端裝備'), backgroundColor: Colors.red));
       },
       child: _GearSetCard(
         gearSet: gearSet,
@@ -497,35 +497,30 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                 Expanded(
                   child: OfflineGate(
                     onOfflineTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('⚠️ 離線模式下無法上傳裝備'), backgroundColor: Colors.red),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法上傳裝備'), backgroundColor: Colors.red));
                     },
-                    child: _ToolButton(
-                      icon: Icons.upload,
-                      label: '上傳裝備與糧食計畫',
-                      onTap: _showUploadDialog,
-                    ),
+                    child: _ToolButton(icon: Icons.upload, label: '上傳裝備與糧食計畫', onTap: _showUploadDialog),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: OfflineGate(
                     onOfflineTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('⚠️ 離線模式下無法管理雲端裝備'), backgroundColor: Colors.red),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法管理雲端裝備'), backgroundColor: Colors.red));
                     },
-                    child: _ToolButton(
-                      icon: Icons.cloud_done,
-                      label: '管理雲端裝備',
-                      onTap: _showManagementDialog,
-                    ),
+                    child: _ToolButton(icon: Icons.cloud_done, label: '管理雲端裝備', onTap: _showManagementDialog),
                   ),
                 ),
               ],
             ),
-            if (_repository.lastFetchedAt != null) ...[const SizedBox(height: 12), _LastFetchedInfo(repository: _repository)],
+            if (_repository.lastFetchedAt != null) ...[
+              const SizedBox(height: 12),
+              _LastFetchedInfo(repository: _repository),
+            ],
           ],
         ),
       ),

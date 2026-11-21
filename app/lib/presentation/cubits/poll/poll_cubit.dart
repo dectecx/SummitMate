@@ -104,24 +104,28 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState>, RemoteSy
       final fetchedPolls = paginatedList.items;
       final now = DateTime.now();
 
-      safeEmit(PollLoaded(
-        polls: fetchedPolls,
-        currentUserId: _currentUserId,
-        lastSyncTime: now,
-        isSyncing: false,
-        notification: isAuto ? null : const ToastNotification.success('投票同步成功'),
-      ));
+      safeEmit(
+        PollLoaded(
+          polls: fetchedPolls,
+          currentUserId: _currentUserId,
+          lastSyncTime: now,
+          isSyncing: false,
+          notification: isAuto ? null : const ToastNotification.success('投票同步成功'),
+        ),
+      );
     } catch (e) {
       LogService.error('Fetch polls failed: $e', source: _source);
       if (!isAuto) {
         final polls = await _pollRepository.getByTripId(tripId);
-        safeEmit(PollLoaded(
-          polls: polls,
-          currentUserId: _currentUserId,
-          lastSyncTime: null,
-          isSyncing: false,
-          notification: ToastNotification.error(AppErrorHandler.getUserMessage(e)),
-        ));
+        safeEmit(
+          PollLoaded(
+            polls: polls,
+            currentUserId: _currentUserId,
+            lastSyncTime: null,
+            isSyncing: false,
+            notification: ToastNotification.error(AppErrorHandler.getUserMessage(e)),
+          ),
+        );
       } else {
         if (state is PollLoaded) {
           safeEmit((state as PollLoaded).copyWith(isSyncing: false));
@@ -137,10 +141,7 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState>, RemoteSy
   // Remote actions（透過 RemoteSyncMixin.runWithSyncGuard）
   // ──────────────────────────────────────────
 
-  Future<bool> _performAction(
-    Future<Result<void, Exception>> Function() action,
-    String offlineMessage,
-  ) async {
+  Future<bool> _performAction(Future<Result<void, Exception>> Function() action, String offlineMessage) async {
     return await runWithSyncGuard(
       offlineMessage: offlineMessage,
       action: () async {
@@ -203,10 +204,7 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState>, RemoteSy
     final tripId = await _currentTripId;
     if (tripId == null) return false;
 
-    return await _performAction(
-      () => _pollRepository.delete(tripId, pollId),
-      '離線模式無法刪除投票',
-    );
+    return await _performAction(() => _pollRepository.delete(tripId, pollId), '離線模式無法刪除投票');
   }
 
   /// 關閉投票（TODO: 功能尚未支援）

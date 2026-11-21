@@ -141,10 +141,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
         content: Text('確定要從雲端刪除「${trip.name}」嗎？\n本地行程不會受影響。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-          SummitDestructiveButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('刪除'),
-          ),
+          SummitDestructiveButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('刪除')),
         ],
       ),
     );

@@ -43,10 +43,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
       final colorScheme = Theme.of(context).colorScheme;
       return ListTile(
         leading: const Icon(Icons.cloud_off),
-        title: Text(
-          widget.isLoading ? '讀取中...' : '請更新氣象資料',
-          style: TextStyle(color: colorScheme.onSurfaceVariant),
-        ),
+        title: Text(widget.isLoading ? '讀取中...' : '請更新氣象資料', style: TextStyle(color: colorScheme.onSurfaceVariant)),
         subtitle: const Text('點擊右側按鈕取得最新預報'),
         trailing: IconButton(
           onPressed: widget.onRefresh,
@@ -210,10 +207,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
           Icon(Icons.warning_amber, size: 16, color: colorScheme.onErrorContainer),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              '資料已過期，請點擊右上角重整更新',
-              style: TextStyle(fontSize: 12, color: colorScheme.onErrorContainer),
-            ),
+            child: Text('資料已過期，請點擊右上角重整更新', style: TextStyle(fontSize: 12, color: colorScheme.onErrorContainer)),
           ),
         ],
       ),

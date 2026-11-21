@@ -106,10 +106,14 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         final n = state.notification;
         if (n == null) return;
         switch (n.type) {
-          case ToastType.success: ToastService.success(n.message);
-          case ToastType.warning: ToastService.warning(n.message);
-          case ToastType.error: ToastService.error(n.message);
-          case ToastType.info: ToastService.info(n.message);
+          case ToastType.success:
+            ToastService.success(n.message);
+          case ToastType.warning:
+            ToastService.warning(n.message);
+          case ToastType.error:
+            ToastService.error(n.message);
+          case ToastType.info:
+            ToastService.info(n.message);
         }
         context.read<PollCubit>().clearNotification();
       },
@@ -503,10 +507,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         content: const Text('確定要刪除此投票嗎？此動作無法復原。'),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                          SummitDestructiveButton(
-                            onPressed: () => Navigator.pop(c, true),
-                            child: const Text('刪除'),
-                          ),
+                          SummitDestructiveButton(onPressed: () => Navigator.pop(c, true), child: const Text('刪除')),
                         ],
                       ),
                     );

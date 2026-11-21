@@ -49,9 +49,7 @@ class UserAvatar extends StatelessWidget {
     }
 
     final trimmedAvatar = avatar?.trim() ?? '';
-    final displayText = trimmedAvatar.isNotEmpty
-        ? trimmedAvatar
-        : (fallbackText.isNotEmpty ? fallbackText[0] : '');
+    final displayText = trimmedAvatar.isNotEmpty ? trimmedAvatar : (fallbackText.isNotEmpty ? fallbackText[0] : '');
 
     return CircleAvatar(
       radius: radius,

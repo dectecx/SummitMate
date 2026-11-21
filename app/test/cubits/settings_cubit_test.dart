@@ -150,10 +150,7 @@ void main() {
         when(() => mockRepo.getSettings()).thenAnswer((_) async => testSettings.copyWith(comfortWeightKg: 18.5));
         await cubit.updateComfortWeight(18.5);
       },
-      expect: () => [
-        isA<SettingsLoaded>()
-            .having((s) => s.settings.comfortWeightKg, 'comfortWeightKg', 18.5),
-      ],
+      expect: () => [isA<SettingsLoaded>().having((s) => s.settings.comfortWeightKg, 'comfortWeightKg', 18.5)],
       verify: (_) {
         verify(() => mockRepo.updateComfortWeight(18.5)).called(1);
       },

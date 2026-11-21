@@ -326,7 +326,8 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     }
 
     // Delegate permission check to PermissionService
-    final canManage = _currentUserId != null &&
+    final canManage =
+        _currentUserId != null &&
         _permissionService.canManageTripMembersWithTripRole(
           currentUserId: _currentUserId!,
           trip: widget.trip,

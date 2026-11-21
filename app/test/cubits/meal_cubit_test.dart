@@ -43,9 +43,9 @@ void main() {
 
       setUp(() {
         when(() => mockTripRepository.getMealPlanDays(any())).thenAnswer((_) async => Success(initialDays));
-        when(() => mockTripRepository.getDailyMealPlans(any())).thenAnswer((_) async => Success(
-          initialDays.map((d) => DailyMealPlan(dayInfo: d)).toList(),
-        ));
+        when(
+          () => mockTripRepository.getDailyMealPlans(any()),
+        ).thenAnswer((_) async => Success(initialDays.map((d) => DailyMealPlan(dayInfo: d)).toList()));
         when(() => mockTripRepository.markTripAsPendingUpdate(any())).thenAnswer((_) async => const Success(null));
       });
 
@@ -157,13 +157,13 @@ void main() {
     });
 
     group('Meal Item Management', () {
-      final initialDays = [
-        const MealPlanDay(id: 'day1', name: 'Day 1'),
-      ];
+      final initialDays = [const MealPlanDay(id: 'day1', name: 'Day 1')];
       final initialMeal = const MealItem(id: 'item1', name: 'Bread', weight: 100, calories: 200, quantity: 1);
       final initialDailyPlan = DailyMealPlan(
         dayInfo: initialDays[0],
-        meals: {MealType.breakfast: [initialMeal]},
+        meals: {
+          MealType.breakfast: [initialMeal],
+        },
       );
 
       setUp(() {
@@ -174,8 +174,11 @@ void main() {
       blocTest<MealCubit, MealState>(
         'addMealItem adds a new item',
         build: () {
-          when(() => mockTripRepository.addMealItem('day1', MealType.breakfast, 'Coffee', 50, 10, note: null))
-              .thenAnswer((_) async => const Success(MealItem(id: 'item2', name: 'Coffee', weight: 50, calories: 10, quantity: 1)));
+          when(
+            () => mockTripRepository.addMealItem('day1', MealType.breakfast, 'Coffee', 50, 10, note: null),
+          ).thenAnswer(
+            (_) async => const Success(MealItem(id: 'item2', name: 'Coffee', weight: 50, calories: 10, quantity: 1)),
+          );
           return mealCubit;
         },
         act: (cubit) async {
@@ -184,7 +187,7 @@ void main() {
         },
         expect: () => [
           isA<MealLoaded>(), // load
-          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.length, 'length', 2) // add
+          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.length, 'length', 2), // add
         ],
       );
 
@@ -200,14 +203,16 @@ void main() {
         },
         expect: () => [
           isA<MealLoaded>(), // load
-          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.length, 'length', 0) // remove
+          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.length, 'length', 0), // remove
         ],
       );
 
       blocTest<MealCubit, MealState>(
         'updateMealItemQuantity updates the quantity',
         build: () {
-          when(() => mockTripRepository.updateMealItemQuantity('item1', 3)).thenAnswer((_) async => const Success(null));
+          when(
+            () => mockTripRepository.updateMealItemQuantity('item1', 3),
+          ).thenAnswer((_) async => const Success(null));
           return mealCubit;
         },
         act: (cubit) async {
@@ -216,7 +221,11 @@ void main() {
         },
         expect: () => [
           isA<MealLoaded>(), // load
-          isA<MealLoaded>().having((s) => s.dailyPlans[0].meals[MealType.breakfast]?.first.quantity, 'quantity', 3) // update
+          isA<MealLoaded>().having(
+            (s) => s.dailyPlans[0].meals[MealType.breakfast]?.first.quantity,
+            'quantity',
+            3,
+          ), // update
         ],
       );
     });

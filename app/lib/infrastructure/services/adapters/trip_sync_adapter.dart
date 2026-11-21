@@ -98,10 +98,7 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
     for (final mealDay in mealDays) {
       final linkedDay = mealDay.linkedItineraryDay;
       if (linkedDay != null && !remote.dayNames.contains(linkedDay)) {
-        await _localDataSource.saveMealPlanDay(
-          mealDay.copyWith(linkedItineraryDay: null),
-          remote.id,
-        );
+        await _localDataSource.saveMealPlanDay(mealDay.copyWith(linkedItineraryDay: null), remote.id);
       }
     }
   }

@@ -273,8 +273,8 @@ class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implemen
 
   @override
   Future<void> updateMealItemQuantity(String itemId, int quantity) async {
-    await (update(mealItemsTable)..where((t) => t.id.equals(itemId))).write(
-      MealItemsTableCompanion(quantity: Value(quantity)),
-    );
+    await (update(
+      mealItemsTable,
+    )..where((t) => t.id.equals(itemId))).write(MealItemsTableCompanion(quantity: Value(quantity)));
   }
 }

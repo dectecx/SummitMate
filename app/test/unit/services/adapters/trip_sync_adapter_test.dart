@@ -109,19 +109,22 @@ void main() {
       verify(() => mockLocal.addTrip(any())).called(1);
     });
 
-    test('Given remote deleted and local pending (cloudSyncedAt set), When pullRemote, Then it deletes local trip', () async {
-      final localTrip = defaultTrip.copyWith(syncStatus: SyncStatus.pendingUpdate, cloudSyncedAt: DateTime.now());
-      when(
-        () => mockRemote.getRemoteTrips(),
-      ).thenAnswer((_) async => Success(PaginatedList(items: [], total: 0, page: 1, hasMore: false)));
-      when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
-      when(() => mockLocal.deleteTrip(any())).thenAnswer((_) async {});
+    test(
+      'Given remote deleted and local pending (cloudSyncedAt set), When pullRemote, Then it deletes local trip',
+      () async {
+        final localTrip = defaultTrip.copyWith(syncStatus: SyncStatus.pendingUpdate, cloudSyncedAt: DateTime.now());
+        when(
+          () => mockRemote.getRemoteTrips(),
+        ).thenAnswer((_) async => Success(PaginatedList(items: [], total: 0, page: 1, hasMore: false)));
+        when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
+        when(() => mockLocal.deleteTrip(any())).thenAnswer((_) async {});
 
-      final result = await adapter.pullRemote();
+        final result = await adapter.pullRemote();
 
-      expect(result.conflictCount, 1);
-      verify(() => mockLocal.deleteTrip('1')).called(1);
-    });
+        expect(result.conflictCount, 1);
+        verify(() => mockLocal.deleteTrip('1')).called(1);
+      },
+    );
 
     test('Given local pending and remote newer (>5s), When pullRemote, Then remote wins', () async {
       final localTrip = defaultTrip.copyWith(
@@ -163,22 +166,24 @@ void main() {
       verify(() => mockLocal.updateTrip(any())).called(1);
     });
 
-    test('Given remote trip removed Day 3, When upsertLocalSynced, Then orphaned linkedItineraryDay is nulled', () async {
-      final remoteTrip = defaultTrip.copyWith(dayNames: ['Day 1', 'Day 2']);
-      const mealDay1 = MealPlanDay(id: 'm1', name: 'Meal 1', linkedItineraryDay: 'Day 1');
-      const mealDay3 = MealPlanDay(id: 'm3', name: 'Meal 3', linkedItineraryDay: 'Day 3');
+    test(
+      'Given remote trip removed Day 3, When upsertLocalSynced, Then orphaned linkedItineraryDay is nulled',
+      () async {
+        final remoteTrip = defaultTrip.copyWith(dayNames: ['Day 1', 'Day 2']);
+        const mealDay1 = MealPlanDay(id: 'm1', name: 'Meal 1', linkedItineraryDay: 'Day 1');
+        const mealDay3 = MealPlanDay(id: 'm3', name: 'Meal 3', linkedItineraryDay: 'Day 3');
 
-      when(() => mockLocal.addTrip(any())).thenAnswer((_) async {});
-      when(() => mockLocal.getMealPlanDays('1')).thenAnswer((_) async => [mealDay1, mealDay3]);
-      when(() => mockLocal.saveMealPlanDay(any(), any())).thenAnswer((_) async {});
+        when(() => mockLocal.addTrip(any())).thenAnswer((_) async {});
+        when(() => mockLocal.getMealPlanDays('1')).thenAnswer((_) async => [mealDay1, mealDay3]);
+        when(() => mockLocal.saveMealPlanDay(any(), any())).thenAnswer((_) async {});
 
-      await adapter.upsertLocalSynced(remoteTrip, null);
+        await adapter.upsertLocalSynced(remoteTrip, null);
 
-      verifyNever(() => mockLocal.saveMealPlanDay(mealDay1, '1'));
-      verify(() => mockLocal.saveMealPlanDay(
-        const MealPlanDay(id: 'm3', name: 'Meal 3', linkedItineraryDay: null),
-        '1',
-      )).called(1);
-    });
+        verifyNever(() => mockLocal.saveMealPlanDay(mealDay1, '1'));
+        verify(
+          () => mockLocal.saveMealPlanDay(const MealPlanDay(id: 'm3', name: 'Meal 3', linkedItineraryDay: null), '1'),
+        ).called(1);
+      },
+    );
   });
 }

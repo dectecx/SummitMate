@@ -52,10 +52,7 @@ mixin RepositoryRemoteAccess {
   ///
   /// 立即回傳本地快取 [local]；若在線上且提供 [refresh]，則在背景觸發一次刷新
   /// （不等待、不阻塞回傳），刷新負責更新本地資料。
-  Future<List<T>> cachedRead<T>(
-    Future<List<T>> Function() local, {
-    Future<void> Function()? refresh,
-  }) async {
+  Future<List<T>> cachedRead<T>(Future<List<T>> Function() local, {Future<void> Function()? refresh}) async {
     final data = await local();
     if (refresh != null && !isOffline) {
       unawaited(refresh());

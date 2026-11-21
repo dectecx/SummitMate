@@ -12,8 +12,7 @@ class ConnectivityCubit extends Cubit<ConnectivityState> with SafeEmitMixin<Conn
   final IConnectivityService _connectivityService;
   StreamSubscription<bool>? _connectivitySubscription;
 
-  ConnectivityCubit(this._connectivityService)
-      : super(ConnectivityInitial(isOffline: _connectivityService.isOffline)) {
+  ConnectivityCubit(this._connectivityService) : super(ConnectivityInitial(isOffline: _connectivityService.isOffline)) {
     _init();
   }
 

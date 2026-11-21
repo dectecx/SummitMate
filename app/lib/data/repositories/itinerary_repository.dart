@@ -121,9 +121,7 @@ class ItineraryRepository implements IItineraryRepository {
         final localItem = localDataMap[item.id];
         if (localItem != null) {
           // 合併本地打卡狀態
-          itemToSave = item.copyWith(
-            isCheckedIn: localItem.isCheckedIn,
-          );
+          itemToSave = item.copyWith(isCheckedIn: localItem.isCheckedIn);
         }
         await _localDataSource.addItem(itemToSave);
       }

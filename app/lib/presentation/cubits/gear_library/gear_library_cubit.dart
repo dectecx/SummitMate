@@ -204,8 +204,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> with SafeEmitMixin<GearLi
   Future<GearLibraryItem?> getById(String id) => _repository.getById(id);
 
   /// 取得連結此裝備的行程資訊
-  Future<List<LinkedTripInfo>> getLinkedTrips(String libraryItemId) =>
-      _syncService.getLinkedTrips(libraryItemId);
+  Future<List<LinkedTripInfo>> getLinkedTrips(String libraryItemId) => _syncService.getLinkedTrips(libraryItemId);
 
   void reset() {
     safeEmit(const GearLibraryInitial());

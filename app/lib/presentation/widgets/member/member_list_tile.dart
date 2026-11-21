@@ -62,11 +62,7 @@ class MemberListTile extends StatelessWidget {
     }
 
     return ListTile(
-      leading: UserAvatar(
-        avatar: member.avatar,
-        fallbackText: member.name,
-        radius: 20,
-      ),
+      leading: UserAvatar(avatar: member.avatar, fallbackText: member.name, radius: 20),
       title: Text(member.name),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

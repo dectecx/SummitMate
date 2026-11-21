@@ -36,11 +36,7 @@ class _TestAdapter extends BaseSyncAdapter<_Entity> {
   final List<String> pushedOrder = [];
   final List<String> deletedLocally = [];
 
-  _TestAdapter(
-    this.db, {
-    required this.local,
-    this.failingIds = const {},
-  });
+  _TestAdapter(this.db, {required this.local, this.failingIds = const {}});
 
   @override
   String get tableName => 'test_table';
@@ -120,10 +116,7 @@ void main() {
     // 已在各 adapter 的 pushOne 測試中覆蓋。
 
     test('Given a delete, When pushPending, Then it does not mark synced', () async {
-      final adapter = _TestAdapter(
-        mockDb,
-        local: [const _Entity('d', SyncStatus.pendingDelete)],
-      );
+      final adapter = _TestAdapter(mockDb, local: [const _Entity('d', SyncStatus.pendingDelete)]);
 
       final result = await adapter.pushPending();
 
@@ -133,11 +126,7 @@ void main() {
     });
 
     test('Given a failing push, When pushPending, Then it records error and marks as error', () async {
-      final adapter = _TestAdapter(
-        mockDb,
-        local: [const _Entity('x', SyncStatus.pendingUpdate)],
-        failingIds: {'x'},
-      );
+      final adapter = _TestAdapter(mockDb, local: [const _Entity('x', SyncStatus.pendingUpdate)], failingIds: {'x'});
 
       final result = await adapter.pushPending();
 
@@ -149,10 +138,7 @@ void main() {
     test('Given deletes mixed with creates, When pushPending, Then deletes are pushed last', () async {
       final adapter = _TestAdapter(
         mockDb,
-        local: [
-          const _Entity('del', SyncStatus.pendingDelete),
-          const _Entity('new', SyncStatus.pendingCreate),
-        ],
+        local: [const _Entity('del', SyncStatus.pendingDelete), const _Entity('new', SyncStatus.pendingCreate)],
       );
 
       await adapter.pushPending();

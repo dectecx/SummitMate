@@ -8,10 +8,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: UserAvatar(
-              avatar: '🐻',
-              fallbackText: 'Alice',
-            ),
+            body: UserAvatar(avatar: '🐻', fallbackText: 'Alice'),
           ),
         ),
       );
@@ -24,10 +21,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: UserAvatar(
-              avatar: '',
-              fallbackText: 'Bob',
-            ),
+            body: UserAvatar(avatar: '', fallbackText: 'Bob'),
           ),
         ),
       );
@@ -36,12 +30,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: UserAvatar(
-              avatar: null,
-              fallbackText: 'Charlie',
-            ),
-          ),
+          home: Scaffold(body: UserAvatar(avatar: null, fallbackText: 'Charlie')),
         ),
       );
 
@@ -52,10 +41,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: UserAvatar(
-              avatar: 'https://example.com/avatar.png',
-              fallbackText: 'Dave',
-            ),
+            body: UserAvatar(avatar: 'https://example.com/avatar.png', fallbackText: 'Dave'),
           ),
         ),
       );

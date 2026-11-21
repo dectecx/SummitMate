@@ -42,15 +42,18 @@ void main() {
       build: () => cubit,
       seed: () => GroupEventReviewLoaded([sampleApp]),
       act: (c) async {
-        when(() => mockRepo.reviewApplication(
-          eventId: eventId,
-          applicationId: 'app-1',
-          action: GroupEventReviewAction.approve,
-          note: null,
-        )).thenAnswer((_) async => const Success(null));
+        when(
+          () => mockRepo.reviewApplication(
+            eventId: eventId,
+            applicationId: 'app-1',
+            action: GroupEventReviewAction.approve,
+            note: null,
+          ),
+        ).thenAnswer((_) async => const Success(null));
 
-        when(() => mockRepo.getApplications(eventId: eventId))
-            .thenAnswer((_) async => Success([sampleApp.copyWith(status: GroupEventApplicationStatus.approved)]));
+        when(
+          () => mockRepo.getApplications(eventId: eventId),
+        ).thenAnswer((_) async => Success([sampleApp.copyWith(status: GroupEventApplicationStatus.approved)]));
 
         await c.reviewApplication('app-1', GroupEventReviewAction.approve);
       },
@@ -61,12 +64,14 @@ void main() {
         isA<GroupEventReviewLoaded>(),
       ],
       verify: (_) {
-        verify(() => mockRepo.reviewApplication(
-          eventId: eventId,
-          applicationId: 'app-1',
-          action: GroupEventReviewAction.approve,
-          note: null,
-        )).called(1);
+        verify(
+          () => mockRepo.reviewApplication(
+            eventId: eventId,
+            applicationId: 'app-1',
+            action: GroupEventReviewAction.approve,
+            note: null,
+          ),
+        ).called(1);
       },
     );
   });

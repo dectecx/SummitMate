@@ -74,8 +74,7 @@ class GlobalErrorListener extends StatelessWidget {
         ),
         // 監聽設定的一次性錯誤 (局部更新失敗時的提示，狀態仍維持 SettingsLoaded)
         BlocListener<SettingsCubit, SettingsState>(
-          listenWhen: (previous, current) =>
-              current is SettingsLoaded && current.transientError != null,
+          listenWhen: (previous, current) => current is SettingsLoaded && current.transientError != null,
           listener: (context, state) {
             if (state is SettingsLoaded && state.transientError != null) {
               ErrorSnackbar.show(context, message: state.transientError!);

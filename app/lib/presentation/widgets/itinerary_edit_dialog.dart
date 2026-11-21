@@ -160,10 +160,7 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
         content: const Text('您有未儲存的內容，確定要離開嗎？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('繼續編輯')),
-          SummitDestructiveButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('捨棄'),
-          ),
+          SummitDestructiveButton(onPressed: () => Navigator.pop(context, true), child: const Text('捨棄')),
         ],
       ),
     );

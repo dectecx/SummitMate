@@ -34,7 +34,7 @@ void main() {
     await GetIt.I.reset();
     final mockAppErrorCubit = MockAppErrorCubit();
     GetIt.I.registerSingleton<AppErrorCubit>(mockAppErrorCubit);
-    
+
     mockAuthService = MockAuthService();
     mockUsageTrackingService = MockUsageTrackingService();
     authStreamController = StreamController<UserProfile?>.broadcast();

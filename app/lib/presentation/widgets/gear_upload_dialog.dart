@@ -213,9 +213,7 @@ class _VisibilityOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Radio<GearSetVisibility>(
-              value: value,
-            ),
+            Radio<GearSetVisibility>(value: value),
             Text(icon, style: const TextStyle(fontSize: 18)),
             const SizedBox(width: 8),
             Expanded(

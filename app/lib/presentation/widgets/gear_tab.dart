@@ -75,179 +75,175 @@ class _GearTabState extends State<GearTab> {
     final mealWeight = mealState is MealLoaded ? mealState.totalWeightKg : 0.0;
 
     return TutorialAwareGearBuilder(
-        builder: (context, items) {
-          final totalWeight = items.fold(0.0, (sum, item) => sum + item.totalWeight) / 1000 + mealWeight;
+      builder: (context, items) {
+        final totalWeight = items.fold(0.0, (sum, item) => sum + item.totalWeight) / 1000 + mealWeight;
 
-          final gearState = context.watch<GearCubit>().state;
-          final isTutorial = context.watch<TutorialCubit>().state is TutorialActive;
+        final gearState = context.watch<GearCubit>().state;
+        final isTutorial = context.watch<TutorialCubit>().state is TutorialActive;
 
-          if (!isTutorial) {
-            if (gearState is GearInitial) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (gearState is GearLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (gearState is GearError) {
-              return Center(child: Text('Error: ${gearState.message}'));
-            }
-
-            if (gearState is! GearLoaded) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        if (!isTutorial) {
+          if (gearState is GearInitial) {
+            return const Center(child: CircularProgressIndicator());
           }
 
-          // 非教學模式直接沿用 GearLoaded 的篩選/分組 getter；
-          // 教學模式無 GearLoaded 狀態，對 mock items 做無篩選分組。
-          final itemsByCategory = !isTutorial && gearState is GearLoaded
-              ? gearState.itemsByCategory
-              : GearFilter.groupByCategory(items, categoryOf: (item) => item.category);
+          if (gearState is GearLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          return Scaffold(
-            body: ResponsiveLayout(
-              mobile: Column(
-                children: [
-                  // 搜尋欄
-                  GearSearchBar(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      context.read<GearCubit>().setSearchQuery(value);
-                      setState(() {});
-                    },
-                    onClear: () {
-                      _searchController.clear();
-                      context.read<GearCubit>().setSearchQuery('');
-                      setState(() {});
-                    },
-                  ),
+          if (gearState is GearError) {
+            return Center(child: Text('Error: ${gearState.message}'));
+          }
 
-                  // 模式切換器
-                  GearModeSelector(selectedMode: _mode, onModeChanged: (newMode) => setState(() => _mode = newMode)),
-                  const SizedBox(height: 8),
+          if (gearState is! GearLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
+        }
 
-                  // 列表內容
-                  Expanded(
-                    child: CustomScrollView(
-                      slivers: [
+        // 非教學模式直接沿用 GearLoaded 的篩選/分組 getter；
+        // 教學模式無 GearLoaded 狀態，對 mock items 做無篩選分組。
+        final itemsByCategory = !isTutorial && gearState is GearLoaded
+            ? gearState.itemsByCategory
+            : GearFilter.groupByCategory(items, categoryOf: (item) => item.category);
+
+        return Scaffold(
+          body: ResponsiveLayout(
+            mobile: Column(
+              children: [
+                // 搜尋欄
+                GearSearchBar(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    context.read<GearCubit>().setSearchQuery(value);
+                    setState(() {});
+                  },
+                  onClear: () {
+                    _searchController.clear();
+                    context.read<GearCubit>().setSearchQuery('');
+                    setState(() {});
+                  },
+                ),
+
+                // 模式切換器
+                GearModeSelector(selectedMode: _mode, onModeChanged: (newMode) => setState(() => _mode = newMode)),
+                const SizedBox(height: 8),
+
+                // 列表內容
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            children: [
+                              const GearQuickLinks(),
+                              const SizedBox(height: 8),
+                              GearTotalWeightCard(totalWeight: totalWeight),
+                              const SizedBox(height: 8),
+                              GearMealCard(mealWeight: mealWeight),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (items.isEmpty)
+                        SliverToBoxAdapter(child: _buildEmptyState(context))
+                      else
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                          sliver: SliverToBoxAdapter(
-                            child: Column(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverMainAxisGroup(
+                            slivers: [
+                              for (final entry in itemsByCategory.entries)
+                                GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                            ],
+                          ),
+                        ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            desktop: Column(
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: GearSearchBar(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        context.read<GearCubit>().setSearchQuery(value);
+                        setState(() {});
+                      },
+                      onClear: () {
+                        _searchController.clear();
+                        context.read<GearCubit>().setSearchQuery('');
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 左側資訊面板
+                          SizedBox(
+                            width: 360,
+                            child: ListView(
+                              padding: const EdgeInsets.all(16),
                               children: [
+                                GearModeSelector(
+                                  selectedMode: _mode,
+                                  onModeChanged: (newMode) => setState(() => _mode = newMode),
+                                ),
+                                const SizedBox(height: 16),
                                 const GearQuickLinks(),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 16),
                                 GearTotalWeightCard(totalWeight: totalWeight),
                                 const SizedBox(height: 8),
                                 GearMealCard(mealWeight: mealWeight),
                               ],
                             ),
                           ),
-                        ),
-                        if (items.isEmpty)
-                          SliverToBoxAdapter(child: _buildEmptyState(context))
-                        else
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            sliver: SliverMainAxisGroup(
+                          const VerticalDivider(width: 1),
+                          // 右側裝備列表
+                          Expanded(
+                            child: CustomScrollView(
                               slivers: [
-                                for (final entry in itemsByCategory.entries)
-                                  GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                                if (items.isEmpty)
+                                  SliverToBoxAdapter(child: _buildEmptyState(context))
+                                else
+                                  SliverPadding(
+                                    padding: const EdgeInsets.all(16),
+                                    sliver: SliverMainAxisGroup(
+                                      slivers: [
+                                        for (final entry in itemsByCategory.entries)
+                                          GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                                      ],
+                                    ),
+                                  ),
+                                const SliverToBoxAdapter(child: SizedBox(height: 80)),
                               ],
                             ),
                           ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 80)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              desktop: Column(
-                children: [
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1200),
-                      child: GearSearchBar(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          context.read<GearCubit>().setSearchQuery(value);
-                          setState(() {});
-                        },
-                        onClear: () {
-                          _searchController.clear();
-                          context.read<GearCubit>().setSearchQuery('');
-                          setState(() {});
-                        },
+                        ],
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1200),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 左側資訊面板
-                            SizedBox(
-                              width: 360,
-                              child: ListView(
-                                padding: const EdgeInsets.all(16),
-                                children: [
-                                  GearModeSelector(
-                                    selectedMode: _mode,
-                                    onModeChanged: (newMode) => setState(() => _mode = newMode),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const GearQuickLinks(),
-                                  const SizedBox(height: 16),
-                                  GearTotalWeightCard(totalWeight: totalWeight),
-                                  const SizedBox(height: 8),
-                                  GearMealCard(mealWeight: mealWeight),
-                                ],
-                              ),
-                            ),
-                            const VerticalDivider(width: 1),
-                            // 右側裝備列表
-                            Expanded(
-                              child: CustomScrollView(
-                                slivers: [
-                                  if (items.isEmpty)
-                                    SliverToBoxAdapter(child: _buildEmptyState(context))
-                                  else
-                                    SliverPadding(
-                                      padding: const EdgeInsets.all(16),
-                                      sliver: SliverMainAxisGroup(
-                                        slivers: [
-                                          for (final entry in itemsByCategory.entries)
-                                            GearCategorySection(
-                                              category: entry.key,
-                                              items: entry.value,
-                                              mode: _mode,
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  const SliverToBoxAdapter(child: SizedBox(height: 80)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () => AddGearDialog.show(context),
-              child: const Icon(Icons.add),
-            ),
-          );
-        },
-      );
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => AddGearDialog.show(context),
+            child: const Icon(Icons.add),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildEmptyState(BuildContext context) {

@@ -7,9 +7,6 @@ part 'linked_trip_info.freezed.dart';
 /// 用於顯示裝備庫項目被哪些行程使用，取代原本的 `Map<String, dynamic>`。
 @freezed
 abstract class LinkedTripInfo with _$LinkedTripInfo {
-  const factory LinkedTripInfo({
-    required String tripId,
-    required String tripName,
-    required DateTime startDate,
-  }) = _LinkedTripInfo;
+  const factory LinkedTripInfo({required String tripId, required String tripName, required DateTime startDate}) =
+      _LinkedTripInfo;
 }

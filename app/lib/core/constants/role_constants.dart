@@ -32,10 +32,5 @@ class RoleConstants {
     return displayName[normalized] ?? role;
   }
 
-  static const Map<String, String> displayName = {
-    admin: '管理員',
-    leader: '團長',
-    guide: '嚮導',
-    member: '成員',
-  };
+  static const Map<String, String> displayName = {admin: '管理員', leader: '團長', guide: '嚮導', member: '成員'};
 }

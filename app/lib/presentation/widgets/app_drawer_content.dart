@@ -268,10 +268,7 @@ class AppDrawerContent extends StatelessWidget {
             content: const Text('您目前處於離線狀態。\n\n如果現在登出，在恢復網路連線前，您將無法重新登入。\n\n確定要登出嗎？'),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-              SummitDestructiveButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('確定登出'),
-              ),
+              SummitDestructiveButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('確定登出')),
             ],
           ),
         );

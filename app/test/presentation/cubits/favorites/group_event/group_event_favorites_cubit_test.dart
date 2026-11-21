@@ -41,15 +41,9 @@ void main() {
   });
 
   group('GroupEventFavoritesCubit', () {
-    test(
-      'Given GroupEventFavoritesCubit, When initialized, Then initial state is GroupEventFavoritesInitial',
-      () {
-        expect(
-          GroupEventFavoritesCubit(mockRepo).state,
-          isA<GroupEventFavoritesInitial>(),
-        );
-      },
-    );
+    test('Given GroupEventFavoritesCubit, When initialized, Then initial state is GroupEventFavoritesInitial', () {
+      expect(GroupEventFavoritesCubit(mockRepo).state, isA<GroupEventFavoritesInitial>());
+    });
 
     // ─── loadFavorites ────────────────────────────────────────────────────────
 
@@ -58,12 +52,7 @@ void main() {
       build: () {
         when(() => mockRepo.getFavorites()).thenAnswer(
           (_) async => Success(
-            PaginatedList(
-              items: [tFavoriteGroupEvent, tFavoriteMountain],
-              total: 2,
-              page: 1,
-              hasMore: false,
-            ),
+            PaginatedList(items: [tFavoriteGroupEvent, tFavoriteMountain], total: 2, page: 1, hasMore: false),
           ),
         );
         return GroupEventFavoritesCubit(mockRepo);
@@ -71,27 +60,18 @@ void main() {
       act: (cubit) => cubit.loadFavorites(),
       expect: () => [
         isA<GroupEventFavoritesLoading>(),
-        isA<GroupEventFavoritesLoaded>().having(
-          (s) => s.favoriteIds,
-          'favoriteIds',
-          ['event-1'],
-        ),
+        isA<GroupEventFavoritesLoaded>().having((s) => s.favoriteIds, 'favoriteIds', ['event-1']),
       ],
     );
 
     blocTest<GroupEventFavoritesCubit, GroupEventFavoritesState>(
       'Given API failure, When loadFavorites, Then emits [Loading, Error]',
       build: () {
-        when(
-          () => mockRepo.getFavorites(),
-        ).thenAnswer((_) async => Failure(Exception('network error')));
+        when(() => mockRepo.getFavorites()).thenAnswer((_) async => Failure(Exception('network error')));
         return GroupEventFavoritesCubit(mockRepo);
       },
       act: (cubit) => cubit.loadFavorites(),
-      expect: () => [
-        isA<GroupEventFavoritesLoading>(),
-        isA<GroupEventFavoritesError>(),
-      ],
+      expect: () => [isA<GroupEventFavoritesLoading>(), isA<GroupEventFavoritesError>()],
     );
 
     // ─── toggleFavorite ───────────────────────────────────────────────────────
@@ -100,22 +80,14 @@ void main() {
       'Given loaded state without id, When toggleFavorite, Then emits Loaded with id added',
       build: () {
         when(
-          () => mockRepo.toggleFavorite(
-            'event-new',
-            FavoriteType.groupEvent,
-            true,
-          ),
+          () => mockRepo.toggleFavorite('event-new', FavoriteType.groupEvent, true),
         ).thenAnswer((_) async => const Success(null));
         return GroupEventFavoritesCubit(mockRepo);
       },
       seed: () => const GroupEventFavoritesLoaded([]),
       act: (cubit) => cubit.toggleFavorite('event-new'),
       expect: () => [
-        isA<GroupEventFavoritesLoaded>().having(
-          (s) => s.favoriteIds,
-          'favoriteIds',
-          contains('event-new'),
-        ),
+        isA<GroupEventFavoritesLoaded>().having((s) => s.favoriteIds, 'favoriteIds', contains('event-new')),
       ],
     );
 
@@ -123,22 +95,14 @@ void main() {
       'Given loaded state with id, When toggleFavorite, Then emits Loaded with id removed',
       build: () {
         when(
-          () => mockRepo.toggleFavorite(
-            'event-1',
-            FavoriteType.groupEvent,
-            false,
-          ),
+          () => mockRepo.toggleFavorite('event-1', FavoriteType.groupEvent, false),
         ).thenAnswer((_) async => const Success(null));
         return GroupEventFavoritesCubit(mockRepo);
       },
       seed: () => const GroupEventFavoritesLoaded(['event-1']),
       act: (cubit) => cubit.toggleFavorite('event-1'),
       expect: () => [
-        isA<GroupEventFavoritesLoaded>().having(
-          (s) => s.favoriteIds,
-          'favoriteIds',
-          isNot(contains('event-1')),
-        ),
+        isA<GroupEventFavoritesLoaded>().having((s) => s.favoriteIds, 'favoriteIds', isNot(contains('event-1'))),
       ],
     );
 
@@ -153,21 +117,10 @@ void main() {
       'Given toggle failure, When toggleFavorite, Then emits Error then re-loads',
       build: () {
         when(
-          () => mockRepo.toggleFavorite(
-            'event-1',
-            FavoriteType.groupEvent,
-            false,
-          ),
+          () => mockRepo.toggleFavorite('event-1', FavoriteType.groupEvent, false),
         ).thenAnswer((_) async => Failure(Exception('server error')));
         when(() => mockRepo.getFavorites()).thenAnswer(
-          (_) async => Success(
-            PaginatedList(
-              items: [tFavoriteGroupEvent],
-              total: 1,
-              page: 1,
-              hasMore: false,
-            ),
-          ),
+          (_) async => Success(PaginatedList(items: [tFavoriteGroupEvent], total: 1, page: 1, hasMore: false)),
         );
         return GroupEventFavoritesCubit(mockRepo);
       },
@@ -182,23 +135,16 @@ void main() {
 
     // ─── isFavorite ───────────────────────────────────────────────────────────
 
-    test(
-      'Given Loaded state with id, When calling isFavorite, Then it returns true',
-      () {
-        final cubit = GroupEventFavoritesCubit(mockRepo)
-          ..emit(const GroupEventFavoritesLoaded(['event-1']));
-        expect(cubit.isFavorite('event-1'), isTrue);
-        expect(cubit.isFavorite('event-other'), isFalse);
-      },
-    );
+    test('Given Loaded state with id, When calling isFavorite, Then it returns true', () {
+      final cubit = GroupEventFavoritesCubit(mockRepo)..emit(const GroupEventFavoritesLoaded(['event-1']));
+      expect(cubit.isFavorite('event-1'), isTrue);
+      expect(cubit.isFavorite('event-other'), isFalse);
+    });
 
-    test(
-      'Given non-Loaded state, When calling isFavorite, Then it returns false',
-      () {
-        final cubit = GroupEventFavoritesCubit(mockRepo);
-        expect(cubit.isFavorite('event-1'), isFalse);
-      },
-    );
+    test('Given non-Loaded state, When calling isFavorite, Then it returns false', () {
+      final cubit = GroupEventFavoritesCubit(mockRepo);
+      expect(cubit.isFavorite('event-1'), isFalse);
+    });
 
     // ─── reset ────────────────────────────────────────────────────────────────
 

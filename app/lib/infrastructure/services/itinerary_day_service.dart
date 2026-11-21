@@ -1,4 +1,4 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 import '../tools/log_service.dart';
@@ -17,11 +17,7 @@ class ItineraryDayService implements IItineraryDayService {
   ItineraryDayService(this._itineraryRepository, this._tripRepository);
 
   @override
-  Future<Result<void, Exception>> renameDay(
-    String tripId,
-    String oldName,
-    String newName,
-  ) async {
+  Future<Result<void, Exception>> renameDay(String tripId, String oldName, String newName) async {
     try {
       final tripResult = await _tripRepository.getTripById(tripId);
       final trip = switch (tripResult) {
@@ -53,14 +49,9 @@ class ItineraryDayService implements IItineraryDayService {
       // 2. 批次更新對應的 ItineraryItem.day
       final items = (await _itineraryRepository.getByTripId(tripId)).where((i) => i.day == oldName);
       for (final item in items) {
-        final updateResult = await _itineraryRepository.update(
-          item.copyWith(day: newName, updatedAt: DateTime.now()),
-        );
+        final updateResult = await _itineraryRepository.update(item.copyWith(day: newName, updatedAt: DateTime.now()));
         if (updateResult is Failure) {
-          LogService.error(
-            'Failed to update item day for item ${item.id}: ${updateResult.exception}',
-            source: _source,
-          );
+          LogService.error('Failed to update item day for item ${item.id}: ${updateResult.exception}', source: _source);
         }
       }
 
@@ -73,11 +64,7 @@ class ItineraryDayService implements IItineraryDayService {
   }
 
   @override
-  Future<Result<void, Exception>> removeDay(
-    String tripId,
-    String name, {
-    bool confirmUnlink = false,
-  }) async {
+  Future<Result<void, Exception>> removeDay(String tripId, String name, {bool confirmUnlink = false}) async {
     try {
       final tripResult = await _tripRepository.getTripById(tripId);
       final trip = switch (tripResult) {
@@ -103,18 +90,11 @@ class ItineraryDayService implements IItineraryDayService {
         );
 
         if (linkedDay != null && !confirmUnlink) {
-          return Failure(
-            MealPlanDayLinkedToItineraryException(dayName: name, mealPlanDayId: linkedDay.id),
-          );
+          return Failure(MealPlanDayLinkedToItineraryException(dayName: name, mealPlanDayId: linkedDay.id));
         }
 
         if (linkedDay != null && confirmUnlink) {
-          await _tripRepository.updateMealPlanDay(
-            tripId,
-            linkedDay.id,
-            linkedDay.name,
-            linkedItineraryDay: null,
-          );
+          await _tripRepository.updateMealPlanDay(tripId, linkedDay.id, linkedDay.name, linkedItineraryDay: null);
         }
       }
 

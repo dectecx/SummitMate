@@ -146,9 +146,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     ),
                     floatingActionButton: OfflineGate(
                       onOfflineTap: () {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
                       },
                       child: FloatingActionButton(
                         onPressed: () => _showAddMessageDialog(
@@ -271,14 +269,8 @@ class _MessageListScreenState extends State<MessageListScreen> {
             OfflineGate(
               child: IconButton(
                 icon: const Icon(Icons.reply, size: 20),
-                onPressed: () => _showReplyDialog(
-                  context,
-                  context.read<MessageCubit>(),
-                  selectedCategory,
-                  username,
-                  avatar,
-                  msg.id,
-                ),
+                onPressed: () =>
+                    _showReplyDialog(context, context.read<MessageCubit>(), selectedCategory, username, avatar, msg.id),
                 tooltip: '回覆',
               ),
             ),
@@ -364,126 +356,123 @@ class _MessageListScreenState extends State<MessageListScreen> {
         context: context,
         barrierDismissible: true,
         builder: (dialogContext) => StatefulBuilder(
-        builder: (innerContext, setState) {
-          Future<bool> checkDismiss() async {
-            if (contentController.text.trim().isEmpty) return true;
-            final confirm = await showDialog<bool>(
-              context: dialogContext,
-              builder: (ctx) => AlertDialog(
-                title: const Text('捨棄留言？'),
-                content: const Text('您有未發送的內容，確定要離開嗎？'),
+          builder: (innerContext, setState) {
+            Future<bool> checkDismiss() async {
+              if (contentController.text.trim().isEmpty) return true;
+              final confirm = await showDialog<bool>(
+                context: dialogContext,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('捨棄留言？'),
+                  content: const Text('您有未發送的內容，確定要離開嗎？'),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
+                    SummitDestructiveButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('捨棄')),
+                  ],
+                ),
+              );
+              return confirm ?? false;
+            }
+
+            return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+                if (isSubmitting) return;
+                final shouldPop = await checkDismiss();
+                if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
+              },
+              child: AlertDialog(
+                title: Text(isReply ? '回覆留言' : _getCategoryName(category)),
+                content: SizedBox(
+                  width: 600,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isReply)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              CircleAvatar(child: Text(avatar)),
+                              const SizedBox(width: 8),
+                              Text('以 $username 的身分發言'),
+                            ],
+                          ),
+                        ),
+                      TextField(
+                        controller: contentController,
+                        enabled: !isSubmitting,
+                        decoration: InputDecoration(
+                          labelText: isReply ? '回覆內容' : '留言內容',
+                          hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
+                          border: const OutlineInputBorder(),
+                        ),
+                        maxLines: 5,
+                        minLines: 3,
+                        textInputAction: TextInputAction.newline,
+                        autofocus: true,
+                      ),
+                    ],
+                  ),
+                ),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
-                  SummitDestructiveButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('捨棄'),
+                  TextButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            final shouldPop = await checkDismiss();
+                            if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
+                          },
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            final content = contentController.text.trim();
+                            if (content.isNotEmpty) {
+                              setState(() => isSubmitting = true);
+                              try {
+                                await cubit.addMessage(
+                                  user: username.isNotEmpty ? username : 'Anonymous',
+                                  avatar: avatar,
+                                  content: content,
+                                  parentId: parentId,
+                                );
+                                if (dialogContext.mounted) {
+                                  Navigator.pop(dialogContext);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('留言傳送成功！'), backgroundColor: Colors.green),
+                                    );
+                                  }
+                                }
+                              } catch (e) {
+                                if (innerContext.mounted) {
+                                  setState(() => isSubmitting = false);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red));
+                                  }
+                                }
+                              }
+                            }
+                          },
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('發送'),
                   ),
                 ],
               ),
             );
-            return confirm ?? false;
-          }
-
-          return PopScope(
-            canPop: false,
-            onPopInvokedWithResult: (didPop, result) async {
-              if (didPop) return;
-              if (isSubmitting) return;
-              final shouldPop = await checkDismiss();
-              if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-            child: AlertDialog(
-              title: Text(isReply ? '回覆留言' : _getCategoryName(category)),
-              content: SizedBox(
-                width: 600,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!isReply)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
-                          children: [
-                            CircleAvatar(child: Text(avatar)),
-                            const SizedBox(width: 8),
-                            Text('以 $username 的身分發言'),
-                          ],
-                        ),
-                      ),
-                    TextField(
-                      controller: contentController,
-                      enabled: !isSubmitting,
-                      decoration: InputDecoration(
-                        labelText: isReply ? '回覆內容' : '留言內容',
-                        hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
-                        border: const OutlineInputBorder(),
-                      ),
-                      maxLines: 5,
-                      minLines: 3,
-                      textInputAction: TextInputAction.newline,
-                      autofocus: true,
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          final shouldPop = await checkDismiss();
-                          if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
-                        },
-                  child: const Text('取消'),
-                ),
-                FilledButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          final content = contentController.text.trim();
-                          if (content.isNotEmpty) {
-                            setState(() => isSubmitting = true);
-                            try {
-                              await cubit.addMessage(
-                                user: username.isNotEmpty ? username : 'Anonymous',
-                                avatar: avatar,
-                                content: content,
-                                parentId: parentId,
-                              );
-                              if (dialogContext.mounted) {
-                                Navigator.pop(dialogContext);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('留言傳送成功！'), backgroundColor: Colors.green),
-                                  );
-                                }
-                              }
-                            } catch (e) {
-                              if (innerContext.mounted) {
-                                setState(() => isSubmitting = false);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red));
-                                }
-                              }
-                            }
-                          }
-                        },
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('發送'),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+          },
+        ),
+      );
     } finally {
       contentController.dispose();
     }

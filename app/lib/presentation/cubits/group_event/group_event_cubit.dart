@@ -21,8 +21,7 @@ class GroupEventCubit extends Cubit<GroupEventState>
 
   final Map<String, DateTime> _likeDebounceMap = {};
 
-  GroupEventCubit(this._groupEventRepository, this._connectivity, this._authService)
-    : super(const GroupEventInitial());
+  GroupEventCubit(this._groupEventRepository, this._connectivity, this._authService) : super(const GroupEventInitial());
 
   // ──────────────────────────────────────────
   // RemoteSyncMixin overrides
@@ -53,7 +52,8 @@ class GroupEventCubit extends Cubit<GroupEventState>
     if (current is GroupEventLoading) return GroupEventLoading(notification: notification);
     if (current is MyEventsLoaded) return current.copyWith(notification: notification);
     if (current is MyEventsLoading) return MyEventsLoading(notification: notification);
-    if (current is MyEventsError) return MyEventsError(message: current.message, type: current.type, notification: notification);
+    if (current is MyEventsError)
+      return MyEventsError(message: current.message, type: current.type, notification: notification);
     return current;
   }
 
@@ -343,10 +343,7 @@ class GroupEventCubit extends Cubit<GroupEventState>
     if (result is Failure) {
       LogService.error('Like event failed: ${result.exception}', source: _source);
       final freshEvents = await _groupEventRepository.getAll();
-      safeEmit(currentState.copyWith(
-        events: freshEvents,
-        notification: const ToastNotification.error('操作失敗'),
-      ));
+      safeEmit(currentState.copyWith(events: freshEvents, notification: const ToastNotification.error('操作失敗')));
       return false;
     }
 

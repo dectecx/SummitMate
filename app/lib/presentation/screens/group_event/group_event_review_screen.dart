@@ -7,7 +7,6 @@ import '../../cubits/connectivity/connectivity_cubit.dart';
 import '../../widgets/common/offline_gate.dart';
 import '../../widgets/buttons/summit_destructive_button.dart';
 
-
 class GroupEventReviewScreen extends StatelessWidget {
   final String eventId;
   final String currentUserId;
@@ -50,9 +49,9 @@ class GroupEventReviewScreen extends StatelessWidget {
                       context,
                     ).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.red));
                   } else if (state is GroupEventReviewActionSuccess) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message), backgroundColor: Colors.green),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.green));
                   }
                 },
                 builder: (context, state) {
@@ -134,9 +133,9 @@ class GroupEventReviewScreen extends StatelessWidget {
               const Divider(height: 24),
               OfflineGate(
                 onOfflineTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('⚠️ 離線模式中，無法進行審核操作'), backgroundColor: Colors.red),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式中，無法進行審核操作'), backgroundColor: Colors.red));
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -149,11 +148,7 @@ class GroupEventReviewScreen extends StatelessWidget {
                               final reason = await _showRejectReasonDialog(context);
                               if (reason != null) {
                                 if (!context.mounted) return;
-                                cubit.reviewApplication(
-                                  app.id,
-                                  GroupEventReviewAction.reject,
-                                  note: reason,
-                                );
+                                cubit.reviewApplication(app.id, GroupEventReviewAction.reject, note: reason);
                               }
                             },
                       style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
@@ -242,10 +237,7 @@ class GroupEventReviewScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          SummitDestructiveButton(
-            onPressed: () => Navigator.pop(context, reason),
-            child: const Text('確認拒絕'),
-          ),
+          SummitDestructiveButton(onPressed: () => Navigator.pop(context, reason), child: const Text('確認拒絕')),
         ],
       ),
     );

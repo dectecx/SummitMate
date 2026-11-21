@@ -20,10 +20,7 @@ class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> with Safe
 
     switch (result) {
       case Success(value: final list):
-        final ids = list.items
-            .where((f) => f.type == FavoriteType.groupEvent)
-            .map((f) => f.targetId)
-            .toList();
+        final ids = list.items.where((f) => f.type == FavoriteType.groupEvent).map((f) => f.targetId).toList();
         safeEmit(GroupEventFavoritesLoaded(ids));
       case Failure(exception: final e):
         safeEmit(GroupEventFavoritesError(AppErrorHandler.getUserMessage(e)));

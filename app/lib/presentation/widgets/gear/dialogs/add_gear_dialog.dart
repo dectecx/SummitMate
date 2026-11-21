@@ -66,10 +66,7 @@ class _AddGearDialogState extends State<AddGearDialog> {
         content: const Text('您有未儲存的內容，確定要離開嗎？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
-          SummitDestructiveButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('捨棄'),
-          ),
+          SummitDestructiveButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('捨棄')),
         ],
       ),
     );
