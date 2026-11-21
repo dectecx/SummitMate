@@ -218,6 +218,48 @@ type VerifyEmailRequest struct {
 	Email openapi_types.Email `json:"email"`
 }
 
+// WeatherDay defines model for WeatherDay.
+type WeatherDay struct {
+	Date openapi_types.Date `json:"date"`
+
+	// PrecipitationProbabilityMax %
+	PrecipitationProbabilityMax *int `json:"precipitation_probability_max"`
+
+	// PrecipitationSum mm
+	PrecipitationSum float64 `json:"precipitation_sum"`
+
+	// TempMax °C
+	TempMax float64 `json:"temp_max"`
+
+	// TempMin °C
+	TempMin float64 `json:"temp_min"`
+
+	// WeatherCode WMO weather code
+	WeatherCode int `json:"weather_code"`
+
+	// WindGustsMax km/h
+	WindGustsMax *float64 `json:"wind_gusts_max"`
+
+	// WindSpeedMax km/h
+	WindSpeedMax float64 `json:"wind_speed_max"`
+}
+
+// WeatherForecast defines model for WeatherForecast.
+type WeatherForecast struct {
+	Daily []WeatherDay `json:"daily"`
+
+	// Elevation Metres
+	Elevation *float64 `json:"elevation"`
+
+	// FetchedAt When the server fetched it from upstream
+	FetchedAt time.Time `json:"fetched_at"`
+	Latitude  float64   `json:"latitude"`
+	Longitude float64   `json:"longitude"`
+
+	// Timezone Example: Asia/Taipei
+	Timezone string `json:"timezone"`
+}
+
 // ResendVerificationJSONBody defines parameters for ResendVerification.
 type ResendVerificationJSONBody struct {
 	Email openapi_types.Email `json:"email"`
@@ -232,6 +274,14 @@ type PullChangesParams struct {
 // SearchUsersParams defines parameters for SearchUsers.
 type SearchUsersParams struct {
 	Email openapi_types.Email `form:"email" json:"email"`
+}
+
+// GetWeatherForecastParams defines parameters for GetWeatherForecast.
+type GetWeatherForecastParams struct {
+	Lat       float64  `form:"lat" json:"lat"`
+	Lng       float64  `form:"lng" json:"lng"`
+	Elevation *float64 `form:"elevation,omitempty" json:"elevation,omitempty"`
+	Days      *int     `form:"days,omitempty" json:"days,omitempty"`
 }
 
 // ChangePasswordJSONRequestBody defines body for ChangePassword for application/json ContentType.
@@ -305,6 +355,9 @@ type ServerInterface interface {
 	// SearchUsers Find users by exact email (for inviting members)
 	// (GET /users/search)
 	SearchUsers(w http.ResponseWriter, r *http.Request, params SearchUsersParams)
+	// GetWeatherForecast Daily weather forecast for a coordinate (Open-Meteo, cached on the server)
+	// (GET /weather/forecast)
+	GetWeatherForecast(w http.ResponseWriter, r *http.Request, params GetWeatherForecastParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -392,6 +445,12 @@ func (_ Unimplemented) PushOps(w http.ResponseWriter, r *http.Request) {
 // SearchUsers Find users by exact email (for inviting members)
 // (GET /users/search)
 func (_ Unimplemented) SearchUsers(w http.ResponseWriter, r *http.Request, params SearchUsersParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetWeatherForecast Daily weather forecast for a coordinate (Open-Meteo, cached on the server)
+// (GET /weather/forecast)
+func (_ Unimplemented) GetWeatherForecast(w http.ResponseWriter, r *http.Request, params GetWeatherForecastParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -651,6 +710,78 @@ func (siw *ServerInterfaceWrapper) SearchUsers(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
+// GetWeatherForecast operation middleware
+func (siw *ServerInterfaceWrapper) GetWeatherForecast(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetWeatherForecastParams
+
+	// ------------- Required query parameter "lat" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "lat", r.URL.Query(), &params.Lat, runtime.BindQueryParameterOptions{Type: "number", Format: "double"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "lat"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "lat", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "lng" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "lng", r.URL.Query(), &params.Lng, runtime.BindQueryParameterOptions{Type: "number", Format: "double"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "lng"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "lng", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "elevation" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "elevation", r.URL.Query(), &params.Elevation, runtime.BindQueryParameterOptions{Type: "number", Format: "double"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "elevation"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "elevation", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "days" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "days", r.URL.Query(), &params.Days, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "days"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "days", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWeatherForecast(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -805,6 +936,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/sync/push", wrapper.PushOps)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/weather/forecast", wrapper.GetWeatherForecast)
 	})
 
 	return r

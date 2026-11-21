@@ -17,6 +17,7 @@ import (
 	"summitmate/internal/platform/ratelimit"
 	"summitmate/internal/server"
 	"summitmate/internal/sync"
+	"summitmate/internal/weather"
 )
 
 func main() {
@@ -61,6 +62,7 @@ func run() error {
 		Handler: server.NewRouter(server.Options{
 			Auth:           auth.NewHandler(authSvc),
 			Sync:           sync.NewHandler(sync.NewService(pool)),
+			Weather:        weather.NewHandler(weather.NewDefaultService(weather.NewOpenMeteo(weather.OpenMeteoURL))),
 			Tokens:         tokens,
 			MaxBodyBytes:   cfg.MaxBodyBytes,
 			RequestTimeout: cfg.RequestTimeout,

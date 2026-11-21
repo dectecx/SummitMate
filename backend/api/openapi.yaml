@@ -241,6 +241,41 @@ paths:
         "400": { $ref: "#/components/responses/Error" }
         "401": { $ref: "#/components/responses/Error" }
 
+  /weather/forecast:
+    get:
+      operationId: getWeatherForecast
+      summary: Daily weather forecast for a coordinate (Open-Meteo, cached on the server)
+      description: |
+        Proxies and caches Open-Meteo. `elevation` (metres) corrects temperatures for mountain
+        locations. Responds 502 `weather_unavailable` when the upstream fails and nothing usable is cached.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema: { type: number, format: double, minimum: -90, maximum: 90 }
+        - name: lng
+          in: query
+          required: true
+          schema: { type: number, format: double, minimum: -180, maximum: 180 }
+        - name: elevation
+          in: query
+          required: false
+          schema: { type: number, format: double, minimum: 0, maximum: 9000 }
+        - name: days
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 16, default: 7 }
+      responses:
+        "200":
+          description: Forecast
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WeatherForecast" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "502": { $ref: "#/components/responses/Error" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -412,3 +447,29 @@ components:
           type: object
           description: Canonical server row after applying (status = applied)
           additionalProperties: true
+
+    WeatherForecast:
+      type: object
+      required: [latitude, longitude, elevation, timezone, fetched_at, daily]
+      properties:
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        elevation: { type: number, format: double, nullable: true, description: Metres, as used by Open-Meteo }
+        timezone: { type: string, example: Asia/Taipei }
+        fetched_at: { type: string, format: date-time, description: When the server fetched it from upstream }
+        daily:
+          type: array
+          items: { $ref: "#/components/schemas/WeatherDay" }
+
+    WeatherDay:
+      type: object
+      required: [date, weather_code, temp_max, temp_min, precipitation_probability_max, precipitation_sum, wind_speed_max, wind_gusts_max]
+      properties:
+        date: { type: string, format: date }
+        weather_code: { type: integer, description: WMO weather code }
+        temp_max: { type: number, format: double, description: °C }
+        temp_min: { type: number, format: double, description: °C }
+        precipitation_probability_max: { type: integer, nullable: true, description: "%" }
+        precipitation_sum: { type: number, format: double, description: mm }
+        wind_speed_max: { type: number, format: double, description: km/h }
+        wind_gusts_max: { type: number, format: double, nullable: true, description: km/h }

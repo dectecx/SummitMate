@@ -27,6 +27,12 @@ TEST_DATABASE_URL='postgres://USER:PASS@localhost:5432/postgres?sslmode=disable'
 Run the server: set the variables from `.env.example`, apply the schema to an empty database with
 `go run ./cmd/migrate`, then `go run ./cmd/api`. In development the email verification code is printed to the log.
 
+## Weather forecast
+`GET /api/v1/weather/forecast?lat&lng[&elevation][&days]` (bearer auth) proxies Open-Meteo (free, no API key) through
+`internal/weather`. Results are cached in memory (30 min fresh, bounded to 1000 entries, identical concurrent requests
+share one upstream call); if upstream fails a copy up to 6 h old is served, otherwise 502 `weather_unavailable`.
+The server needs outbound HTTPS to `api.open-meteo.com`.
+
 ## Docker
 `Dockerfile` (context `backend/`) builds static binaries (CGO off) for `api` and `migrate` into a distroless
 `nonroot` image with `migrations/` included. The default entrypoint is `/app/api` (port 8080); `/app/migrate` reads

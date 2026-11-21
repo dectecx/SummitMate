@@ -81,3 +81,15 @@ func TestEveryEntityHasAPullQuery(t *testing.T) {
 	}
 	assert.Len(t, pullOrder, len(entities))
 }
+
+// The Flutter client derives the same IDs (uuid v5, same namespace and "<trip>:<user>" name).
+// These vectors are asserted on both sides; change them together.
+func TestMemberIDMatchesClientVectors(t *testing.T) {
+	cases := []struct{ trip, user, want string }{
+		{"11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222", "cf807dd9-3045-5104-9b40-c032df6cf9b0"},
+		{"0192f3a0-0000-7000-8000-000000000001", "0192f3a0-0000-7000-8000-000000000002", "cb60a657-6b35-547f-a3a0-4181d7daa7c0"},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.want, MemberID(uuid.MustParse(c.trip), uuid.MustParse(c.user)).String())
+	}
+}
