@@ -2,24 +2,6 @@ import 'dart:convert';
 
 enum MountainCategory { baiyue, other }
 
-enum Difficulty {
-  easy('easy', '入門'),
-  moderate('moderate', '中等'),
-  hard('hard', '困難'),
-  expert('expert', '高難度');
-
-  const Difficulty(this.key, this.label);
-  final String key;
-  final String label;
-
-  static Difficulty? fromKey(String? key) {
-    for (final d in values) {
-      if (d.key == key) return d;
-    }
-    return null;
-  }
-}
-
 class Mountain {
   const Mountain({
     required this.id,
@@ -30,7 +12,7 @@ class Mountain {
     required this.latitude,
     required this.longitude,
     required this.category,
-    required this.difficulty,
+    required this.trailGrade,
     required this.beginnerFriendly,
     required this.summary,
     required this.permit,
@@ -48,7 +30,9 @@ class Mountain {
   final double latitude;
   final double longitude;
   final MountainCategory category;
-  final Difficulty? difficulty;
+  /// The national park service's trail grade (步道分級) 0-6 from the cited source, as published.
+  /// Higher means harder; we deliberately do not translate it into our own labels.
+  final int? trailGrade;
   final bool beginnerFriendly;
   final String summary;
   final String? permit;
@@ -66,7 +50,7 @@ class Mountain {
     latitude: (j['latitude'] as num).toDouble(),
     longitude: (j['longitude'] as num).toDouble(),
     category: j['category'] == 'baiyue' ? MountainCategory.baiyue : MountainCategory.other,
-    difficulty: Difficulty.fromKey(j['difficulty'] as String?),
+    trailGrade: (j['trail_grade'] as num?)?.toInt(),
     beginnerFriendly: j['beginner_friendly'] as bool? ?? false,
     summary: j['summary'] as String? ?? '',
     permit: j['permit'] as String?,

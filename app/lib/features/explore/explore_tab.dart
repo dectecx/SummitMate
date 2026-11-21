@@ -88,7 +88,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (m.beginnerFriendly) const _Badge('新手'),
-                          if (m.difficulty != null) _Badge(m.difficulty!.label),
+                          if (m.trailGrade != null) _Badge('${m.trailGrade} 級'),
                           const Icon(Icons.chevron_right),
                         ],
                       ),

@@ -37,10 +37,14 @@ class MountainDetailPage extends ConsumerWidget {
               _Fact(icon: Icons.landscape_outlined, text: '${mountain.elevation} m'),
               _Fact(icon: Icons.place_outlined, text: mountain.region),
               if (mountain.category == MountainCategory.baiyue) const _Fact(icon: Icons.flag_outlined, text: '台灣百岳'),
-              if (mountain.difficulty != null) _Fact(icon: Icons.speed, text: '難度：${mountain.difficulty!.label}'),
+              if (mountain.trailGrade != null) _Fact(icon: Icons.speed, text: '步道分級 ${mountain.trailGrade} 級'),
               if (mountain.beginnerFriendly) const _Fact(icon: Icons.thumb_up_outlined, text: '新手推薦'),
             ],
           ),
+          if (mountain.trailGrade != null) ...[
+            const SizedBox(height: 8),
+            Text('步道分級為國家公園署公布的 0 至 6 級，數字越大越困難；級數定義請見資料來源。', style: theme.textTheme.bodySmall),
+          ],
           if (mountain.summary.isNotEmpty) ...[const SizedBox(height: 16), Text(mountain.summary, style: theme.textTheme.bodyLarge)],
           if (mountain.permit != null) ...[
             const SizedBox(height: 16),

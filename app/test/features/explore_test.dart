@@ -14,17 +14,17 @@ import 'package:summitmate/features/weather/providers.dart';
 import '../core/support.dart';
 import 'harness.dart';
 
-Map<String, Object?> m(String id, String name, int elev, {String region = '玉山國家公園', bool beginner = false, String category = 'baiyue', String? difficulty, String? permit, String? nameEn}) => {
+Map<String, Object?> m(String id, String name, int elev, {String region = '玉山國家公園', bool beginner = false, String category = 'baiyue', int? grade, String? permit, String? nameEn}) => {
   'id': id, 'name': name, 'name_en': nameEn, 'elevation': elev, 'region': region, 'latitude': 23.47, 'longitude': 120.96, 'category': category,
-  'difficulty': difficulty, 'beginner_friendly': beginner, 'summary': '$name 的簡介', 'permit': permit, 'verified': false, 'sources': ['https://example.org/$id'],
+  'trail_grade': grade, 'beginner_friendly': beginner, 'summary': '$name 的簡介', 'permit': permit, 'verified': false, 'sources': ['https://example.org/$id'],
 };
 
 String payloadOf(List<Map<String, Object?>> ms, {String version = 'v1'}) => jsonEncode({'version': version, 'updated_at': '2026-11-22T00:00:00Z', 'mountains': ms});
 
 final _sample = [
   m('yushan-main', '玉山主峰', 3952, nameEn: 'Yushan Main Peak', permit: '需申請入園與入山'),
-  m('xueshan-main', '雪山主峰', 3886, region: '雪霸國家公園', difficulty: 'moderate'),
-  m('hehuanshan-main', '合歡山主峰', 3417, region: '太魯閣國家公園', beginner: true, difficulty: 'easy'),
+  m('xueshan-main', '雪山主峰', 3886, region: '雪霸國家公園', grade: 3),
+  m('hehuanshan-main', '合歡山主峰', 3417, region: '太魯閣國家公園', beginner: true, grade: 1),
   m('little-one', '某座小山', 1500, category: 'other', beginner: true),
 ];
 
@@ -62,7 +62,8 @@ void main() {
       expect(list.mountains.length, 4);
       final y = list.byId('yushan-main')!;
       expect([y.name, y.nameEn, y.elevation, y.category, y.permit, y.verified], ['玉山主峰', 'Yushan Main Peak', 3952, MountainCategory.baiyue, '需申請入園與入山', false]);
-      expect(list.byId('hehuanshan-main')!.difficulty, Difficulty.easy);
+      expect(list.byId('hehuanshan-main')!.trailGrade, 1);
+      expect(list.byId('little-one')!.trailGrade, isNull);
       expect(list.byId('little-one')!.category, MountainCategory.other);
       expect(list.byId('missing'), isNull);
     });
@@ -172,7 +173,7 @@ void main() {
       await tapText(tester, '新手推薦');
       expect(find.text('玉山主峰'), findsNothing);
       expect(find.text('合歡山主峰'), findsOneWidget);
-      expect(find.text('入門'), findsOneWidget);
+      expect(find.text('1 級'), findsOneWidget);
 
       await tapText(tester, '全部');
       await tester.enterText(find.byType(TextField), '雪霸');
