@@ -17,6 +17,7 @@ packages:
       TripMealPlanDayRepository: {}
       TripGearRepository: {}
       TripMealRepository: {}
+      TripAccessChecker: {}
   summitmate/internal/groupevent:
     interfaces:
       GroupEventService: {}

@@ -107,3 +107,44 @@ func TestPollService_VoteOption(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 }
+
+func TestMessageService_RemovedMemberCannotModifyOwnMessages(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	t.Run("Given the author was removed from the trip, When deleting the message, Then access is denied before touching data", func(t *testing.T) {
+		repo := new(MockMessageRepository)
+		checker := new(tripmocks.MockTripAccessChecker)
+		svc := NewMessageService(logger, repo, checker)
+		checker.On("RequireMember", mock.Anything, "trip-1", "ex-member").Return(apperror.ErrTripAccessDenied).Once()
+
+		err := svc.DeleteTripMessage(context.Background(), "trip-1", "m1", "ex-member")
+
+		assert.ErrorIs(t, err, apperror.ErrTripAccessDenied)
+		repo.AssertNotCalled(t, "DeleteMessage", mock.Anything, mock.Anything)
+	})
+
+	t.Run("Given the author was removed from the trip, When editing the message, Then access is denied before touching data", func(t *testing.T) {
+		repo := new(MockMessageRepository)
+		checker := new(tripmocks.MockTripAccessChecker)
+		svc := NewMessageService(logger, repo, checker)
+		checker.On("RequireMember", mock.Anything, "trip-1", "ex-member").Return(apperror.ErrTripAccessDenied).Once()
+
+		_, err := svc.UpdateTripMessage(context.Background(), "trip-1", "m1", "ex-member", &TripMessage{Content: "edited"})
+
+		assert.ErrorIs(t, err, apperror.ErrTripAccessDenied)
+		repo.AssertNotCalled(t, "UpdateMessage", mock.Anything, mock.Anything)
+	})
+}
+
+func TestPollService_RemovedMemberCannotDeletePoll(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	repo := new(MockPollRepository)
+	checker := new(tripmocks.MockTripAccessChecker)
+	svc := NewPollService(logger, repo, checker)
+	checker.On("RequireMember", mock.Anything, "trip-1", "ex-member").Return(apperror.ErrTripAccessDenied).Once()
+
+	err := svc.DeleteTripPoll(context.Background(), "trip-1", "p1", "ex-member")
+
+	assert.ErrorIs(t, err, apperror.ErrTripAccessDenied)
+	repo.AssertNotCalled(t, "DeletePoll", mock.Anything, mock.Anything)
+}

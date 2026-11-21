@@ -29,6 +29,10 @@ type TripAccessChecker interface {
 	// RequireRole 在 userID 持有 allowedRoles 其中一個角色時回傳 nil。
 	// 若行程擁有者不在成員表中，自動視為 RoleLeader。
 	RequireRole(ctx context.Context, t *Trip, userID string, allowedRoles ...string) error
+
+	// RequireRoleByID 透過 tripID 載入行程後，驗證 userID 是否持有 allowedRoles 其中一個角色。
+	// 適用於尚未取得行程物件的場景。
+	RequireRoleByID(ctx context.Context, tripID, userID string, allowedRoles ...string) error
 }
 
 type tripAccessChecker struct {
@@ -82,6 +86,17 @@ func (c *tripAccessChecker) RequireOwnerByID(ctx context.Context, tripID, userID
 		return apperror.ErrTripNotFound
 	}
 	return c.RequireOwner(t, userID)
+}
+
+func (c *tripAccessChecker) RequireRoleByID(ctx context.Context, tripID, userID string, allowedRoles ...string) error {
+	t, err := c.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return err
+	}
+	if t == nil {
+		return apperror.ErrTripNotFound
+	}
+	return c.RequireRole(ctx, t, userID, allowedRoles...)
 }
 
 func (c *tripAccessChecker) RequireRole(ctx context.Context, t *Trip, userID string, allowedRoles ...string) error {

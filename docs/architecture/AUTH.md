@@ -75,8 +75,17 @@ sequenceDiagram
 | 離線寬限      |  7 天  | 離線模式存取             | App 快取判斷  |
 
 > [!NOTE]
-> 登出 (`/auth/logout`) 與修改密碼 (`/auth/change-password`) 會將當前 Token 加入黑名單 (Token Blacklist)，
-> 黑名單透過可抽換的 `pkg/cache` (Memory / Redis) 儲存，於 JWT 中介層驗證時比對。
+> **Token 撤銷**：
+> - 登出 (`/auth/logout`) 會註銷請求帶的 access token；若 body 提供 `refresh_token` 也會一併註銷，
+>   客戶端登出時應一併帶上，否則 refresh token 仍可換發新的 Token。
+> - 修改密碼 (`/auth/change-password`) 與停用帳號 (`DELETE /auth/me`) 會呼叫 `RevokeAll`，
+>   讓該使用者此刻之前簽發的所有 access / refresh token 失效。因 JWT `iat` 精度為秒，
+>   同一秒內簽發的 token 也會被視為已撤銷。
+> - 黑名單透過可抽換的 `pkg/cache` (Memory / Redis) 儲存，於 JWT 中介層驗證時比對。
+>
+> **帳號狀態**：註冊 (`/auth/register`) 不發 Token。必須先以驗證碼完成 Email 驗證，
+> 登入時才會簽發 Token；未驗證回傳 `403 email_not_verified`，已停用回傳 `403 account_disabled`。
+> Email 一律轉小寫儲存與比對。登入頻率限制只計算失敗次數，成功登入會清除計數。
 
 ### JWT 結構
 

@@ -21,25 +21,25 @@ Authorization: Bearer <access_token>
 | Method | Path             | 說明           | 認證 |
 | :----- | :--------------- | :------------- | :--- |
 | `GET`  | `/health`        | 健康檢查       | 無   |
-| `POST` | `/logs`          | 上傳 App 日誌  | 無   |
+| `POST` | `/logs`          | 上傳 App 日誌  | JWT  |
 | `POST` | `/system/heartbeat` | 心跳與統計同步 | JWT  |
-| `GET`  | `/system/flags`  | 取得系統旗標   | 無   |
-| `POST` | `/system/flags`  | 更新系統旗標   | 無   |
+| `GET`  | `/system/flags`  | 取得系統旗標   | JWT  |
+| `POST` | `/system/flags`  | 更新系統旗標 (僅限管理員) | JWT  |
 
 ### 認證 (Auth)
 
 | Method   | Path                        | 說明                      | 認證 |
 | :------- | :-------------------------- | :------------------------ | :--- |
-| `POST`   | `/auth/register`            | 註冊                      | 無   |
-| `POST`   | `/auth/login`               | 登入                      | 無   |
+| `POST`   | `/auth/register`            | 註冊 (不發 Token，需先驗證信箱) | 無   |
+| `POST`   | `/auth/login`               | 登入 (需已驗證且啟用的帳號)     | 無   |
 | `POST`   | `/auth/refresh`             | 刷新 Token                | 無   |
 | `POST`   | `/auth/verify-email`        | 驗證信箱                  | 無   |
 | `POST`   | `/auth/resend-verification` | 重發驗證碼                | 無   |
-| `POST`   | `/auth/logout`              | 登出 (Token 加入黑名單)   | JWT  |
-| `POST`   | `/auth/change-password`     | 修改密碼 (Token 加入黑名單) | JWT  |
+| `POST`   | `/auth/logout`              | 登出 (註銷 access，並可選擇一併註銷 `refresh_token`) | JWT  |
+| `POST`   | `/auth/change-password`     | 修改密碼 (註銷所有裝置的 Token) | JWT  |
 | `GET`    | `/auth/me`                  | 取得當前使用者            | JWT  |
 | `PUT`    | `/auth/me`                  | 更新個人資料              | JWT  |
-| `DELETE` | `/auth/me`                  | 停用帳號 (軟刪除)         | JWT  |
+| `DELETE` | `/auth/me`                  | 停用帳號 (軟刪除，並註銷所有 Token) | JWT  |
 
 ### 使用者 (Users)
 

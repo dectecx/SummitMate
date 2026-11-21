@@ -80,7 +80,8 @@ func (s *tripGearService) DeleteItem(ctx context.Context, tripID, itemID, userID
 }
 
 func (s *tripGearService) ReplaceAllItems(ctx context.Context, tripID, userID string, items []*TripGearItem) error {
-	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
+	// 整批覆蓋會取代整個行程的清單，僅限團長或嚮導
+	if err := s.accessChecker.RequireRoleByID(ctx, tripID, userID, RoleLeader, RoleGuide); err != nil {
 		return err
 	}
 

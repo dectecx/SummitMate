@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"summitmate/api"
 	appapi "summitmate/internal/app/api"
@@ -72,6 +73,13 @@ func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	return app, nil
 }
 
+// HTTP 伺服器的連線逾時設定。
+const (
+	serverReadHeaderTimeout = 10 * time.Second
+	serverWriteTimeoutGrace = 10 * time.Second
+	serverIdleTimeout       = 120 * time.Second
+)
+
 // apiBaseURL 為 REST API 的掛載前綴，需與 OpenAPI servers 設定一致。
 const apiBaseURL = "/api/v1"
 
@@ -86,6 +94,7 @@ func (a *App) InitRouter() (*chi.Mux, error) {
 	router.Use(middleware.ContextLogger(a.Logger))
 	router.Use(middleware.RequestLogger(a.Logger))
 	router.Use(middleware.CORS(a.Config.AllowedOrigins))
+	router.Use(middleware.MaxBodySize(a.Config.MaxRequestBodyBytes))
 	router.Use(chiMiddleware.Timeout(a.Config.HTTPRequestTimeout))
 	router.Use(chiMiddleware.Recoverer)
 
@@ -122,6 +131,12 @@ func (a *App) Run() error {
 	a.Server = &http.Server{
 		Addr:    a.Config.Addr(),
 		Handler: router,
+		// 避免慢速連線（Slowloris）長時間佔用連線
+		ReadHeaderTimeout: serverReadHeaderTimeout,
+		ReadTimeout:       a.Config.HTTPRequestTimeout,
+		// 寫入逾時需大於處理逾時，讓處理逾時的 503 回應能順利送出
+		WriteTimeout: a.Config.HTTPRequestTimeout + serverWriteTimeoutGrace,
+		IdleTimeout:  serverIdleTimeout,
 	}
 
 	// Graceful shutdown

@@ -182,7 +182,7 @@ CREATE TABLE role_permissions (
 | Column        | Type         | Constraints | Description   |
 | :------------ | :----------- | :---------- | :------------ |
 | **id**        | UUID         | **PK**      |               |
-| email         | VARCHAR(255) | **UK**, NN  | 登入帳號      |
+| email         | VARCHAR(255) | **UK**, NN, CHECK | 登入帳號（一律小寫） |
 | password_hash | TEXT         | NN          | bcrypt        |
 | display_name  | VARCHAR(100) | NN          |               |
 | avatar        | VARCHAR(255) | NN, Default | Emoji 頭像    |
@@ -198,7 +198,7 @@ CREATE TABLE role_permissions (
 ```sql
 CREATE TABLE users (
     id                  UUID PRIMARY KEY DEFAULT uuidv7(),
-    email               VARCHAR(255) NOT NULL UNIQUE,
+    email               VARCHAR(255) NOT NULL UNIQUE CHECK (email = LOWER(email)),
     password_hash       TEXT         NOT NULL,
     display_name        VARCHAR(100) NOT NULL,
     avatar              VARCHAR(255) NOT NULL DEFAULT '🐻',
@@ -991,7 +991,7 @@ CREATE INDEX idx_weather_start_time ON weather_data (start_time);
 
 ### 3.12 系統旗標 (System Flags)
 
-提供後端功能開關 (Feature Flags)，由 `flag` 領域管理 (`GET /system/flags`, `POST /system/flags`)。所有變更皆會透過 Trigger 寫入歷史表稽核。
+提供後端功能開關 (Feature Flags)，由 `flag` 領域管理 (`GET /system/flags` 需登入，`POST /system/flags` 僅限管理員)。所有變更皆會透過 Trigger 寫入歷史表稽核。
 
 #### Table: `system_flags`
 
@@ -1006,7 +1006,7 @@ CREATE INDEX idx_weather_start_time ON weather_data (start_time);
 
 | Key                       | 預設值  | 說明                         |
 | :------------------------ | :------ | :--------------------------- |
-| `skip_verification_code`  | `FALSE` | 是否放行任意 Email 驗證碼    |
+| `skip_verification_code`  | `FALSE` | 是否放行任意 Email 驗證碼（僅供非正式環境，正式環境禁止開啟） |
 | `enable_email_sending`    | `TRUE`  | 是否實際寄送驗證信           |
 
 ```sql

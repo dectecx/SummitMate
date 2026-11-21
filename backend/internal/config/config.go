@@ -21,7 +21,9 @@ type Config struct {
 
 	// HTTP server / lifecycle timeouts.
 	HTTPRequestTimeout time.Duration
-	ShutdownTimeout    time.Duration
+	// MaxRequestBodyBytes 為單一請求 body 的大小上限。
+	MaxRequestBodyBytes int64
+	ShutdownTimeout     time.Duration
 
 	// Database connection.
 	DBHost      string
@@ -89,8 +91,9 @@ func Load() *Config {
 		Port: getEnv("PORT", "8080"),
 		Env:  env,
 
-		HTTPRequestTimeout: getEnvAsDuration("HTTP_REQUEST_TIMEOUT", 30*time.Second),
-		ShutdownTimeout:    getEnvAsDuration("SHUTDOWN_TIMEOUT", 10*time.Second),
+		HTTPRequestTimeout:  getEnvAsDuration("HTTP_REQUEST_TIMEOUT", 30*time.Second),
+		MaxRequestBodyBytes: int64(getEnvAsInt("MAX_REQUEST_BODY_BYTES", 2<<20)),
+		ShutdownTimeout:     getEnvAsDuration("SHUTDOWN_TIMEOUT", 10*time.Second),
 
 		DBHost:    getEnv("DB_HOST", "localhost"),
 		DBPort:    getEnv("DB_PORT", "5432"),

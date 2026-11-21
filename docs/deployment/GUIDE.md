@@ -16,7 +16,7 @@
 | :-------- | :-------------------------------------- | :-------------- |
 | `PORT`    | 監聽埠                                  | `8080`          |
 | `ENV`     | 環境標識 (`development` / `production`) | `development`   |
-| `JWT_SECRET` | JWT 簽章密鑰 (正式環境**必須**設定)  | 空字串          |
+| `JWT_SECRET` | JWT 簽章密鑰，至少 16 字元，**無預設值**，未設定時伺服器拒絕啟動 | 無              |
 | `CWA_API_KEY` | 中央氣象署 API 授權碼 (Weather ETL) | 空字串          |
 | `ALLOWED_ORIGINS` | CORS 允許來源 (逗號分隔)        | `https://summitmate-tw.netlify.app` (dev 另含 localhost) |
 

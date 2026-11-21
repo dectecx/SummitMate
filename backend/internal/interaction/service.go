@@ -63,6 +63,11 @@ func (s *messageService) AddTripMessage(ctx context.Context, tripID, userID stri
 }
 
 func (s *messageService) UpdateTripMessage(ctx context.Context, tripID, messageID, userID string, msg *TripMessage) (*TripMessage, error) {
+	// 即使是留言作者，被移出行程後也不能再編輯
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
+		return nil, err
+	}
+
 	existing, err := s.repo.GetMessageByID(ctx, messageID)
 	if err != nil {
 		return nil, err
@@ -85,6 +90,11 @@ func (s *messageService) UpdateTripMessage(ctx context.Context, tripID, messageI
 }
 
 func (s *messageService) DeleteTripMessage(ctx context.Context, tripID, messageID, userID string) error {
+	// 即使是留言作者，被移出行程後也不能再刪除
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
+		return err
+	}
+
 	existing, err := s.repo.GetMessageByID(ctx, messageID)
 	if err != nil {
 		return err
@@ -191,6 +201,11 @@ func (s *pollService) GetTripPoll(ctx context.Context, tripID, pollID, userID st
 }
 
 func (s *pollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID string) error {
+	// 即使是投票建立者，被移出行程後也不能再刪除
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
+		return err
+	}
+
 	poll, err := s.repo.GetPollByID(ctx, pollID)
 	if err != nil {
 		return err

@@ -2,11 +2,13 @@ package tokens
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+// tokenIssuer 是本服務簽發 JWT 時的 iss 宣告，驗證時必須相符。
+const tokenIssuer = "summitmate"
 
 // ErrInvalidToken 代表 JWT Token 驗證失敗。
 var ErrInvalidToken = errors.New("invalid token")
@@ -45,6 +47,7 @@ func (manager *TokenManager) GenerateToken(userID, email, tokenType string, dura
 		Email:     email,
 		TokenType: tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    tokenIssuer,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
@@ -58,12 +61,13 @@ func (manager *TokenManager) GenerateToken(userID, email, tokenType string, dura
 // 若 Token 無效、過期或簽名不符，會回傳錯誤。
 func (manager *TokenManager) ParseToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		// 確保簽名方式為 HMAC
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
 		return []byte(manager.secret), nil
-	})
+	},
+		// 只接受 HS256，並要求有效期限與簽發者宣告
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+		jwt.WithExpirationRequired(),
+		jwt.WithIssuer(tokenIssuer),
+	)
 
 	if err != nil {
 		return nil, err

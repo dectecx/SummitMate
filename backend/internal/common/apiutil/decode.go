@@ -58,6 +58,12 @@ func buildDecodeError(err error) error {
 		return apperror.ErrBadRequest.WithMessage(msg).Wrap(err)
 	}
 
+	// 超過 MaxBodySize 中介層設定的上限
+	var tooLarge *http.MaxBytesError
+	if errors.As(err, &tooLarge) {
+		return apperror.ErrPayloadTooLarge.Wrap(err)
+	}
+
 	var syntaxErr *json.SyntaxError
 	if errors.As(err, &syntaxErr) {
 		msg := fmt.Sprintf("JSON 語法錯誤（偏移位置 %d）", syntaxErr.Offset)

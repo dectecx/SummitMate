@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"summitmate/internal/apperror"
 	"summitmate/internal/trip"
 	tripmocks "summitmate/internal/trip/mocks"
 
@@ -69,7 +70,7 @@ func TestTripGearService_ReplaceAllItems(t *testing.T) {
 			{ID: "tg1", Name: "Rope"},
 			{ID: "tg2", Name: "Harness"},
 		}
-		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil)
+		mockChecker.On("RequireRoleByID", mock.Anything, tripID, userID, trip.RoleLeader, trip.RoleGuide).Return(nil)
 		mockRepo.On("ReplaceAll", mock.Anything, tripID, mock.MatchedBy(func(args []*trip.TripGearItem) bool {
 			return len(args) == 2 && args[0].Name == "Rope" && args[1].Name == "Harness"
 		})).Return(nil)
@@ -77,5 +78,17 @@ func TestTripGearService_ReplaceAllItems(t *testing.T) {
 		err := svc.ReplaceAllItems(context.Background(), tripID, userID, items)
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Given a regular member, When calling TripGearService ReplaceAllItems, Then it is denied and nothing is replaced", func(t *testing.T) {
+		denied := new(tripmocks.MockTripGearRepository)
+		checker := new(tripmocks.MockTripAccessChecker)
+		denySvc := trip.NewTripGearService(logger, denied, checker)
+		checker.On("RequireRoleByID", mock.Anything, "t1", "member-1", trip.RoleLeader, trip.RoleGuide).Return(apperror.ErrAccessDenied)
+
+		err := denySvc.ReplaceAllItems(context.Background(), "t1", "member-1", []*trip.TripGearItem{{ID: "x", Name: "Rope"}})
+
+		assert.ErrorIs(t, err, apperror.ErrAccessDenied)
+		denied.AssertNotCalled(t, "ReplaceAll", mock.Anything, mock.Anything, mock.Anything)
 	})
 }

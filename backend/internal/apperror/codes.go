@@ -32,6 +32,7 @@ var (
 var (
 	ErrResourceNotFound = New(http.StatusNotFound, TypeInvalidReq, "resource_not_found", "找不到該資源")
 	ErrBadRequest       = New(http.StatusBadRequest, TypeInvalidReq, "invalid_body", "參數格式錯誤")
+	ErrPayloadTooLarge  = New(http.StatusRequestEntityTooLarge, TypeInvalidReq, "payload_too_large", "請求內容過大")
 )
 
 // Favorite 相關

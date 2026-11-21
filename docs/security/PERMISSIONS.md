@@ -96,6 +96,11 @@ List<String> members; // 儲存 User ID 列表
 |                                 | 新增天數 (AddMealPlanDay)             | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
 |                                 | 更新天數 (UpdateMealPlanDay)          | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
 |                                 | 刪除天數 (DeleteMealPlanDay)          | 必須為行程成員或擁有者 + 未綁定行程天數 | 擁有者 (Owner)、Leader、Guide、Member (已綁定天數禁止刪除) | `requireTripMember`                          |
+| **行程裝備 (Gear)**             | 列出／新增／修改／刪除單筆            | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `RequireMember`                              |
+|                                 | 整批覆蓋 (ReplaceAllTripGear)         | 行程管理權限                            | 擁有者 (Owner)、Leader、Guide                              | `RequireRoleByID`                            |
+| **行程糧食 (Meals)**            | 列出／新增／修改／刪除單筆            | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `RequireMember`                              |
+|                                 | 整批覆蓋 (ReplaceAllTripMeals)        | 行程管理權限                            | 擁有者 (Owner)、Leader、Guide                              | `RequireRoleByID`                            |
+| **留言／投票**                  | 修改／刪除自己的留言、刪除自己的投票  | 仍須為行程成員（被移出後不可再修改）    | 作者且為成員；擁有者可刪除他人內容                         | `RequireMember`                              |
 
 ---
 
