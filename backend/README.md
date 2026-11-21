@@ -13,8 +13,10 @@ Old implementation (reference only): `legacy/backend_legacy/`.
 ```bash
 go test ./...                       # unit tests (no database needed)
 go vet ./...
-~/go/bin/oapi-codegen --config=api/oapi-codegen.yaml api/openapi.yaml   # or: cd api && go generate
+~/go/bin/oapi-codegen --config=api/oapi-codegen.yaml api/openapi.yaml
 ~/go/bin/sqlc generate
+# without installing: (cd api && go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.8.2 --config=oapi-codegen.yaml openapi.yaml)
+#                     go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate
 ```
 
 Sync integration tests need PostgreSQL 18+ and are skipped unless `TEST_DATABASE_URL` is set:
@@ -24,3 +26,27 @@ TEST_DATABASE_URL='postgres://USER:PASS@localhost:5432/postgres?sslmode=disable'
 
 Run the server: set the variables from `.env.example`, apply the schema to an empty database with
 `go run ./cmd/migrate`, then `go run ./cmd/api`. In development the email verification code is printed to the log.
+
+## Docker
+`Dockerfile` (context `backend/`) builds static binaries (CGO off) for `api` and `migrate` into a distroless
+`nonroot` image with `migrations/` included. The default entrypoint is `/app/api` (port 8080); `/app/migrate` reads
+`migrations/000001_init_schema.up.sql` relative to the working directory `/app`. The image has no shell or curl, so it
+has no HEALTHCHECK (Cloud Run probes on its own); check `GET /api/v1/health` from the host.
+
+```bash
+docker build -t summitmate-api backend            # build the image
+docker compose up -d db                            # PostgreSQL 19 (dev credentials in docker-compose.yml)
+docker compose --profile migrate run --rm migrate  # apply the schema; EMPTY database only, run once
+docker compose --profile api up --build api        # API on http://localhost:8080 (API_PORT=18081 to change)
+curl localhost:8080/api/v1/health
+```
+
+Compose passes `ENV=development`, `DATABASE_URL`, a dev-only `JWT_SECRET` and `BCRYPT_COST=4`
+(override `DATABASE_URL` from your shell to target another database). The full variable list is in
+`.env.example` / `internal/platform/config/config.go`: `ENV`, `PORT`, `DATABASE_URL` (or `DB_*`), `JWT_SECRET` (>= 32 chars),
+TTLs, `BCRYPT_COST`, and so on. In development the verification code is printed to the container log
+(`docker logs summitmate-api`).
+
+Known limitation: `ENV=production` does not start yet, because no email provider is chosen and the app returns
+"production mailer is not configured". Until one is wired in, the Cloud Run deploy workflow
+(`.github/workflows/deploy_to_gcp.yml`) uses `ENV=development`; do not send real traffic to it.

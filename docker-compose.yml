@@ -1,3 +1,12 @@
+# Shared by the api and migrate services. DEV ONLY values; never reuse them anywhere real.
+x-backend-env: &backend-env
+  ENV: development # "production" cannot start yet: no email provider is configured
+  PORT: 8080
+  DATABASE_URL: ${DATABASE_URL:-postgres://dev:dev2026%21@db:5432/summitmate?sslmode=disable}
+  # Dev-only placeholder (>= 32 chars required). Real secrets come from Secret Manager in deployment.
+  JWT_SECRET: dev-only-insecure-jwt-secret-change-me-0123456789
+  BCRYPT_COST: 4
+
 services:
   db:
     image: postgres:19-alpine
@@ -12,28 +21,45 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d summitmate"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
+  # Applies backend/migrations/000001_init_schema.up.sql to an EMPTY database, then exits.
+  # Run once: docker compose --profile migrate run --rm migrate
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: summitmate-api:dev
+    profiles:
+      - migrate
+    restart: "no"
+    entrypoint: ["/app/migrate"]
+    environment: *backend-env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Start with: docker compose --profile api up --build api
+  # (no healthcheck: the distroless runtime image has no shell/curl; probe GET /api/v1/health from the host)
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: summitmate-api:dev
     container_name: summitmate-api
     profiles:
       - api
     restart: "no"
     ports:
-      - "8080:8080"
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: dev
-      DB_PASS: dev2026!
-      DB_NAME: summitmate
-      DB_SSLMODE: disable
-      ENV: development
-      JWT_SECRET: dev_jwt_secret_change_in_production_min_16_chars
+      - "${API_PORT:-8080}:8080"
+    environment: *backend-env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   pgdata:

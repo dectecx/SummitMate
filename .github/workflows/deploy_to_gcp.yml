@@ -40,21 +40,37 @@ jobs:
       - name: 📦 Download Dependencies
         run: go mod download
 
-      - name: 🧪 Run Unit Tests
-        # 使用 -short 跳過需要資料庫連線的 E2E/整合測試
-        # 如需完整整合測試，可另建獨立 job 並帶起測試用 PostgreSQL
-        run: go test -v -short ./...
+      - name: 🔍 Vet
+        run: go vet ./...
 
-      - name: 🔍 Verify Mocks are Up-to-Date
+      - name: 🧪 Run Unit Tests
+        # Sync integration tests are skipped unless TEST_DATABASE_URL is set; no database is needed here.
+        run: go test ./...
+
+      - name: 🔍 Verify Generated Code is Up-to-Date
+        # Tool versions are pinned to the ones that produced the committed files
+        # (see the header of api/gen.go and internal/store/db.go).
         run: |
-          go generate ./...
-          git diff --exit-code
+          (cd api && go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.8.2 --config=oapi-codegen.yaml openapi.yaml)
+          go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate
+          git diff --exit-code -- api/gen.go internal/store
 
   # ─────────────────────────────────────────
   # Job 2: Build & Deploy (only after tests pass)
   #
   # 目前暫停部署到 GCP：僅在 repository variable GCP_DEPLOY_ENABLED 為 'true' 時才會執行。
   # 要恢復部署，請在 GitHub 的 Settings > Secrets and variables > Actions > Variables 新增該變數。
+  #
+  # 需要的 GitHub Secrets（沿用既有名稱）：GCP_WORKLOAD_IDENTITY_PROVIDER、GCP_SERVICE_ACCOUNT
+  # 需要的 GCP Secret Manager secrets（runtime SA 需有 secretAccessor）：
+  #   - JWT_SECRET    至少 32 字元
+  #   - DATABASE_URL  postgres://USER:PASS@HOST:5432/DB?sslmode=...（Cloud SQL 可用 unix socket host 形式）
+  #   資料庫需 PostgreSQL 18+，且須事先用 `migrate`（映像內 /app/migrate，工作目錄 /app）套用 schema 到空資料庫；
+  #   本 workflow 不會自動執行 migration。
+  #
+  # 已知限制：ENV=production 目前無法啟動（尚未選定寄信服務，程式回傳 "production mailer is not configured"）。
+  # config 只接受 development|production，因此在寄信服務就緒前，這裡暫以 ENV=development 部署，
+  # 此模式的驗證碼只會印在 log、不會寄出，僅供測試用，勿用於正式流量。寄信服務就緒後改為 ENV=production。
   # ─────────────────────────────────────────
   deploy:
     name: 🚀 Build & Deploy
@@ -106,8 +122,8 @@ jobs:
             --image=${{ env.IMAGE }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --service-account=${{ env.RUNTIME_SA }} \
-            --set-env-vars="ENV=production,CACHE_TYPE=memory" \
-            --set-secrets="DB_HOST=DB_HOST:latest,DB_PORT=DB_PORT:latest,DB_USER=DB_USER:latest,DB_PASS=DB_PASS:latest,DB_NAME=DB_NAME:latest,JWT_SECRET=JWT_SECRET:latest,CWA_API_KEY=CWA_API_KEY:latest,SMTP_USER=SMTP_USER:latest,SMTP_PASS=SMTP_PASS:latest,REDIS_ADDR=REDIS_ADDR:latest,REDIS_PASSWORD=REDIS_PASSWORD:latest,REDIS_DB=REDIS_DB:latest" \
+            --set-env-vars="ENV=development" \
+            --set-secrets="JWT_SECRET=JWT_SECRET:latest,DATABASE_URL=DATABASE_URL:latest" \
             --quiet
 
       - name: ✅ Output Deployed URL
