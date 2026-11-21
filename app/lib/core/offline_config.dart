@@ -34,41 +34,14 @@ class OfflineConfig {
   static const int autoSyncDefaultIntervalMinutes = 5;
 
   // ============================================================
-  // === Push 重試相關 ===
-  // ============================================================
-
-  /// Push 重試次數上限
-  static const int maxPushRetryCount = 3;
-
-  /// Push 失敗後的退避基礎時間 (秒)
-  static const int pushRetryBackoffSeconds = 5;
-
-  // ============================================================
   // === 合併策略相關 ===
   // ============================================================
-
-  /// Pull 合併策略 (LWW = Last-Writer-Wins)
-  static const String mergeStrategy = 'lww';
 
   /// LWW 衝突容忍時間閾值 (秒)
   ///
   /// 當本地與遠端的 `updatedAt` 時間差在此閾值以內時，視為本地勝出。
   /// 這是為了容忍不同裝置之間的系統時鐘誤差，避免秒級差距導致使用者修改被意外覆蓋。
   static const int conflictToleranceSeconds = 5;
-
-  /// 自動 Push 延遲 (寫入後等待幾秒再 Push，避免頻繁操作)
-  static const int autoPushDelaySeconds = 3;
-
-  // ============================================================
-  // === Token 相關 ===
-  // ============================================================
-
-  /// Token 即將過期警告時間 (分鐘)
-  /// 當 Token 剩餘時間低於此值時，嘗試刷新
-  static const int tokenExpiryWarningMinutes = 5;
-
-  /// Token 即將過期警告 Duration
-  static const Duration tokenExpiryWarning = Duration(minutes: tokenExpiryWarningMinutes);
 
   // ============================================================
   // === Helpers ===

@@ -71,14 +71,29 @@ void main() {
       expect(migration?.permanentId, 'remote-id-123');
     });
 
-    test('Given pendingDelete, When pushOne, Then it deletes remote and local trip', () async {
-      when(() => mockRemote.deleteTrip(any())).thenAnswer((_) async => const Success(null));
+    test(
+      'Given a previously uploaded trip pendingDelete, When pushOne, Then it deletes remote and local trip',
+      () async {
+        when(() => mockRemote.deleteTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockLocal.deleteTrip(any())).thenAnswer((_) async {});
+
+        final migration = await adapter.pushOne(
+          defaultTrip.copyWith(syncStatus: SyncStatus.pendingDelete, cloudSyncedAt: DateTime.utc(2026, 11, 20)),
+        );
+
+        expect(migration, isNull);
+        verify(() => mockRemote.deleteTrip('1')).called(1);
+        verify(() => mockLocal.deleteTrip('1')).called(1);
+      },
+    );
+
+    test('Given a never-uploaded trip pendingDelete, When pushOne, Then it only deletes the local trip', () async {
       when(() => mockLocal.deleteTrip(any())).thenAnswer((_) async {});
 
       final migration = await adapter.pushOne(defaultTrip.copyWith(syncStatus: SyncStatus.pendingDelete));
 
       expect(migration, isNull);
-      verify(() => mockRemote.deleteTrip('1')).called(1);
+      verifyNever(() => mockRemote.deleteTrip(any()));
       verify(() => mockLocal.deleteTrip('1')).called(1);
     });
 
@@ -96,7 +111,10 @@ void main() {
     test('Given not exists in local, When pullRemote, Then it adds trip to local', () async {
       final remoteTrip = defaultTrip.copyWith(name: 'Remote Trip');
       when(
-        () => mockRemote.getRemoteTrips(),
+        () => mockRemote.getRemoteTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
       ).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
       when(() => mockLocal.getAllTrips()).thenAnswer((_) async => []);
       when(() => mockLocal.getTripById(any())).thenAnswer((_) async => null);
@@ -114,7 +132,10 @@ void main() {
       () async {
         final localTrip = defaultTrip.copyWith(syncStatus: SyncStatus.pendingUpdate, cloudSyncedAt: DateTime.now());
         when(
-          () => mockRemote.getRemoteTrips(),
+          () => mockRemote.getRemoteTrips(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
         ).thenAnswer((_) async => Success(PaginatedList(items: [], total: 0, page: 1, hasMore: false)));
         when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
         when(() => mockLocal.deleteTrip(any())).thenAnswer((_) async {});
@@ -133,7 +154,10 @@ void main() {
       );
       final remoteTrip = defaultTrip.copyWith(name: 'Remote Newer', updatedAt: DateTime(2026, 6, 6, 12, 0, 10));
       when(
-        () => mockRemote.getRemoteTrips(),
+        () => mockRemote.getRemoteTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
       ).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
       when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
       when(() => mockLocal.getTripById('1')).thenAnswer((_) async => localTrip);
@@ -153,7 +177,10 @@ void main() {
       );
       final remoteTrip = defaultTrip.copyWith(name: 'Remote Close', updatedAt: DateTime(2026, 6, 6, 12, 0, 4));
       when(
-        () => mockRemote.getRemoteTrips(),
+        () => mockRemote.getRemoteTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
       ).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
       when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
       when(() => mockLocal.getTripById('1')).thenAnswer((_) async => localTrip);

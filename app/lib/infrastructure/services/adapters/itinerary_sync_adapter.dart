@@ -46,8 +46,11 @@ class ItinerarySyncAdapter extends BaseSyncAdapter<ItineraryItem> {
         await _remoteDataSource.deleteItem(item.tripId, item.id);
         await _localDataSource.deleteById(item.id);
         return null;
-      default:
-        return null;
+      case SyncStatus.synced:
+      case SyncStatus.syncing:
+      case SyncStatus.error:
+        // 這些狀態不是資料表中合法的待同步狀態；回報錯誤而不是假裝成功，避免把未上傳的資料標成已同步
+        throw StateError('無法推送狀態為 ${item.syncStatus.name} 的項目 (${item.id})');
     }
   }
 

@@ -20,7 +20,10 @@ class MockSettings extends Mock implements Settings {}
 
 /// 只提供資料表資訊的 adapter，用來驗證引擎對真實資料庫產生的 SQL。
 class FakeSyncAdapter implements ISyncAdapter {
-  FakeSyncAdapter(this.tableName, {required this.tracksSyncStatus});
+  FakeSyncAdapter(this.tableName, {required this.tracksSyncStatus, this.pushErrors = const []});
+
+  /// 由測試調整：非空時 pushPending 會回報失敗。
+  List<String> pushErrors;
 
   @override
   final String tableName;
@@ -29,7 +32,7 @@ class FakeSyncAdapter implements ISyncAdapter {
   final bool tracksSyncStatus;
 
   @override
-  Future<SyncPushResult> pushPending() async => const SyncPushResult();
+  Future<SyncPushResult> pushPending() async => SyncPushResult(errors: pushErrors);
 
   @override
   Future<SyncPushResult> pushPendingForTrip(String tripId) async => const SyncPushResult();
@@ -44,6 +47,8 @@ class FakeSyncAdapter implements ISyncAdapter {
 void main() {
   late AppDatabase db;
   late SyncEngine engine;
+  late FakeSyncAdapter tripsAdapter;
+  late FakeSyncAdapter mealAdapter;
 
   setUp(() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
@@ -54,14 +59,17 @@ void main() {
     when(() => settings.autoSyncIntervalMinutes).thenReturn(0);
     when(() => settingsRepo.getSettings()).thenAnswer((_) async => settings);
 
+    tripsAdapter = FakeSyncAdapter('trips_table', tracksSyncStatus: true);
+    mealAdapter = FakeSyncAdapter('meal_plan_days_table', tracksSyncStatus: false);
+
     engine = SyncEngine(
       // 對應 SyncModule 的真實組合：糧食天數資料表沒有 sync_status 欄位
       adapters: [
-        FakeSyncAdapter('trips_table', tracksSyncStatus: true),
+        tripsAdapter,
         FakeSyncAdapter('itinerary_items_table', tracksSyncStatus: true),
         FakeSyncAdapter('gear_items_table', tracksSyncStatus: true),
         FakeSyncAdapter('favorites_table', tracksSyncStatus: true),
-        FakeSyncAdapter('meal_plan_days_table', tracksSyncStatus: false),
+        mealAdapter,
       ],
       settingsRepo: settingsRepo,
       connectivity: MockConnectivityService(),
@@ -114,6 +122,37 @@ void main() {
       final status = await engine.watchSyncStatus('trips_table').first;
 
       expect(status, SyncStatus.synced);
+    });
+  });
+
+  group('SyncEngine - watchSyncStatus after a failed push', () {
+    test(
+      'Given a push that fails, When watching a tracked table, Then it reports error until a push succeeds',
+      () async {
+        tripsAdapter.pushErrors = ['trips_table t1 推送失敗: network down'];
+        await engine.pushPending();
+
+        expect(await engine.watchSyncStatus('trips_table').first, SyncStatus.error);
+
+        tripsAdapter.pushErrors = const [];
+        await engine.pushPending();
+
+        expect(await engine.watchSyncStatus('trips_table').first, SyncStatus.synced);
+      },
+    );
+
+    test('Given a failing table without sync_status, When watching it, Then it reports error too', () async {
+      mealAdapter.pushErrors = ['meal_plan_days_table 失敗'];
+      await engine.pushPending();
+
+      expect(await engine.watchSyncStatus('meal_plan_days_table').first, SyncStatus.error);
+    });
+
+    test('Given one failing table, When watching another, Then the other is unaffected', () async {
+      tripsAdapter.pushErrors = ['boom'];
+      await engine.pushPending();
+
+      expect(await engine.watchSyncStatus('gear_items_table').first, SyncStatus.synced);
     });
   });
 }

@@ -56,23 +56,33 @@ sequenceDiagram
 
 ## SyncStatus 狀態機
 
+資料表中的 `sync_status` 只會有下列五種值：`synced`、`pendingCreate`、`pendingUpdate`、`pendingDelete`、`conflict`。
+
 ```mermaid
 stateDiagram-v2
     [*] --> pendingCreate: 本地新增
     [*] --> synced: 從雲端下載
 
-    pendingCreate --> synced: push成功
-    pendingCreate --> error: push失敗
+    pendingCreate --> synced: push 成功
+    pendingCreate --> [*]: 尚未上傳就刪除（直接移除本地）
 
     synced --> pendingUpdate: 本地修改
     synced --> pendingDelete: 本地刪除
 
-    pendingUpdate --> synced: push成功
-    pendingDelete --> [*]: push成功
+    pendingUpdate --> synced: push 成功
+    pendingDelete --> [*]: push 成功（遠端與本地皆移除）
 
-    error --> pendingCreate: 重試
-    error --> pendingUpdate: 重試
+    synced --> conflict: 本地有未同步修改但遠端較新時，本地勝出
+    conflict --> synced: push 成功
 ```
+
+**推送失敗不會改變狀態。** 失敗的項目維持原本的 `pendingCreate`／`pendingUpdate`／`pendingDelete`，
+錯誤只回報在 `SyncResult.errors`，下一輪同步會再次嘗試。曾經的做法是把失敗項目改成 `error`，
+但這會丟失原本「要新增／更新／刪除」的意圖，下一輪就會被誤標為已同步而遺失資料。
+
+`SyncStatus.syncing` 與 `SyncStatus.error` 只是供 UI 顯示的衍生狀態（`SyncEngine.watchSyncStatus`
+依「是否正在同步」與「最近一次推送／拉取是否失敗」推導），不會寫入資料表。
+推送遇到不該出現的狀態（`synced`、`syncing`、`error`）會丟出錯誤，而不是假裝成功。
 
 ---
 
@@ -82,7 +92,7 @@ stateDiagram-v2
 | :------- | :---------------------------------------------- |
 | 線上     | A/B：先讀 cache 背景刷新；C：背景 push + pull    |
 | 離線     | A/B 寫入回 `OfflineException`；C 寫本地排入 pending |
-| 恢復連線 | 若上次同步因離線失敗，自動觸發 `runSyncCycle` |
+| 恢復連線 | 若有同步因離線被擋下（`SyncCubit` 記錄旗標），自動補跑一次 `runSyncCycle` |
 
 ---
 
@@ -94,6 +104,8 @@ stateDiagram-v2
 - 較新的資料覆蓋舊資料
 - 本地有 pending 變更且遠端較新 → 遠端勝出；否則標記 `conflict` 等待下次推送
 - 遠端已刪除（本地曾同步過、遠端不存在）→ 刪除本地
+- 偵測遠端刪除需要**完整的遠端清單**：行程與最愛以 `fetchAllPages` 逐頁取完（後端預設每頁 20 筆），
+  任何一頁失敗就中止本輪拉取，避免把尚未取得的資料誤判成遠端已刪除
 
 ---
 

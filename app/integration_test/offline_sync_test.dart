@@ -118,16 +118,14 @@ void main() {
           expect(find.text('上傳'), findsOneWidget);
 
           // Mock sync result
-          when(
-            () => mockSyncEngine.runSyncCycle(force: any(named: 'force')),
-          ).thenAnswer((_) async => SyncResult.success());
+          when(() => mockSyncEngine.runSyncCycle()).thenAnswer((_) async => SyncResult.success());
 
           // Tap Confirm Upload
           await tester.tap(find.text('上傳'));
           await tester.pumpAndSettle();
 
           // Verify that the sync services were called
-          verify(() => mockSyncEngine.runSyncCycle(force: true)).called(1);
+          verify(() => mockSyncEngine.runSyncCycle()).called(1);
         }
       },
     );

@@ -25,6 +25,9 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
   DateTime? _lastSyncTime;
   bool _syncInProgress = false;
 
+  /// 是否有同步因為離線而被擋下（網路恢復時需補跑）
+  bool _syncDeferredWhileOffline = false;
+
   void _init() {
     _initLastSyncTime();
 
@@ -61,11 +64,11 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
         );
       }
 
-      if (isOnline) {
-        if (state is SyncFailure && (state as SyncFailure).errorMessage.contains('離線')) {
-          LogService.info('網路恢復，自動觸發同步...', source: _source);
-          syncAll(force: false);
-        }
+      // 離線時被擋下的同步，在網路恢復後自動補跑
+      if (isOnline && _syncDeferredWhileOffline) {
+        _syncDeferredWhileOffline = false;
+        LogService.info('網路恢復，自動觸發同步...', source: _source);
+        syncAll();
       }
     });
 
@@ -120,15 +123,14 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
   }
 
   /// 執行完整同步
-  ///
-  /// [force] 是否強制執行同步 (忽略節流與最小間隔)
-  Future<void> syncAll({bool force = false}) async {
+  Future<void> syncAll() async {
     if (_syncInProgress) {
       LogService.info('Sync already in progress, skipping.', source: _source);
       return;
     }
 
     if (_connectivityService.isOffline) {
+      _syncDeferredWhileOffline = true;
       safeEmit(
         SyncFailure(
           errorMessage: '目前處於離線模式，無法同步',
@@ -145,33 +147,21 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
     LogService.info('Starting syncAll...', source: _source);
 
     try {
-      final result = await _syncEngine.runSyncCycle(force: force);
+      final result = await _syncEngine.runSyncCycle();
 
       if (result.isSuccess) {
         _lastSyncTime = result.syncedAt;
-        if (result.skipReason != null) {
-          LogService.info('Sync skipped: ${result.skipReason}', source: _source);
-          safeEmit(
-            SyncSuccess(
-              timestamp: result.syncedAt,
-              message: '同步完成 (已略過: ${result.skipReason})',
-              pendingCount: state.pendingCount,
-              isOnline: state.isOnline,
-            ),
-          );
-        } else {
-          safeEmit(
-            SyncSuccess(
-              timestamp: result.syncedAt,
-              message: '同步成功',
-              pushedCount: result.pushedCount,
-              pulledCount: result.pulledCount,
-              conflictCount: result.conflictCount,
-              pendingCount: state.pendingCount,
-              isOnline: state.isOnline,
-            ),
-          );
-        }
+        safeEmit(
+          SyncSuccess(
+            timestamp: result.syncedAt,
+            message: '同步成功',
+            pushedCount: result.pushedCount,
+            pulledCount: result.pulledCount,
+            conflictCount: result.conflictCount,
+            pendingCount: state.pendingCount,
+            isOnline: state.isOnline,
+          ),
+        );
       } else {
         safeEmit(
           SyncFailure(
@@ -197,15 +187,8 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
     }
   }
 
-  /// 檢查行程衝突 (目前固定回傳無衝突)
-  Future<bool> checkItineraryConflict() async {
-    return false;
-  }
-
   /// 上傳行程 (與雲端同步)
-  Future<void> uploadItinerary() async {
-    await syncAll(force: true);
-  }
+  Future<void> uploadItinerary() => syncAll();
 
   /// 重置狀態
   void reset() {

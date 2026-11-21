@@ -31,6 +31,12 @@ class SyncEngine implements ISyncEngine {
   final ITripRemoteDataSource _tripRemoteDataSource;
 
   final _syncingTables = BehaviorSubject<Set<String>>.seeded({});
+
+  // 最近一次推送／拉取失敗的資料表（僅記憶體，供 UI 顯示「同步錯誤」）。
+  // 失敗的資料維持原本的 pending 狀態並於下一輪重試，不會寫入資料表。
+  final _pushFailedTables = <String>{};
+  final _pullFailedTables = <String>{};
+  final _failedTables = BehaviorSubject<Set<String>>.seeded({});
   Completer<SyncResult>? _syncCompleter;
   Timer? _autoSyncTimer;
   StreamSubscription<void>? _settingsSubscription;
@@ -57,7 +63,7 @@ class SyncEngine implements ISyncEngine {
   }
 
   @override
-  Future<SyncResult> runSyncCycle({bool force = false}) async {
+  Future<SyncResult> runSyncCycle() async {
     final userId = _authService.currentUserId;
     if (userId == null || userId == 'guest') {
       LogService.info('SyncEngine: 訪客或未登入狀態，跳過雲端同步', source: 'SyncEngine');
@@ -174,13 +180,16 @@ class SyncEngine implements ISyncEngine {
 
     for (final adapter in _adapters) {
       _setSyncing(adapter.tableName, true);
+      var result = const SyncPushResult();
       try {
-        aggregate = aggregate + await adapter.pushPending();
+        result = await adapter.pushPending();
       } catch (e) {
-        aggregate = aggregate + SyncPushResult(errors: ['推送 ${adapter.tableName} 時發生異常: $e']);
+        result = SyncPushResult(errors: ['推送 ${adapter.tableName} 時發生異常: $e']);
       } finally {
         _setSyncing(adapter.tableName, false);
       }
+      _recordResult(adapter.tableName, isPush: true, failed: !result.isSuccess);
+      aggregate = aggregate + result;
     }
 
     return SyncResult(
@@ -198,13 +207,16 @@ class SyncEngine implements ISyncEngine {
 
     for (final adapter in _adapters) {
       _setSyncing(adapter.tableName, true);
+      var result = const SyncMergeResult();
       try {
-        aggregate = aggregate + await adapter.pullRemote();
+        result = await adapter.pullRemote();
       } catch (e) {
-        aggregate = aggregate + SyncMergeResult(errors: ['拉取 ${adapter.tableName} 時發生異常: $e']);
+        result = SyncMergeResult(errors: ['拉取 ${adapter.tableName} 時發生異常: $e']);
       } finally {
         _setSyncing(adapter.tableName, false);
       }
+      _recordResult(adapter.tableName, isPush: false, failed: !result.isSuccess);
+      aggregate = aggregate + result;
     }
 
     return SyncResult(
@@ -293,7 +305,7 @@ class SyncEngine implements ISyncEngine {
       if (minutes > 0) {
         LogService.info('SyncEngine: Configuring auto-sync every $minutes minutes', source: 'SyncEngine');
         _autoSyncTimer = Timer.periodic(Duration(minutes: minutes), (timer) {
-          runSyncCycle(force: false);
+          runSyncCycle();
         });
       } else {
         LogService.info('SyncEngine: Auto-sync is disabled', source: 'SyncEngine');
@@ -314,6 +326,7 @@ class SyncEngine implements ISyncEngine {
     stopAutoSync();
     _settingsSubscription?.cancel();
     _syncingTables.close();
+    _failedTables.close();
   }
 
   @override
@@ -335,29 +348,37 @@ class SyncEngine implements ISyncEngine {
   @override
   Stream<SyncStatus> watchSyncStatus(String table) {
     final untracked = _adapters.any((a) => a.tableName == table && !a.tracksSyncStatus);
+
     if (untracked) {
-      // 沒有 sync_status 欄位的資料表只會有「同步中」或「已同步」
-      return _syncingTables.stream.map((syncing) => syncing.contains(table) ? SyncStatus.syncing : SyncStatus.synced);
-    }
-    return Rx.combineLatest2(
-      _syncingTables.stream,
-      _db.customSelect('''
-        SELECT
-          COUNT(CASE WHEN sync_status = 'error' THEN 1 END) as failed_count,
-          COUNT(CASE WHEN sync_status != 'synced' AND sync_status != 'error' THEN 1 END) as pending_count
-        FROM $table
-      ''').watchSingle(),
-      (syncingSet, row) {
-        if (syncingSet.contains(table)) return SyncStatus.syncing;
-
-        final failedCount = row.read<int>('failed_count');
-        final pendingCount = row.read<int>('pending_count');
-
-        if (failedCount > 0) return SyncStatus.error;
-        if (pendingCount > 0) return SyncStatus.pendingUpdate;
+      // 沒有 sync_status 欄位的資料表只會有「同步中」、「同步錯誤」或「已同步」
+      return Rx.combineLatest2(_syncingTables.stream, _failedTables.stream, (syncing, failed) {
+        if (syncing.contains(table)) return SyncStatus.syncing;
+        if (failed.contains(table)) return SyncStatus.error;
         return SyncStatus.synced;
+      });
+    }
+
+    return Rx.combineLatest3(
+      _syncingTables.stream,
+      _failedTables.stream,
+      _db.customSelect("SELECT COUNT(*) AS pending_count FROM $table WHERE sync_status != 'synced'").watchSingle(),
+      (syncing, failed, row) {
+        if (syncing.contains(table)) return SyncStatus.syncing;
+        if (failed.contains(table)) return SyncStatus.error;
+        return row.read<int>('pending_count') > 0 ? SyncStatus.pendingUpdate : SyncStatus.synced;
       },
     );
+  }
+
+  /// 記錄某張資料表最近一次推送／拉取是否失敗，並通知 UI。
+  void _recordResult(String table, {required bool isPush, required bool failed}) {
+    final set = isPush ? _pushFailedTables : _pullFailedTables;
+    if (failed) {
+      set.add(table);
+    } else {
+      set.remove(table);
+    }
+    _failedTables.add({..._pushFailedTables, ..._pullFailedTables});
   }
 
   void _setSyncing(String table, bool isSyncing) {

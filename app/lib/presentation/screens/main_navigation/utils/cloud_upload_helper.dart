@@ -8,7 +8,6 @@ import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
-import 'package:summitmate/presentation/widgets/buttons/summit_destructive_button.dart';
 
 class CloudUploadHelper {
   static Future<void> handleCloudUpload(BuildContext context) async {
@@ -37,53 +36,23 @@ class CloudUploadHelper {
       return;
     }
 
-    // 1. 檢查衝突 (Use SyncCubit)
-    final hasConflict = await context.read<SyncCubit>().checkItineraryConflict();
-
-    if (!context.mounted) return;
-
-    if (hasConflict) {
-      // 3. 有衝突，顯示警告
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('⚠️ 雲端資料衝突'),
-          content: const Text(
-            '雲端上的行程資料與您目前的版本不同。\n\n'
-            '若選擇「強制覆蓋」，雲端的資料將被您的版本完全取代。\n'
-            '確定要繼續嗎？',
+    // 確認後上傳
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('上傳行程'),
+        content: const Text('確定將目前的行程計畫上傳至雲端嗎？此操作將覆寫雲端資料。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<SyncCubit>().uploadItinerary();
+            },
+            child: const Text('上傳'),
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-            SummitDestructiveButton(
-              onPressed: () {
-                Navigator.pop(context); // 關閉 Dialog
-                context.read<SyncCubit>().uploadItinerary(); // 執行上傳
-              },
-              child: const Text('強制覆蓋'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // 4. 無衝突，直接確認上傳
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('上傳行程'),
-          content: const Text('確定將目前的行程計畫上傳至雲端嗎？此操作將覆寫雲端資料。'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<SyncCubit>().uploadItinerary();
-              },
-              child: const Text('上傳'),
-            ),
-          ],
-        ),
-      );
-    }
+        ],
+      ),
+    );
   }
 }

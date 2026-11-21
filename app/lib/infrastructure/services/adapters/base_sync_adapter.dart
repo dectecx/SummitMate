@@ -7,13 +7,14 @@ import '../sync_conflict_resolver.dart';
 /// C 模式（OfflineFirst）同步適配器的共用基底。
 ///
 /// 集中實作所有領域共通的：
-/// - **Push**：讀 pending → 依狀態推送 → ID 遷移 → `markAsSynced`／`markAsError`
-///   （刪除排在最後、ID 遷移與標記在同一 transaction）。
+/// - **Push**：讀 pending → 依狀態推送 → ID 遷移 → `markAsSynced`
+///   （刪除排在最後、ID 遷移與標記在同一 transaction）。失敗的項目維持原本的
+///   pending 狀態，錯誤只回報在 [SyncPushResult.errors]，下一輪自動重試。
 /// - **Pull**：解析 scope → 拉取遠端 → 偵測遠端刪除 → Last-Write-Wins 合併。
 ///
 /// 子類只需實作領域相關的 hook（遠端呼叫、本地讀寫、scope 解析、欄位保留）。
 abstract class BaseSyncAdapter<T extends SyncableEntity> implements ISyncAdapter {
-  /// 本地資料庫，供通用的 `markAsSynced`／`markAsError` 與 ID 遷移 transaction。
+  /// 本地資料庫，供通用的 `markAsSynced` 與 ID 遷移 transaction。
   AppDatabase get db;
 
   /// 繼承 Base 的 adapter 都以 `syncStatus` 管理 pending，資料表必有 `sync_status` 欄位。
@@ -149,8 +150,9 @@ abstract class BaseSyncAdapter<T extends SyncableEntity> implements ISyncAdapter
           await db.markAsSynced(tableName, item.id);
         }
       } catch (e) {
+        // 推送失敗時保留原本的 pending 狀態，下一輪同步會再次嘗試。
+        // 若在此改成其他狀態，會丟失「待新增／更新／刪除」的意圖，進而造成資料遺失。
         errors.add('$tableName ${item.id} 推送失敗: $e');
-        await db.markAsError(tableName, item.id);
       }
     }
 

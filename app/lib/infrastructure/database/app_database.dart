@@ -134,14 +134,6 @@ class AppDatabase extends _$AppDatabase {
       variables: [Variable.withString(id)],
     );
   }
-
-  /// 將指定項目標記為 error
-  Future<void> markAsError(String tableName, String id) async {
-    await customUpdate(
-      "UPDATE $tableName SET sync_status = 'error' WHERE id = ?",
-      variables: [Variable.withString(id)],
-    );
-  }
 }
 
 QueryExecutor _openConnection() {

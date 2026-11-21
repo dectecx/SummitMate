@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
+import '../../../core/utils/pagination.dart';
 import '../../../domain/entities/favorite.dart';
 import '../../../domain/enums/sync_status.dart';
 import '../../../domain/interfaces/i_sync_adapter.dart';
@@ -55,11 +56,8 @@ class FavoritesSyncAdapter extends BaseSyncAdapter<Favorite> {
 
   @override
   Future<List<Favorite>> fetchRemote(String scope) async {
-    final result = await _remote.getFavorites();
-    return switch (result) {
-      Success(value: final v) => v.items.map((f) => f.copyWith(id: '${f.type.name}_${f.targetId}')).toList(),
-      Failure(exception: final e) => throw e,
-    };
+    final remote = await fetchAllPages((page, limit) => _remote.getFavorites(page: page, limit: limit));
+    return remote.map((f) => f.copyWith(id: '${f.type.name}_${f.targetId}')).toList();
   }
 
   @override

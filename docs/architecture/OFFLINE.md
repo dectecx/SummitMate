@@ -244,7 +244,7 @@ Future<Result<void, Exception>> vote(...) =>
 // → 離線時直接回 Failure(OfflineException)，不發出網路請求
 
 // C 模式：背景同步引擎自行檢查
-Future<SyncResult> runSyncCycle({bool force = false}) async {
+Future<SyncResult> runSyncCycle() async {
   if (_connectivity.isOffline) return SyncResult.failure('目前為離線模式，無法同步');
   // ... push pending → pull remote
 }

@@ -6,11 +6,6 @@ import '../enums/sync_status.dart';
 /// 同步結果
 class SyncResult {
   final bool isSuccess;
-  final bool itinerarySynced;
-  final bool gearSynced;
-  final bool messagesSynced;
-  final bool pollsSynced;
-  final bool eventsSynced;
   final int pushedCount;
   final int pulledCount;
   final int conflictCount;
@@ -18,15 +13,9 @@ class SyncResult {
   final List<String> errors;
   final String? errorMessage;
   final DateTime syncedAt;
-  final String? skipReason;
 
   const SyncResult({
     required this.isSuccess,
-    this.itinerarySynced = false,
-    this.gearSynced = false,
-    this.messagesSynced = false,
-    this.pollsSynced = false,
-    this.eventsSynced = false,
     this.pushedCount = 0,
     this.pulledCount = 0,
     this.conflictCount = 0,
@@ -34,16 +23,10 @@ class SyncResult {
     this.errors = const [],
     this.errorMessage,
     required this.syncedAt,
-    this.skipReason,
   });
 
   /// 建立成功結果
   factory SyncResult.success({
-    bool itinerarySynced = true,
-    bool gearSynced = true,
-    bool messagesSynced = true,
-    bool eventsSynced = true,
-    bool pollsSynced = false,
     int pushedCount = 0,
     int pulledCount = 0,
     int conflictCount = 0,
@@ -52,11 +35,6 @@ class SyncResult {
   }) {
     return SyncResult(
       isSuccess: true,
-      itinerarySynced: itinerarySynced,
-      gearSynced: gearSynced,
-      messagesSynced: messagesSynced,
-      eventsSynced: eventsSynced,
-      pollsSynced: pollsSynced,
       pushedCount: pushedCount,
       pulledCount: pulledCount,
       conflictCount: conflictCount,
@@ -70,15 +48,9 @@ class SyncResult {
     return SyncResult(isSuccess: false, errorMessage: message, errors: errors ?? [message], syncedAt: DateTime.now());
   }
 
-  /// 建立跳過結果 (離線或節流)
-  factory SyncResult.skipped({required String reason}) {
-    return SyncResult(isSuccess: true, skipReason: reason, syncedAt: DateTime.now());
-  }
-
   @override
   String toString() {
     if (isSuccess) {
-      if (skipReason != null) return '同步跳過: $skipReason';
       return '同步成功 (pushed: $pushedCount, pulled: $pulledCount, '
           'conflicts: $conflictCount, idMigrations: $idMigrationsCount)';
     } else {
@@ -105,9 +77,7 @@ enum SyncDirection {
 /// - 定時輪詢: 依使用者設定的間隔自動觸發 runSyncCycle
 abstract interface class ISyncEngine {
   /// 執行完整同步週期 (Push pending → Pull remote → Merge)
-  ///
-  /// [force] 是否強制執行 (忽略節流)
-  Future<SyncResult> runSyncCycle({bool force = false});
+  Future<SyncResult> runSyncCycle();
 
   /// 針對單一行程執行有向同步
   ///

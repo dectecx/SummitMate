@@ -17,9 +17,12 @@ enum SyncStatus {
   /// 下一輪 Push 時應優先推送此狀態的資料
   conflict,
 
-  /// 同步中
+  /// 同步中（僅供 UI 顯示的衍生狀態，不會寫入資料表）
   syncing,
 
-  /// 同步錯誤
+  /// 同步錯誤（僅供 UI 顯示的衍生狀態，不會寫入資料表）
+  ///
+  /// 推送失敗的資料會維持原本的 pending 狀態並在下一輪重試；
+  /// 此值只由 `SyncEngine.watchSyncStatus` 依最近一次同步結果推導。
   error,
 }

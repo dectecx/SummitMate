@@ -71,7 +71,7 @@ class _TripSelectionDialogState extends State<TripSelectionDialog> {
 
       // 3. 觸發 Sync (下載該 Trip 的 itinerary/messages)
       if (!mounted) return;
-      await context.read<SyncCubit>().syncAll(force: true);
+      await context.read<SyncCubit>().syncAll();
 
       if (mounted) {
         ToastService.success('行程匯入成功');

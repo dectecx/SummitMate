@@ -87,7 +87,6 @@ void main() {
   setUp(() {
     mockDb = MockAppDatabase();
     when(() => mockDb.markAsSynced(any(), any())).thenAnswer((_) async {});
-    when(() => mockDb.markAsError(any(), any())).thenAnswer((_) async {});
   });
 
   group('BaseSyncAdapter - pushPending', () {
@@ -125,14 +124,15 @@ void main() {
       verifyNever(() => mockDb.markAsSynced('test_table', 'd'));
     });
 
-    test('Given a failing push, When pushPending, Then it records error and marks as error', () async {
+    test('Given a failing push, When pushPending, Then it reports the error and leaves the item pending', () async {
       final adapter = _TestAdapter(mockDb, local: [const _Entity('x', SyncStatus.pendingUpdate)], failingIds: {'x'});
 
       final result = await adapter.pushPending();
 
       expect(result.isSuccess, isFalse);
       expect(result.errors, isNotEmpty);
-      verify(() => mockDb.markAsError('test_table', 'x')).called(1);
+      // 失敗的項目不可被標成 synced（資料遺失）或覆寫狀態（遺失待辦意圖）
+      verifyNever(() => mockDb.markAsSynced(any(), any()));
     });
 
     test('Given deletes mixed with creates, When pushPending, Then deletes are pushed last', () async {

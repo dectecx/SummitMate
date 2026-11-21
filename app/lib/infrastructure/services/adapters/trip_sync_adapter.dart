@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
 import '../../../domain/entities/trip.dart';
+import '../../../core/utils/pagination.dart';
 import '../../../domain/enums/sync_status.dart';
 import '../../../domain/interfaces/i_sync_adapter.dart';
 import '../../../data/datasources/interfaces/i_trip_local_data_source.dart';
@@ -49,6 +50,11 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
             throw exception;
         }
       case SyncStatus.pendingDelete:
+        // 從未上傳過的行程在遠端不存在，直接刪除本地即可（呼叫遠端刪除只會得到 404 而永遠卡住）
+        if (!wasEverSynced(item)) {
+          await _localDataSource.deleteTrip(item.id);
+          return null;
+        }
         final result = await _remoteDataSource.deleteTrip(item.id);
         switch (result) {
           case Success():
@@ -57,8 +63,11 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
           case Failure(:final exception):
             throw exception;
         }
-      default:
-        return null;
+      case SyncStatus.synced:
+      case SyncStatus.syncing:
+      case SyncStatus.error:
+        // 這些狀態不是資料表中合法的待同步狀態；回報錯誤而不是假裝成功，避免把未上傳的資料標成已同步
+        throw StateError('無法推送狀態為 ${item.syncStatus.name} 的項目 (${item.id})');
     }
   }
 
@@ -70,13 +79,8 @@ class TripSyncAdapter extends BaseSyncAdapter<Trip> {
   Future<List<String>> resolveScopes() async => const [_allScope];
 
   @override
-  Future<List<Trip>> fetchRemote(String scope) async {
-    final result = await _remoteDataSource.getRemoteTrips();
-    return switch (result) {
-      Success(value: final v) => v.items,
-      Failure(exception: final e) => throw e,
-    };
-  }
+  Future<List<Trip>> fetchRemote(String scope) =>
+      fetchAllPages((page, limit) => _remoteDataSource.getRemoteTrips(page: page, limit: limit));
 
   @override
   Future<List<Trip>> getLocalItemsForScope(String scope) => _localDataSource.getAllTrips();

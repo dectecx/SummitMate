@@ -60,7 +60,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
 
   /// 手動觸發同步
   Future<void> _manualSync(BuildContext context) async {
-    context.read<SyncCubit>().syncAll(force: true);
+    context.read<SyncCubit>().syncAll();
   }
 
   @override

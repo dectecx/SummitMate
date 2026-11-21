@@ -114,7 +114,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                                   : isListEmpty
                                   ? const Center(child: Text('尚無留言，點擊右下角新增'))
                                   : RefreshIndicator(
-                                      onRefresh: () async => context.read<SyncCubit>().syncAll(force: true),
+                                      onRefresh: () async => context.read<SyncCubit>().syncAll(),
                                       child: ListView.builder(
                                         physics: const AlwaysScrollableScrollPhysics(),
                                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -219,7 +219,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                 color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 child: InkWell(
-                  onTap: () => context.read<SyncCubit>().syncAll(force: true),
+                  onTap: () => context.read<SyncCubit>().syncAll(),
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),

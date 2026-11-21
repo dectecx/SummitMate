@@ -48,7 +48,7 @@ class SyncStatusDetailSheet extends StatelessWidget {
                     const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                   else
                     IconButton(
-                      onPressed: state.isOnline ? () => context.read<SyncCubit>().syncAll(force: true) : null,
+                      onPressed: state.isOnline ? () => context.read<SyncCubit>().syncAll() : null,
                       icon: const Icon(Icons.refresh),
                       tooltip: '立即同步',
                     ),
@@ -102,9 +102,7 @@ class SyncStatusDetailSheet extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: state.isOnline && !state.isInProgress
-                      ? () => context.read<SyncCubit>().syncAll(force: true)
-                      : null,
+                  onPressed: state.isOnline && !state.isInProgress ? () => context.read<SyncCubit>().syncAll() : null,
                   icon: const Icon(Icons.sync),
                   label: const Text('立即完整同步'),
                 ),
