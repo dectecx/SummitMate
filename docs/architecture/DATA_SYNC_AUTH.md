@@ -238,6 +238,16 @@ internal/
 8. refresh token 被撤銷後，App 仍可使用，同步暫停並顯示橫幅。
 9. 登出後再以另一個帳號登入，看不到前一個帳號的資料。
 
+## 7.5 實作時定下的細節（2026-11-21）
+
+- **trip_members 的 ID 是確定性的**：`id = UUIDv5(namespace, "<trip_id>:<user_id>")`（namespace 見 `internal/sync/spec.go`）。移除成員後重新邀請，會復活同一列，不會撞到唯一限制；伺服器會拒絕不符合此規則的 ID。
+- **擁有者的成員列由伺服器建立**：client 建立行程時不推送擁有者的 trip_members；離線時 UI 以 `trip.owner_id == 我` 判斷擁有者。成員列在下次拉取時回來。
+- **同步端點的 SQL**：`/sync/*` 使用「靜態表名與欄位白名單 + 綁定參數」組出 SQL（逐實體欄位規格在 `internal/sync/spec.go`），而非 sqlc——六個實體共用同一套 patch 引擎，比逐實體寫 sqlc 查詢更少出錯。使用者輸入只會成為綁定參數。auth 查詢仍使用 sqlc。
+- **Refresh token 重送寬限 10 秒**：client 若沒收到刷新回應而重送舊 token，不會被誤判為被盜用；超過寬限才再出示已輪替的 token，才會撤銷該使用者全部 session。登出或改密碼造成的撤銷只回傳失效，不連坐其他裝置。
+- **授權預設拒絕**：中介層只放行白名單中的公開路徑（health、註冊、驗證、登入、refresh、logout），其餘一律要求 token。
+- **分頁**：每個實體各自取 `limit` 筆；任一實體被截斷就 `has_more = true`，`next_since` 取被截斷實體中最早的最後一筆時間。其他實體在下一頁可能重複回傳，因為套用是冪等的。
+- **單一裝置的待辦**：推送時整批在同一交易，每個操作用 savepoint 隔離；`forbidden` / `invalid` 不影響同批其他操作。
+
 ## 8. 決策狀態
 
 第 1～7 項皆已確認（2026-11-21）。

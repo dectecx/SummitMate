@@ -39,8 +39,8 @@
 | SQL | sqlc（型別安全查詢） |
 | 分層 | Handler → Service → Repository，去除不必要抽象 |
 | 權限 | `trip_members.role` + 程式內判斷，取代 roles/permissions/role_permissions 三表 |
-| 裝備 | 合併為單一「裝備組合」，以分享碼取代金鑰機制 |
-| 同步 API | 每個行程的變更拉取 endpoint（游標 + tombstone），寫入冪等 |
+| 裝備 | 裝備與餐食為個人資料（每筆有 `user_id`，僅本人可編輯）；可分享的「裝備組合」之後再做 |
+| 同步 API | `GET /sync/changes`（時間游標 + tombstone）與 `POST /sync/push`（op_id 冪等、欄位層級 LWW） |
 | 第一版不做 | feature flag、heartbeat、遠端 logs、揪團、投票、留言、收藏；天氣僅做快取代理 |
 | 快取 / 限流 | 第一版不用 Redis；以介面抽象，預設記憶體實作，需要時再替換 |
 | 遷移 | 開發期只修改 `000001_init_schema.up.sql` |
