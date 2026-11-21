@@ -43,8 +43,11 @@
 
 #### iOS
 
-- **機制**: `Info.plist` 使用變數替換功能 `$(ADMOB_APP_ID)`。
-- **實作**: 需在 `Podfile` 中加入 `post_install` 腳本，從 `local.properties` 讀取 ID 並注入至 Xcode Build Settings。
+- **機制**: `Info.plist` 使用變數替換功能 `$(ADMOB_APP_ID)`，值由 xcconfig 提供。
+- **讀取順序 (優先權)**:
+  1.  `ios/Flutter/AdMobLocal.xcconfig` (已被 Git 忽略) - 本地或 CI 放入真實 App ID。
+  2.  **預設值**: `ios/Flutter/AdMob.xcconfig` 內的 Google iOS Test ID (安全備援)。
+- **注意**: 若 `ADMOB_APP_ID` 沒有定義，Google Mobile Ads SDK 會在啟動時直接中止 App (閃退)，因此預設值不可移除。
 
 ### 3.2 廣告單元 ID (Unit IDs)
 
@@ -63,27 +66,11 @@ Banner 與 Interstitial 的 Unit IDs 設定於 `.env` 檔案 (`.env.dev`, `.env.
 
 ### 4.2 iOS 設定指南 (Mac 環境)
 
-請將以下腳本加入 `ios/Podfile`，以實現從 `local.properties` 統一管理雙平台 ID：
+- **預設情況**: 無需設定，`ios/Flutter/AdMob.xcconfig` 已提供 Test ID。
+- **測試或發佈真實廣告**: 新增 `ios/Flutter/AdMobLocal.xcconfig` (已被 Git 忽略)，內容只需一行：
 
-```ruby
-post_install do |installer|
-  # 1. 讀取 ../android/local.properties 中的 ADMOB_APP_ID
-  admob_app_id = 'ca-app-pub-3940256099942544~1458002511' # 預設 fallback 使用 Test ID
-
-  local_props_path = File.join(Dir.pwd, '..', 'android', 'local.properties')
-  if File.exist?(local_props_path)
-    File.readlines(local_props_path).each do |line|
-      if line.strip.start_with?('ADMOB_APP_ID=')
-        admob_app_id = line.strip.split('=').last
-      end
-    end
-  end
-
-  # 2. 將 ID 注入至所有 Target 的 Build Settings
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['ADMOB_APP_ID'] = admob_app_id
-    end
-  end
-end
+```text
+ADMOB_APP_ID=ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy
 ```
+
+- **CI/CD**: 在建置前以 Secret 產生同一個檔案即可。

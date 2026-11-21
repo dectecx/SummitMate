@@ -1,0 +1,6 @@
+// AdMob App ID used by Info.plist ($(ADMOB_APP_ID)).
+// Defaults to Google's official iOS test App ID so debug builds never crash or serve real ads.
+ADMOB_APP_ID=ca-app-pub-3940256099942544~1458002511
+
+// Optional local/CI override with the real App ID (git-ignored), e.g. ADMOB_APP_ID=ca-app-pub-xxxx~yyyy
+#include? "AdMobLocal.xcconfig"

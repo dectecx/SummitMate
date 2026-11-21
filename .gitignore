@@ -70,6 +70,7 @@ app/ios/.cocoapods/
 app/ios/Runner.xcworkspace/
 app/ios/Flutter/Flutter.framework/
 app/ios/Flutter/Flutter.podspec
+app/ios/Flutter/AdMobLocal.xcconfig
 
 # Web
 app/web/.dart_tool/
