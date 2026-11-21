@@ -31,7 +31,7 @@ void main() {
 
   group('SummitMate Smoke Test (Full App Walkthrough)', () {
     testWidgets(
-      'Given SummitMate Smoke Test (Full App Walkthrough), When executing, Then Guest User Flow: Landing -> Guest Login -> Main Nav -> Settings',
+      'Given SummitMate Smoke Test (Full App Walkthrough), When executing, Then Guest User Flow: Login -> Guest Login -> Welcome -> Settings',
       (tester) async {
         mockConnectivityService = MockConnectivityService();
         mockSyncEngine = MockSyncEngine();
@@ -60,42 +60,31 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // 1. Verify Welcome/Login Screen
-        // expect(find.text('歡迎使用 SummitMate'), findsOneWidget); // Assuming welcome text
+        // 1. Login screen offers guest mode
+        final guestButton = find.text('以訪客身分繼續');
+        expect(guestButton, findsOneWidget);
 
-        // 2. Guest Login
-        final guestButton = find.text('訪客登入');
-        if (guestButton.evaluate().isNotEmpty) {
-          await tester.tap(guestButton);
-          await tester.pumpAndSettle();
-        } else {
-          // If already logged in or different UI, skip to main navigation
-        }
-
-        // 3. Verify Main Navigation (Trip Tab)
-        expect(find.byIcon(Icons.map_outlined), findsOneWidget); // Trip tab icon
-        expect(find.text('行程'), findsOneWidget);
-
-        // 4. Navigate to Gear Tab
-        await tester.tap(find.byIcon(Icons.backpack_outlined));
+        // 2. Guest login: confirm the dialog
+        await tester.tap(guestButton);
         await tester.pumpAndSettle();
-        expect(find.text('裝備'), findsOneWidget);
-
-        // 5. Navigate to Settings
-        final settingsButton = find.byIcon(Icons.settings_outlined);
-        if (settingsButton.evaluate().isNotEmpty) {
-          await tester.tap(settingsButton);
-          await tester.pumpAndSettle();
-          expect(find.text('系統設定'), findsOneWidget);
-
-          // Toggle Theme or something
-          // await tester.tap(find.text('切換主題'));
-          // await tester.pumpAndSettle();
-        }
-
-        // 6. Back to Trip
-        await tester.tap(find.byIcon(Icons.map_outlined));
+        expect(find.text('訪客模式'), findsOneWidget);
+        await tester.tap(find.text('繼續'));
         await tester.pumpAndSettle();
+
+        // 3. With no trips, the welcome screen is shown
+        expect(find.text('歡迎使用 SummitMate'), findsOneWidget);
+        expect(find.text('您目前還沒有任何行程'), findsOneWidget);
+        expect(find.text('建立新行程'), findsOneWidget);
+
+        // 4. Open the settings dialog
+        await tester.tap(find.byIcon(Icons.settings));
+        await tester.pumpAndSettle();
+        expect(find.text('設定'), findsOneWidget);
+
+        // 5. Close it and land back on the welcome screen
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(find.text('歡迎使用 SummitMate'), findsOneWidget);
       },
     );
   });
