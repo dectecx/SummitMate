@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_strategy/url_strategy.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'core/di/injection.dart';
@@ -14,7 +14,7 @@ import 'infrastructure/database/database_migration_manager.dart';
 Future<void> main() async {
   // ① Web: remove '#' from URL path
   if (kIsWeb) {
-    setPathUrlStrategy();
+    usePathUrlStrategy();
   }
   WidgetsFlutterBinding.ensureInitialized();
 

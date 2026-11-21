@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   # UI
   cupertino_icons: ^2.0.0
@@ -21,7 +23,6 @@ dependencies:
   drift: ^2.20.0
   drift_flutter: ^0.3.1
   sqlite3: ^3.9.1
-  sqlite3_flutter_libs: ^0.6.0+eol
   path: ^1.9.0
   path_provider: ^2.1.5
 
@@ -40,7 +41,7 @@ dependencies:
   url_launcher: ^6.3.0
 
   # 程式碼生成輔助
-  json_annotation: ^4.11.0
+  json_annotation: ^4.12.0
   flutter_slidable: ^5.2.0
   flutter_map: ^8.1.0
   latlong2: ^0.9.1
@@ -63,7 +64,6 @@ dependencies:
   cached_network_image: ^4.0.7
   injectable: ^3.0.0
   meta: ^1.17.0
-  url_strategy: ^0.3.0
   rxdart: ^0.28.0
 dev_dependencies:
   flutter_test:
