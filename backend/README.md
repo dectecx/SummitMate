@@ -56,3 +56,16 @@ TTLs, `BCRYPT_COST`, and so on. In development the verification code is printed 
 Known limitation: `ENV=production` does not start yet, because no email provider is chosen and the app returns
 "production mailer is not configured". Until one is wired in, the Cloud Run deploy workflow
 (`.github/workflows/deploy_to_gcp.yml`) uses `ENV=development`; do not send real traffic to it.
+
+## Explore (mountain reference data)
+`GET /api/v1/explore/mountains` is **public** (no token; guests browse it too). It serves `internal/explore/mountains.json`,
+embedded with `go:embed` and held in memory (no database table or migration: it only changes with a deploy). The dataset is
+validated at startup (the server refuses to start on invalid data) and in tests. The response carries a strong `ETag`,
+honours `If-None-Match` with 304, and sends `Cache-Control: public, max-age=3600`. Entries are sorted by elevation (desc), then id.
+
+**Data notice:** the 100 baiyue entries were compiled from public sources (zh.wikipedia 台灣百岳 list and peak pages,
+Wikidata as a cross-check, the Yushan National Park trail-grading page); each entry lists its `sources`. The data is
+**unreviewed** (`verified` is false everywhere and validation rejects `true`) and must be reviewed by a human before release,
+because it affects hikers' safety. Rules used: elevation = the list's latest survey rounded to metres; `difficulty` is derived
+from the national park trail grade the list states (0-2 easy, 3 moderate, 4 hard, 5-6 expert); `beginner_friendly` is true only
+where a cited article says so (石門山); `permit` and `name_en` are null because no consulted source stated them.

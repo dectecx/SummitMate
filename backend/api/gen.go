@@ -14,6 +14,48 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for MountainCategory.
+const (
+	Baiyue MountainCategory = "baiyue"
+	Other  MountainCategory = "other"
+)
+
+// Valid indicates whether the value is a known member of the MountainCategory enum.
+func (e MountainCategory) Valid() bool {
+	switch e {
+	case Baiyue:
+		return true
+	case Other:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MountainDifficulty.
+const (
+	Easy     MountainDifficulty = "easy"
+	Expert   MountainDifficulty = "expert"
+	Hard     MountainDifficulty = "hard"
+	Moderate MountainDifficulty = "moderate"
+)
+
+// Valid indicates whether the value is a known member of the MountainDifficulty enum.
+func (e MountainDifficulty) Valid() bool {
+	switch e {
+	case Easy:
+		return true
+	case Expert:
+		return true
+	case Hard:
+		return true
+	case Moderate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PushOpType.
 const (
 	Delete PushOpType = "delete"
@@ -119,6 +161,47 @@ type Error struct {
 type LoginRequest struct {
 	Email    openapi_types.Email `json:"email"`
 	Password string              `json:"password"`
+}
+
+// Mountain defines model for Mountain.
+type Mountain struct {
+	BeginnerFriendly bool                `json:"beginner_friendly"`
+	Category         MountainCategory    `json:"category"`
+	Difficulty       *MountainDifficulty `json:"difficulty"`
+
+	// Elevation Metres
+	Elevation int `json:"elevation"`
+
+	// Id Stable lowercase ascii slug
+	Id        string  `json:"id"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+
+	// Name Traditional Chinese
+	Name    string   `json:"name"`
+	NameEn  *string  `json:"name_en"`
+	Permit  *string  `json:"permit"`
+	Region  string   `json:"region"`
+	Sources []string `json:"sources"`
+	Summary string   `json:"summary"`
+
+	// Verified True only after a human reviewed the entry
+	Verified bool `json:"verified"`
+}
+
+// MountainCategory defines model for Mountain.Category.
+type MountainCategory string
+
+// MountainDifficulty defines model for Mountain.Difficulty.
+type MountainDifficulty string
+
+// MountainDataset defines model for MountainDataset.
+type MountainDataset struct {
+	Mountains []Mountain `json:"mountains"`
+	UpdatedAt time.Time  `json:"updated_at"`
+
+	// Version Dataset version, e.g. "2026-11-22.1"
+	Version string `json:"version"`
 }
 
 // PublicUser defines model for PublicUser.
@@ -265,6 +348,11 @@ type ResendVerificationJSONBody struct {
 	Email openapi_types.Email `json:"email"`
 }
 
+// GetExploreMountainsParams defines parameters for GetExploreMountains.
+type GetExploreMountainsParams struct {
+	IfNoneMatch *string `json:"If-None-Match,omitempty"`
+}
+
 // PullChangesParams defines parameters for PullChanges.
 type PullChangesParams struct {
 	Since *time.Time `form:"since,omitempty" json:"since,omitempty"`
@@ -343,6 +431,9 @@ type ServerInterface interface {
 	// VerifyEmail Verify the email with the 6-digit code and sign in
 	// (POST /auth/verify-email)
 	VerifyEmail(w http.ResponseWriter, r *http.Request)
+	// GetExploreMountains Read-only mountain reference data (public, no token)
+	// (GET /explore/mountains)
+	GetExploreMountains(w http.ResponseWriter, r *http.Request, params GetExploreMountainsParams)
 	// GetHealth Liveness check
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
@@ -421,6 +512,12 @@ func (_ Unimplemented) ResendVerification(w http.ResponseWriter, r *http.Request
 // VerifyEmail Verify the email with the 6-digit code and sign in
 // (POST /auth/verify-email)
 func (_ Unimplemented) VerifyEmail(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetExploreMountains Read-only mountain reference data (public, no token)
+// (GET /explore/mountains)
+func (_ Unimplemented) GetExploreMountains(w http.ResponseWriter, r *http.Request, params GetExploreMountainsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -594,6 +691,47 @@ func (siw *ServerInterfaceWrapper) VerifyEmail(w http.ResponseWriter, r *http.Re
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.VerifyEmail(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetExploreMountains operation middleware
+func (siw *ServerInterfaceWrapper) GetExploreMountains(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetExploreMountainsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-None-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-None-Match")]; found {
+		var IfNoneMatch string
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-None-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-None-Match", valueList[0], &IfNoneMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-None-Match", Err: err})
+			return
+		}
+
+		params.IfNoneMatch = &IfNoneMatch
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetExploreMountains(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -939,6 +1077,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/weather/forecast", wrapper.GetWeatherForecast)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/explore/mountains", wrapper.GetExploreMountains)
 	})
 
 	return r

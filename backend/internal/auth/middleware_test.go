@@ -33,10 +33,10 @@ func TestMiddlewareIsDenyByDefault(t *testing.T) {
 		return rec.Code
 	}
 
-	for _, p := range []string{"/health", "/auth/login", "/auth/register", "/auth/refresh", "/auth/verify-email"} {
+	for _, p := range []string{"/health", "/auth/login", "/auth/register", "/auth/refresh", "/auth/verify-email", "/explore/mountains"} {
 		assert.Equal(t, http.StatusNoContent, call(p, ""), "public: %s", p)
 	}
-	for _, p := range []string{"/auth/me", "/sync/changes", "/sync/push", "/users/search", "/anything/new"} {
+	for _, p := range []string{"/auth/me", "/sync/changes", "/sync/push", "/users/search", "/anything/new", "/explore/mountains/x", "/explore", "/weather/forecast"} {
 		assert.Equal(t, http.StatusUnauthorized, call(p, ""), "no token: %s", p)
 		assert.Equal(t, http.StatusUnauthorized, call(p, "Bearer garbage"), "bad token: %s", p)
 		assert.Equal(t, http.StatusUnauthorized, call(p, "Basic "+tok), "wrong scheme: %s", p)

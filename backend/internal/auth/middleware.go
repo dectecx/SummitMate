@@ -26,6 +26,7 @@ const BasePath = "/api/v1"
 // authenticated by default so a forgotten route can never be left open.
 var publicPaths = map[string]bool{
 	"/health":                   true,
+	"/explore/mountains":        true,
 	"/auth/register":            true,
 	"/auth/verify-email":        true,
 	"/auth/resend-verification": true,

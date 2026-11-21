@@ -10,6 +10,7 @@ import (
 
 	"summitmate/api"
 	"summitmate/internal/auth"
+	"summitmate/internal/explore"
 	"summitmate/internal/platform/apperror"
 	"summitmate/internal/platform/httpx"
 	"summitmate/internal/sync"
@@ -21,6 +22,7 @@ type Server struct {
 	authHandler
 	syncHandler
 	weatherHandler
+	exploreHandler
 }
 
 // Wrapper types give each embedded handler a distinct field name.
@@ -28,6 +30,7 @@ type (
 	authHandler    struct{ *auth.Handler }
 	syncHandler    struct{ *sync.Handler }
 	weatherHandler struct{ *weather.Handler }
+	exploreHandler struct{ *explore.Handler }
 )
 
 func (Server) GetHealth(w http.ResponseWriter, _ *http.Request) {
@@ -39,6 +42,7 @@ type Options struct {
 	Auth           *auth.Handler
 	Sync           *sync.Handler
 	Weather        *weather.Handler
+	Explore        *explore.Handler
 	Tokens         *auth.TokenManager
 	MaxBodyBytes   int64
 	RequestTimeout time.Duration
@@ -48,7 +52,7 @@ type Options struct {
 func NewRouter(o Options) http.Handler {
 	r := chi.NewRouter()
 	r.Use(httpx.Recoverer, httpx.RequestLogger, middleware.Timeout(o.RequestTimeout), httpx.BodyLimit(o.MaxBodyBytes))
-	r.Mount(auth.BasePath, api.HandlerWithOptions(Server{authHandler{o.Auth}, syncHandler{o.Sync}, weatherHandler{o.Weather}}, api.ChiServerOptions{
+	r.Mount(auth.BasePath, api.HandlerWithOptions(Server{authHandler{o.Auth}, syncHandler{o.Sync}, weatherHandler{o.Weather}, exploreHandler{o.Explore}}, api.ChiServerOptions{
 		Middlewares: []api.MiddlewareFunc{auth.Middleware(o.Tokens)},
 		ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 			httpx.WriteError(w, r, apperror.ErrBadRequest.Wrap(err))

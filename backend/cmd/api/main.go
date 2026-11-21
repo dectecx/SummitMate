@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"summitmate/internal/auth"
+	"summitmate/internal/explore"
 	"summitmate/internal/platform/config"
 	"summitmate/internal/platform/database"
 	"summitmate/internal/platform/mail"
@@ -57,12 +58,19 @@ func run() error {
 		return err
 	}
 
+	// Fails fast when the embedded mountain dataset is invalid.
+	exploreSvc, err := explore.NewDefaultService()
+	if err != nil {
+		return err
+	}
+
 	srv := &http.Server{
 		Addr: ":" + cfg.Port,
 		Handler: server.NewRouter(server.Options{
 			Auth:           auth.NewHandler(authSvc),
 			Sync:           sync.NewHandler(sync.NewService(pool)),
 			Weather:        weather.NewHandler(weather.NewDefaultService(weather.NewOpenMeteo(weather.OpenMeteoURL))),
+			Explore:        explore.NewHandler(exploreSvc),
 			Tokens:         tokens,
 			MaxBodyBytes:   cfg.MaxBodyBytes,
 			RequestTimeout: cfg.RequestTimeout,

@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"summitmate/internal/auth"
+	"summitmate/internal/explore"
 	"summitmate/internal/sync"
 	"summitmate/internal/weather"
 )
@@ -38,6 +39,34 @@ func TestHealthIsPublic(t *testing.T) {
 	rec := do(newTestRouter(), http.MethodGet, "/api/v1/health", "")
 	assert.Equal(t, http.StatusOK, rec.Code)
 	assert.JSONEq(t, `{"status":"ok"}`, rec.Body.String())
+}
+
+func TestExploreMountainsIsPublicButOtherRoutesAreNot(t *testing.T) {
+	svc, err := explore.NewDefaultService()
+	require.NoError(t, err)
+	tm := auth.NewTokenManager("test-secret-test-secret-test-secret-123", time.Minute)
+	h := NewRouter(Options{
+		Auth: auth.NewHandler(nil), Sync: sync.NewHandler(nil), Explore: explore.NewHandler(svc), Tokens: tm,
+		MaxBodyBytes: 1 << 10, RequestTimeout: time.Second,
+	})
+
+	rec := do(h, http.MethodGet, "/api/v1/explore/mountains", "") // no Authorization header
+	require.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, svc.ETag(), rec.Header().Get("ETag"))
+	var body map[string]any
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+	assert.Len(t, body["mountains"], 100)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/explore/mountains", nil)
+	req.Header.Set("If-None-Match", svc.ETag())
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotModified, rec.Code)
+	assert.Empty(t, rec.Body.Bytes())
+
+	for _, path := range []string{"/api/v1/sync/changes", "/api/v1/auth/me", "/api/v1/weather/forecast?lat=1&lng=1"} {
+		assert.Equal(t, http.StatusUnauthorized, do(h, http.MethodGet, path, "").Code, path)
+	}
 }
 
 func TestProtectedRoutesRequireAuth(t *testing.T) {

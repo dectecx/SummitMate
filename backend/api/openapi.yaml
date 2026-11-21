@@ -276,6 +276,32 @@ paths:
         "401": { $ref: "#/components/responses/Error" }
         "502": { $ref: "#/components/responses/Error" }
 
+  /explore/mountains:
+    get:
+      operationId: getExploreMountains
+      summary: Read-only mountain reference data (public, no token)
+      description: |
+        Static dataset embedded in the server binary; changes only with a deploy. Guests may call it.
+        The data is compiled from public sources and NOT yet reviewed (`verified` is false for every entry).
+        Responds with a strong `ETag`; send it back in `If-None-Match` to get 304 with no body.
+        Entries are sorted by elevation (descending) then id.
+      parameters:
+        - name: If-None-Match
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Mountain dataset
+          headers:
+            ETag: { schema: { type: string }, description: Strong validator of the dataset }
+            Cache-Control: { schema: { type: string }, description: "public, max-age=3600" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MountainDataset" }
+        "304":
+          description: Not modified (If-None-Match matched), no body
+
 components:
   securitySchemes:
     bearerAuth:
@@ -473,3 +499,34 @@ components:
         precipitation_sum: { type: number, format: double, description: mm }
         wind_speed_max: { type: number, format: double, description: km/h }
         wind_gusts_max: { type: number, format: double, nullable: true, description: km/h }
+
+    MountainDataset:
+      type: object
+      required: [version, updated_at, mountains]
+      properties:
+        version: { type: string, description: 'Dataset version, e.g. "2026-11-22.1"' }
+        updated_at: { type: string, format: date-time }
+        mountains:
+          type: array
+          items: { $ref: "#/components/schemas/Mountain" }
+
+    Mountain:
+      type: object
+      required: [id, name, name_en, elevation, region, latitude, longitude, category, difficulty, beginner_friendly, summary, permit, verified, sources]
+      properties:
+        id: { type: string, description: Stable lowercase ascii slug }
+        name: { type: string, description: Traditional Chinese }
+        name_en: { type: string, nullable: true }
+        elevation: { type: integer, description: Metres }
+        region: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        category: { type: string, enum: [baiyue, other] }
+        difficulty: { type: string, nullable: true, enum: [easy, moderate, hard, expert] }
+        beginner_friendly: { type: boolean }
+        summary: { type: string }
+        permit: { type: string, nullable: true }
+        verified: { type: boolean, description: True only after a human reviewed the entry }
+        sources:
+          type: array
+          items: { type: string }
