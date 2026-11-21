@@ -190,6 +190,15 @@ Riverpod：`appDatabaseProvider`、`syncEngineProvider`、`syncStatusProvider`�
 10. 描述與 Drift 欄位一致（第 7 節）。
 11. `SyncStatus` 在各種組合下的結果。
 
+## 9.5 實作時定下的細節（2026-11-22）
+
+- `outbox` 另有兩個旗標：`is_create`（伺服器還沒有這個實體）與 `sent`（請求可能已送達）。「建立後刪除就不送出」只在 `sent = false` 時成立；若已送出過，必須再排一筆 delete。
+- **送出中被編輯**：合併進已 `sent` 的操作時會換新的 `op_id`（伺服器會對舊 `op_id` 重播舊結果，沿用會吃掉新內容）。引擎在同一輪的下一批就會把它送出。
+- 捨棄失敗操作：失敗的「建立」連同本地資料移除；失敗的「修改／刪除」會清掉同步游標，下次同步重新下載伺服器版本。
+- 刪除 `meal_plan_days` 時，同時為其 `meal_items` 排 delete（伺服器不會連動刪除）。
+- 通用 SQL 一律用 `customUpdate` 並指定受影響的表，這樣 Drift 的 Stream 會更新；SQLite 的 CASCADE 刪除 Drift 看不見，所以刪除後會手動通知子表。
+- 驗證：54 個單元測試（記憶體資料庫 + 假伺服器），另有 `test/integration/real_backend_test.dart` 以兩個「裝置」對真實後端跑完整流程（設定 `E2E_BASE_URL`、`E2E_TOKEN` 才會執行）。
+
 ## 10. 待確認
 
 | # | 議題 | 我的建議 |
