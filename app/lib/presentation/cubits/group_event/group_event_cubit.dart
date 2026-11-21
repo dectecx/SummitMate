@@ -52,8 +52,9 @@ class GroupEventCubit extends Cubit<GroupEventState>
     if (current is GroupEventLoading) return GroupEventLoading(notification: notification);
     if (current is MyEventsLoaded) return current.copyWith(notification: notification);
     if (current is MyEventsLoading) return MyEventsLoading(notification: notification);
-    if (current is MyEventsError)
+    if (current is MyEventsError) {
       return MyEventsError(message: current.message, type: current.type, notification: notification);
+    }
     return current;
   }
 
