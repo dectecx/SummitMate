@@ -6,6 +6,7 @@ import '../features/account/login_page.dart';
 import '../features/account/register_page.dart';
 import '../features/account/verify_page.dart';
 import '../features/explore/explore_tab.dart';
+import '../features/explore/ui/mountain_detail_page.dart';
 import '../features/map/map_tab.dart';
 import '../features/onboarding/welcome_page.dart';
 import '../features/trips/trips_tab.dart';
@@ -17,6 +18,7 @@ abstract final class Routes {
   static const trips = '/trips';
   static const map = '/map';
   static const explore = '/explore';
+  static String mountain(String id) => '/explore/$id';
   static const me = '/me';
   static String trip(String id) => '/trips/$id';
   static const login = '/login';
@@ -51,7 +53,15 @@ GoRouter buildRouter({required String initialLocation}) {
             ],
           ),
           StatefulShellBranch(routes: [GoRoute(path: Routes.map, builder: (_, _) => const MapTab())]),
-          StatefulShellBranch(routes: [GoRoute(path: Routes.explore, builder: (_, _) => const ExploreTab())]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.explore,
+                builder: (_, _) => const ExploreTab(),
+                routes: [GoRoute(path: ':id', builder: (_, s) => MountainDetailPage(mountainId: s.pathParameters['id']!))],
+              ),
+            ],
+          ),
           StatefulShellBranch(routes: [GoRoute(path: Routes.me, builder: (_, _) => const AccountTab())]),
         ],
       ),

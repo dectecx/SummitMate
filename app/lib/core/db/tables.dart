@@ -150,3 +150,15 @@ class WeatherCache extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+/// Last response of a cacheable reference endpoint (e.g. the mountain list) with its ETag, so the
+/// app can show it offline and ask the server "has it changed?" cheaply.
+class HttpCache extends Table {
+  TextColumn get key => text()();
+  TextColumn get etag => text().nullable()();
+  TextColumn get payload => text()();
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}

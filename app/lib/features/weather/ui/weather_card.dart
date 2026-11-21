@@ -36,12 +36,7 @@ class WeatherCard extends ConsumerWidget {
     if (query == null) {
       body = const Text('在行程節點填上座標後，這裡就會顯示該地的天氣預報。');
     } else {
-      body = switch (ref.watch(weatherProvider(query)).value) {
-        null || WeatherLoading() => const Padding(padding: EdgeInsets.all(8), child: Center(child: CircularProgressIndicator())),
-        WeatherNeedsLogin() => const Text('登入後可以查看天氣預報。'),
-        WeatherUnavailable() => const Text('目前無法取得天氣，請稍後再試。'),
-        WeatherData(:final forecast, :final stale, :final refreshFailed) => _Forecast(trip: trip, query: query, forecast: forecast, stale: stale, refreshFailed: refreshFailed),
-      };
+      body = PlaceWeather(query: query, from: trip.start, to: trip.end);
     }
 
     return Card(
@@ -61,9 +56,28 @@ class WeatherCard extends ConsumerWidget {
   }
 }
 
+/// The forecast for a place, with the days between [from] and [to] (the trip) highlighted.
+class PlaceWeather extends ConsumerWidget {
+  const PlaceWeather({super.key, required this.query, this.from, this.to});
+  final WeatherQuery query;
+  final DateTime? from;
+  final DateTime? to;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return switch (ref.watch(weatherProvider(query)).value) {
+      null || WeatherLoading() => const Padding(padding: EdgeInsets.all(8), child: Center(child: CircularProgressIndicator())),
+      WeatherNeedsLogin() => const Text('登入後可以查看天氣預報。'),
+      WeatherUnavailable() => const Text('目前無法取得天氣，請稍後再試。'),
+      WeatherData(:final forecast, :final stale, :final refreshFailed) => _Forecast(query: query, from: from, to: to, forecast: forecast, stale: stale, refreshFailed: refreshFailed),
+    };
+  }
+}
+
 class _Forecast extends StatelessWidget {
-  const _Forecast({required this.trip, required this.query, required this.forecast, required this.stale, required this.refreshFailed});
-  final Trip trip;
+  const _Forecast({required this.query, required this.from, required this.to, required this.forecast, required this.stale, required this.refreshFailed});
+  final DateTime? from;
+  final DateTime? to;
   final WeatherQuery query;
   final WeatherForecast forecast;
   final bool stale;
@@ -89,7 +103,7 @@ class _Forecast extends StatelessWidget {
             itemBuilder: (_, i) {
               final d = forecast.daily[i];
               final w = describeWeather(d.weatherCode);
-              final inTrip = !d.date.isBefore(trip.start) && !d.date.isAfter(trip.end);
+              final inTrip = from != null && to != null && !d.date.isBefore(from!) && !d.date.isAfter(to!);
               return Container(
                 key: ValueKey('weather-${formatDate(d.date)}'),
                 width: 92,
@@ -122,7 +136,7 @@ class _Forecast extends StatelessWidget {
               : '更新於 ${_hm(updated)}',
           style: theme.textTheme.bodySmall,
         ),
-        if (!forecast.daily.any((d) => !d.date.isBefore(trip.start) && !d.date.isAfter(trip.end)))
+        if (from != null && to != null && !forecast.daily.any((d) => !d.date.isBefore(from!) && !d.date.isAfter(to!)))
           Padding(padding: const EdgeInsets.only(top: 4), child: Text('行程日期還不在預報範圍內，以上是接下來幾天的天氣。', style: theme.textTheme.bodySmall)),
       ],
     );
