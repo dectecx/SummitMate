@@ -10,6 +10,7 @@
 | [技術決策](./project/TECH_DECISIONS.md) | 前後端技術選型 |
 | [新手引導與導覽](./ui/ONBOARDING_NAVIGATION.md) | 導覽結構、歡迎頁、情境提示 |
 | [資料庫、同步與 Auth](./architecture/DATA_SYNC_AUTH.md) | 資料表、Outbox 同步、認證與訪客模式 |
+| [前端資料層](./architecture/FRONTEND_DATA.md) | Drift 資料表、outbox 規則、SyncEngine、帳號切換 |
 | [隱私權政策](./security/PRIVACY_POLICY.md) | |
 
 ## 單一可信源（SSOT）
