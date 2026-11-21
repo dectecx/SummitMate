@@ -11,6 +11,7 @@ import 'auth_support.dart';
 import 'support.dart';
 
 void main() {
+  authedWiringTest();
   late AppDatabase db;
   late FakeAuthApi api;
   late ProviderContainer container;
@@ -63,5 +64,45 @@ void main() {
     await repo.restore();
     expect(await engine.sync(), isNot(equals(null)));
     expect(repo.canSync, isFalse);
+  });
+}
+
+/// Regression test: the authenticated Dio, the auth repository and the sync API depend on each
+/// other through the session bridge; wiring them with provider reads once failed at request time.
+void authedWiringTest() {
+  test('the real authenticated Dio sends the stored access token and refreshes on 401', () async {
+    final db = memoryDb();
+    final tokens = MemoryTokenStore();
+    final api = FakeAuthApi()..addAccount('a@x.co', 'Passw0rd1');
+    final container = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        tokenStoreProvider.overrideWithValue(tokens),
+        authApiProvider.overrideWithValue(api),
+        connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
+      ],
+    );
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+    final repo = container.read(authRepositoryProvider);
+    await repo.login(email: 'a@x.co', password: 'Passw0rd1'); // stores access-1 / refresh-1
+
+    final seen = <String?>[];
+    final adapter = ScriptedAdapter((req) async {
+      seen.add(req.headers['Authorization'] as String?);
+      if (req.headers['Authorization'] == 'Bearer access-2') {
+        return json({'server_time': 'x', 'next_since': 'y', 'has_more': false, 'changes': {}});
+      }
+      return json({'code': 'unauthorized'}, 401);
+    });
+    container.read(authedDioProvider).httpClientAdapter = adapter;
+
+    final page = await container.read(syncApiProvider).pull(limit: 1);
+
+    expect(page.nextSince, 'y');
+    expect(seen, ['Bearer access-1', 'Bearer access-2'], reason: 'first token rejected, refreshed, replayed');
+    expect(api.refreshCalls, 1);
   });
 }

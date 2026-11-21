@@ -63,7 +63,7 @@ class DioSyncApi implements SyncApi {
       final status = e.response?.statusCode;
       if (status == 401) throw const SyncAuthException();
       if (status != null) throw SyncServerException(status, message: '${e.response?.data}');
-      throw SyncNetworkException(e.type.name);
+      throw SyncNetworkException('${e.type.name}: ${e.error ?? e.message}');
     }
   }
 }

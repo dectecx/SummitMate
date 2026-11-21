@@ -8,6 +8,18 @@ abstract interface class TokenSource {
   Future<String?> refreshAccessToken();
 }
 
+/// A [TokenSource] whose real implementation is attached later (see `sessionBridgeProvider`).
+/// Until then there is no token and no refresh.
+class SessionBridge implements TokenSource {
+  TokenSource? target;
+
+  @override
+  Future<String?> accessToken() async => target?.accessToken();
+
+  @override
+  Future<String?> refreshAccessToken() async => target?.refreshAccessToken();
+}
+
 /// Adds the access token to requests and, on 401, refreshes it once and retries.
 ///
 /// Many requests failing at the same time share a single refresh (the [TokenSource] guarantees

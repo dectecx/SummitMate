@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth/auth_api.dart';
@@ -39,20 +40,24 @@ BaseOptions _dioOptions(String baseUrl) => BaseOptions(
 /// Dio for calls that must never carry or refresh a token (login, refresh, ...).
 final publicDioProvider = Provider<Dio>((ref) => Dio(_dioOptions(ref.watch(apiBaseUrlProvider))));
 
+/// Connects the auth interceptor to the [AuthRepository] without a provider cycle
+/// (repository -> API -> Dio -> interceptor -> repository). The repository registers itself when created.
+final sessionBridgeProvider = Provider<SessionBridge>((ref) => SessionBridge());
+
 /// Dio that adds the access token and refreshes it on 401.
-final Provider<Dio> authedDioProvider = Provider<Dio>((ref) {
+final authedDioProvider = Provider<Dio>((ref) {
   final dio = Dio(_dioOptions(ref.watch(apiBaseUrlProvider)));
-  // Read lazily: the repository itself depends on this Dio through the API object.
-  dio.interceptors.add(AuthInterceptor(tokens: _LazyTokenSource(() => ref.read(authRepositoryProvider)), dio: dio));
+  dio.interceptors.add(AuthInterceptor(tokens: ref.watch(sessionBridgeProvider), dio: dio));
   return dio;
 });
 
-final Provider<AuthApi> authApiProvider = Provider<AuthApi>(
+final authApiProvider = Provider<AuthApi>(
   (ref) => DioAuthApi(publicDio: ref.watch(publicDioProvider), authedDio: ref.watch(authedDioProvider)),
 );
 
-final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>((ref) {
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final repo = AuthRepository(api: ref.watch(authApiProvider), tokens: ref.watch(tokenStoreProvider), account: ref.watch(localAccountStoreProvider));
+  ref.watch(sessionBridgeProvider).target = repo;
   ref.onDispose(repo.dispose);
   return repo;
 });
@@ -94,6 +99,7 @@ final syncCoordinatorProvider = Provider<SyncCoordinator>((ref) {
     outbox: watchOutboxCounts(ref.watch(appDatabaseProvider)),
     online: watchOnline(),
     resumed: ref.watch(appResumedProvider),
+    onError: (error, stack) => debugPrint('sync failed: $error\n$stack'),
   );
   ref.onDispose(coordinator.dispose);
   return coordinator;
@@ -110,12 +116,3 @@ final syncStatusProvider = Provider<SyncStatus>((ref) {
     online: ref.watch(onlineProvider),
   );
 });
-
-class _LazyTokenSource implements TokenSource {
-  _LazyTokenSource(this._get);
-  final TokenSource Function() _get;
-  @override
-  Future<String?> accessToken() => _get().accessToken();
-  @override
-  Future<String?> refreshAccessToken() => _get().refreshAccessToken();
-}
