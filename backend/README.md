@@ -215,10 +215,12 @@ docker build -t summitmate-api .
 
 push 到 `main` 且 `backend/` 有任何異動時，GitHub Actions 自動執行：
 
-1. 🧪 跑單元測試 (`go test -short ./...`)
+1. 🧪 跑單元測試 (`go test -short ./...`) 並檢查 mock 是否為最新
 2. 🐳 建置並推送 Docker Image 至 Artifact Registry
 3. 🚀 部署新 Revision 至 Cloud Run
 
+> **目前已暫停部署到 GCP**：步驟 2、3 僅在 GitHub repository variable `GCP_DEPLOY_ENABLED` 設為 `true` 時才會執行，未設定時只會跑步驟 1 的測試。
+>
 > 手動觸發：GitHub → Actions → `Deploy Backend to GCP Cloud Run` → Run workflow
 
 **所需 GitHub Secrets：** `GCP_WORKLOAD_IDENTITY_PROVIDER`、`GCP_SERVICE_ACCOUNT`

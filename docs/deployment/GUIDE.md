@@ -140,7 +140,7 @@ flutter run -d chrome --web-port 54263 --dart-define-from-file=.env.dev
 
 #### 3. 觸發部署
 
-推送程式碼至 `main` 分支即自動觸發 `.github/workflows/deploy_to_netlify.yml` 流程。
+推送程式碼至 `main` 分支即自動觸發 `.github/workflows/deploy_to_netlify.yml` 流程。流程會先執行 `flutter analyze` 與 `flutter test`，兩者都通過才會建置並部署；任一失敗就不會部署。
 
 ---
 
