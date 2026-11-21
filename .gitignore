@@ -48,6 +48,8 @@ app/devtools_options.yaml
 
 # Generated Dart files (build_runner)
 **/*.g.dart
+**/*.freezed.dart
+app/lib/core/di/injection.config.dart
 
 # Android
 app/android/.gradle/
