@@ -174,3 +174,19 @@ legacy/app_legacy/.test_coverage.dart
 legacy/app_legacy/test_output*.txt
 legacy/app_legacy/test_output*.xml
 !legacy/app_legacy/pubspec.lock
+
+# legacy backend (moved from backend/)
+legacy/backend_legacy/*.exe
+legacy/backend_legacy/*.exe~
+legacy/backend_legacy/*.dll
+legacy/backend_legacy/*.so
+legacy/backend_legacy/*.dylib
+legacy/backend_legacy/bin/
+legacy/backend_legacy/cmd/api/api
+legacy/backend_legacy/cmd/api/api.exe
+legacy/backend_legacy/tmp/
+legacy/backend_legacy/vendor/
+legacy/backend_legacy/*.test
+legacy/backend_legacy/*.out
+legacy/backend_legacy/coverage.*
+legacy/backend_legacy/__debug_bin*
