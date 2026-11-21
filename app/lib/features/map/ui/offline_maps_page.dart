@@ -71,7 +71,11 @@ class _AvailableTile extends StatelessWidget {
       isThreeLine: true,
       trailing: FilledButton.tonal(
         style: FilledButton.styleFrom(minimumSize: const Size(72, 40)),
-        onPressed: () => manager.start(entry.def.id),
+        onPressed: () {
+          manager.start(entry.def.id);
+          // The row moves to the section at the top, which may be out of view: say what happened.
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已加入下載：${entry.def.name}（進度在畫面上方）')));
+        },
         child: const Text('下載'),
       ),
     );
