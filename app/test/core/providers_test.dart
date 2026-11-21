@@ -23,6 +23,7 @@ void main() {
         appDatabaseProvider.overrideWithValue(db),
         tokenStoreProvider.overrideWithValue(MemoryTokenStore()),
         authApiProvider.overrideWithValue(api),
+        connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
       ],
     );
   });

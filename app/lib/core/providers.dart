@@ -10,10 +10,12 @@ import 'config.dart';
 import 'db/app_database.dart';
 import 'db/local_account.dart';
 import 'settings/app_settings.dart';
+import 'sync/connectivity.dart';
 import 'sync/dio_sync_api.dart';
 import 'sync/outbox_counts.dart';
 import 'sync/outbox_writer.dart';
 import 'sync/sync_api.dart';
+import 'sync/sync_coordinator.dart';
 import 'sync/sync_engine.dart';
 import 'sync/sync_status.dart';
 
@@ -70,9 +72,32 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
 final outboxCountsProvider = StreamProvider<OutboxCounts>((ref) => watchOutboxCounts(ref.watch(appDatabaseProvider)));
 final syncRunningProvider = StreamProvider<bool>((ref) => ref.watch(syncEngineProvider).running);
 
-/// Whether the device has a connection. Wired to connectivity_plus together with the sync triggers;
-/// until then it assumes online.
-final onlineProvider = Provider<bool>((ref) => true);
+/// Connectivity hint from the platform (null until the first event); not proof the server is reachable.
+final connectivityOnlineProvider = StreamProvider<bool>((ref) => watchOnline());
+
+/// Whether the device appears to have a connection. Assumes online until the platform reports.
+final onlineProvider = Provider<bool>((ref) => ref.watch(connectivityOnlineProvider).value ?? true);
+
+/// Fires when the app returns to the foreground. Override in tests.
+final appResumedProvider = Provider<Stream<void>>((ref) {
+  final observer = AppResumedObserver();
+  ref.onDispose(observer.dispose);
+  return observer.resumed;
+});
+
+/// Starts the sync triggers. Read it once at startup (after `authRepositoryProvider.restore()`);
+/// `ref.read(syncCoordinatorProvider).refresh()` is the pull-to-refresh entry point.
+final syncCoordinatorProvider = Provider<SyncCoordinator>((ref) {
+  final coordinator = SyncCoordinator(
+    engine: ref.watch(syncEngineProvider),
+    auth: ref.watch(authRepositoryProvider).watch(),
+    outbox: watchOutboxCounts(ref.watch(appDatabaseProvider)),
+    online: watchOnline(),
+    resumed: ref.watch(appResumedProvider),
+  );
+  ref.onDispose(coordinator.dispose);
+  return coordinator;
+});
 
 /// The single value the UI shows about syncing.
 final syncStatusProvider = Provider<SyncStatus>((ref) {
