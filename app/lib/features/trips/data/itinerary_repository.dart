@@ -22,6 +22,8 @@ class ItineraryRepository {
     int? estMinutes,
     int altitude = 0,
     double distance = 0,
+    double? lat,
+    double? lng,
     String note = '',
   }) async {
     final id = _uuid.v7();
@@ -35,13 +37,24 @@ class ItineraryRepository {
           estMinutes: Value(estMinutes),
           altitude: Value(altitude),
           distance: Value(distance),
+          lat: Value(lat),
+          lng: Value(lng),
           note: Value(note),
         ),
       );
       await _outbox.upsert(
         'itinerary_items',
         id,
-        {'trip_id': tripId, 'day_index': dayIndex, 'name': name, 'est_minutes': estMinutes, 'altitude': altitude, 'distance': distance, 'note': note},
+        {
+          'trip_id': tripId,
+          'day_index': dayIndex,
+          'name': name,
+          'est_minutes': estMinutes,
+          'altitude': altitude,
+          'distance': distance,
+          if (lat != null && lng != null) ...{'lat': lat, 'lng': lng},
+          'note': note,
+        },
         isCreate: true,
       );
     });
@@ -56,6 +69,8 @@ class ItineraryRepository {
     Value<int?> estMinutes = const Value.absent(),
     int? altitude,
     double? distance,
+    Value<double?> lat = const Value.absent(),
+    Value<double?> lng = const Value.absent(),
     String? note,
     Value<DateTime?> checkedInAt = const Value.absent(),
   }) async {
@@ -65,6 +80,8 @@ class ItineraryRepository {
       if (estMinutes.present) 'est_minutes': estMinutes.value,
       'altitude': ?altitude,
       'distance': ?distance,
+      if (lat.present) 'lat': lat.value,
+      if (lng.present) 'lng': lng.value,
       'note': ?note,
       if (checkedInAt.present) 'checked_in_at': checkedInAt.value,
     };
@@ -77,6 +94,8 @@ class ItineraryRepository {
           estMinutes: estMinutes,
           altitude: Value.absentIfNull(altitude),
           distance: Value.absentIfNull(distance),
+          lat: lat,
+          lng: lng,
           note: Value.absentIfNull(note),
           checkedInAt: checkedInAt,
         ),

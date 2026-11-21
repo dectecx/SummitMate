@@ -139,3 +139,14 @@ class AppSettings extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+/// Last forecast received for a place, so the weather can still be read without a connection.
+/// The key identifies the place (rounded coordinates and elevation); the payload is the server's JSON.
+class WeatherCache extends Table {
+  TextColumn get key => text()();
+  TextColumn get payload => text()();
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}

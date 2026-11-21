@@ -85,6 +85,17 @@ class OutboxWriter {
     });
   }
 
+  /// Drops every pending operation of a trip's content (not the trip itself). Used when the person
+  /// leaves a trip: whatever they had queued for it can no longer be accepted by the server.
+  Future<void> dropTripWork(String tripId) => _db.transaction(() async {
+    for (final child in syncEntities.where((e) => e.name != 'trips')) {
+      for (final childId in await _store.childIds(child.name, 'trip_id', tripId)) {
+        await _removeOps(child.name, childId);
+      }
+    }
+    await _removeOps('trips', tripId);
+  });
+
   /// Gives up on a failed op. The local data is made consistent with that choice:
   /// a failed creation is removed locally (with its pending content); a failed edit or delete
   /// resets the sync cursor so the next sync re-downloads the server's version.

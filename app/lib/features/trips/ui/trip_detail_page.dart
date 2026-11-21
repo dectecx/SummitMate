@@ -8,6 +8,7 @@ import '../../gear/ui/gear_form_sheet.dart';
 import '../../gear/ui/gear_view.dart';
 import '../../meals/ui/meal_form_sheet.dart';
 import '../../meals/ui/meals_view.dart';
+import '../../members/ui/members_view.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
 import 'itinerary_view.dart';
@@ -73,7 +74,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
         ],
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [Tab(text: '行程'), Tab(text: '裝備'), Tab(text: '餐食'), Tab(text: '成員')],
+          tabs: const [Tab(text: '行程'), Tab(text: '裝備'), Tab(text: '餐食'), Tab(text: '成員與天氣')],
         ),
       ),
       body: TabBarView(
@@ -82,7 +83,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
           ItineraryView(trip: trip, role: role, day: day, onDayChanged: (d) => setState(() => _day = d)),
           GearView(tripId: trip.id),
           MealsView(trip: trip, day: _mealDay, onDayChanged: (d) => setState(() => _mealDay = d)),
-          const ComingSoon(icon: Icons.group_outlined, message: '成員與天氣即將推出'),
+          MembersView(trip: trip, role: role),
         ],
       ),
       floatingActionButton: switch (_tabs.index) {

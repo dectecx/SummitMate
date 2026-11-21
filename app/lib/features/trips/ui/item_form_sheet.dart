@@ -34,6 +34,8 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
   late final _name = TextEditingController(text: widget.item?.name);
   late final _altitude = TextEditingController(text: (widget.item?.altitude ?? 0) == 0 ? '' : '${widget.item!.altitude}');
   late final _distance = TextEditingController(text: (widget.item?.distance ?? 0) == 0 ? '' : formatKm(widget.item!.distance));
+  late final _lat = TextEditingController(text: widget.item?.lat?.toString());
+  late final _lng = TextEditingController(text: widget.item?.lng?.toString());
   late final _note = TextEditingController(text: widget.item?.note);
   late int _day = widget.item?.dayIndex ?? widget.initialDay;
   late int? _minutes = widget.item?.estMinutes;
@@ -44,6 +46,8 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
     _name.dispose();
     _altitude.dispose();
     _distance.dispose();
+    _lat.dispose();
+    _lng.dispose();
     _note.dispose();
     super.dispose();
   }
@@ -60,10 +64,14 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
     final repo = ref.read(itineraryRepositoryProvider);
     final altitude = int.tryParse(_altitude.text.trim()) ?? 0;
     final distance = double.tryParse(_distance.text.trim()) ?? 0;
+    // Both or neither: a half coordinate is useless.
+    final lat = double.tryParse(_lat.text.trim());
+    final lng = double.tryParse(_lng.text.trim());
+    final hasCoords = lat != null && lng != null;
     if (widget.item == null) {
-      await repo.add(widget.trip.id, dayIndex: _day, name: _name.text.trim(), estMinutes: _minutes, altitude: altitude, distance: distance, note: _note.text.trim());
+      await repo.add(widget.trip.id, dayIndex: _day, name: _name.text.trim(), estMinutes: _minutes, altitude: altitude, distance: distance, lat: hasCoords ? lat : null, lng: hasCoords ? lng : null, note: _note.text.trim());
     } else {
-      await repo.update(widget.item!.id, dayIndex: _day, name: _name.text.trim(), estMinutes: Value(_minutes), altitude: altitude, distance: distance, note: _note.text.trim());
+      await repo.update(widget.item!.id, dayIndex: _day, name: _name.text.trim(), estMinutes: Value(_minutes), altitude: altitude, distance: distance, lat: Value(hasCoords ? lat : null), lng: Value(hasCoords ? lng : null), note: _note.text.trim());
     }
     if (mounted) Navigator.pop(context);
   }
@@ -88,6 +96,20 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
     await ref.read(itineraryRepositoryProvider).delete(widget.item!.id);
     if (mounted) Navigator.pop(context);
   }
+
+  Widget _coordField(TextEditingController c, String label, double min, double max, bool ro) => TextFormField(
+    controller: c,
+    readOnly: ro,
+    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^-?\d{0,3}\.?\d{0,6}'))],
+    validator: (v) {
+      final t = (v ?? '').trim();
+      if (t.isEmpty) return null;
+      final n = double.tryParse(t);
+      return n == null || n < min || n > max ? '$label 需介於 ${min.toInt()} 到 ${max.toInt()}' : null;
+    },
+    decoration: InputDecoration(labelText: label, hintText: label == '緯度' ? '23.4' : '121.0'),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +188,21 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
               ),
               const SizedBox(height: 16),
               TextFormField(controller: _note, readOnly: ro, minLines: 1, maxLines: 4, decoration: const InputDecoration(labelText: '備註（選填）')),
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                initiallyExpanded: _lat.text.isNotEmpty,
+                title: const Text('座標（選填，用來查天氣）'),
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: _coordField(_lat, '緯度', -90, 90, ro)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _coordField(_lng, '經度', -180, 180, ro)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
               if (!ro) ...[
                 const SizedBox(height: 24),
                 FilledButton(onPressed: _busy ? null : _save, child: Text(editing ? '儲存' : '新增')),
