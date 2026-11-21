@@ -32,30 +32,6 @@ func (e MountainCategory) Valid() bool {
 	}
 }
 
-// Defines values for MountainDifficulty.
-const (
-	Easy     MountainDifficulty = "easy"
-	Expert   MountainDifficulty = "expert"
-	Hard     MountainDifficulty = "hard"
-	Moderate MountainDifficulty = "moderate"
-)
-
-// Valid indicates whether the value is a known member of the MountainDifficulty enum.
-func (e MountainDifficulty) Valid() bool {
-	switch e {
-	case Easy:
-		return true
-	case Expert:
-		return true
-	case Hard:
-		return true
-	case Moderate:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for PushOpType.
 const (
 	Delete PushOpType = "delete"
@@ -165,9 +141,8 @@ type LoginRequest struct {
 
 // Mountain defines model for Mountain.
 type Mountain struct {
-	BeginnerFriendly bool                `json:"beginner_friendly"`
-	Category         MountainCategory    `json:"category"`
-	Difficulty       *MountainDifficulty `json:"difficulty"`
+	BeginnerFriendly bool             `json:"beginner_friendly"`
+	Category         MountainCategory `json:"category"`
 
 	// Elevation Metres
 	Elevation int `json:"elevation"`
@@ -185,15 +160,15 @@ type Mountain struct {
 	Sources []string `json:"sources"`
 	Summary string   `json:"summary"`
 
+	// TrailGrade Raw national-park trail grade (0-6, https://www.ysnp.gov.tw/StaticPage/TrailsG) as stated by the cited source; null if none. No difficulty label is provided.
+	TrailGrade *int `json:"trail_grade"`
+
 	// Verified True only after a human reviewed the entry
 	Verified bool `json:"verified"`
 }
 
 // MountainCategory defines model for Mountain.Category.
 type MountainCategory string
-
-// MountainDifficulty defines model for Mountain.Difficulty.
-type MountainDifficulty string
 
 // MountainDataset defines model for MountainDataset.
 type MountainDataset struct {

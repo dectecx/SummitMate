@@ -5,8 +5,11 @@
 //
 // DATA NOTICE: mountains.json is compiled from public sources (see each entry's `sources`). It has NOT been
 // reviewed by a human: every entry has verified=false. Mountain information affects hikers' safety, so the
-// data MUST be reviewed (elevation, coordinates, difficulty, permit wording) before it is released to users.
-// Fields that no consulted source stated are null (name_en, permit) or false (beginner_friendly) on purpose.
+// data MUST be reviewed (elevation, coordinates, trail grade, permit wording) before it is released to users.
+// Fields that no consulted source stated are null (name_en, permit, trail_grade) or false (beginner_friendly) on purpose.
+//
+// trail_grade is the RAW national-park trail grade (0..6, see https://www.ysnp.gov.tw/StaticPage/TrailsG) exactly as
+// the cited source list states it. No difficulty labels (easy/hard/...) are derived or provided on purpose.
 package explore
 
 import (
@@ -34,9 +37,8 @@ const (
 )
 
 var (
-	validCategories   = []string{CategoryBaiyue, CategoryOther}
-	validDifficulties = []string{"easy", "moderate", "hard", "expert"}
-	slugRe            = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	validCategories = []string{CategoryBaiyue, CategoryOther}
+	slugRe          = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 )
 
 // Mountain is one reference entry. JSON names match the API contract.
@@ -49,7 +51,7 @@ type Mountain struct {
 	Latitude         float64  `json:"latitude"`
 	Longitude        float64  `json:"longitude"`
 	Category         string   `json:"category"`
-	Difficulty       *string  `json:"difficulty"`
+	TrailGrade       *int     `json:"trail_grade"` // raw national-park trail grade 0..6; nil if the source gives none
 	BeginnerFriendly bool     `json:"beginner_friendly"`
 	Summary          string   `json:"summary"`
 	Permit           *string  `json:"permit"`
@@ -122,8 +124,8 @@ func (d Dataset) Validate() error {
 		if !slices.Contains(validCategories, m.Category) {
 			add("%s: invalid category %q", at, m.Category)
 		}
-		if m.Difficulty != nil && !slices.Contains(validDifficulties, *m.Difficulty) {
-			add("%s: invalid difficulty %q", at, *m.Difficulty)
+		if m.TrailGrade != nil && (*m.TrailGrade < 0 || *m.TrailGrade > 6) {
+			add("%s: trail_grade %d outside 0..6", at, *m.TrailGrade)
 		}
 		if m.Verified {
 			add("%s: verified must be false until a human has reviewed the entry", at)

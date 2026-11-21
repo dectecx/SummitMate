@@ -512,7 +512,7 @@ components:
 
     Mountain:
       type: object
-      required: [id, name, name_en, elevation, region, latitude, longitude, category, difficulty, beginner_friendly, summary, permit, verified, sources]
+      required: [id, name, name_en, elevation, region, latitude, longitude, category, trail_grade, beginner_friendly, summary, permit, verified, sources]
       properties:
         id: { type: string, description: Stable lowercase ascii slug }
         name: { type: string, description: Traditional Chinese }
@@ -522,7 +522,7 @@ components:
         latitude: { type: number, format: double }
         longitude: { type: number, format: double }
         category: { type: string, enum: [baiyue, other] }
-        difficulty: { type: string, nullable: true, enum: [easy, moderate, hard, expert] }
+        trail_grade: { type: integer, nullable: true, minimum: 0, maximum: 6, description: "Raw national-park trail grade (0-6, https://www.ysnp.gov.tw/StaticPage/TrailsG) as stated by the cited source; null if none. No difficulty label is provided." }
         beginner_friendly: { type: boolean }
         summary: { type: string }
         permit: { type: string, nullable: true }

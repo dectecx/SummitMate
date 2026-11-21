@@ -66,6 +66,7 @@ honours `If-None-Match` with 304, and sends `Cache-Control: public, max-age=3600
 **Data notice:** the 100 baiyue entries were compiled from public sources (zh.wikipedia 台灣百岳 list and peak pages,
 Wikidata as a cross-check, the Yushan National Park trail-grading page); each entry lists its `sources`. The data is
 **unreviewed** (`verified` is false everywhere and validation rejects `true`) and must be reviewed by a human before release,
-because it affects hikers' safety. Rules used: elevation = the list's latest survey rounded to metres; `difficulty` is derived
-from the national park trail grade the list states (0-2 easy, 3 moderate, 4 hard, 5-6 expert); `beginner_friendly` is true only
+because it affects hikers' safety. Rules used: elevation = the list's latest survey rounded to metres; `trail_grade` is the RAW national park
+trail grade (0-6, https://www.ysnp.gov.tw/StaticPage/TrailsG) taken from the list's 分級 column, or null if the list gives none; no
+difficulty labels (easy/hard/...) are provided or derived; `beginner_friendly` is true only
 where a cited article says so (石門山); `permit` and `name_en` are null because no consulted source stated them.

@@ -67,7 +67,8 @@ func TestValidate(t *testing.T) {
 		"lng too low":     func(m *Mountain) { m.Longitude = 119 },
 		"lng too high":    func(m *Mountain) { m.Longitude = 123 },
 		"bad category":    func(m *Mountain) { m.Category = "hill" },
-		"bad difficulty":  func(m *Mountain) { m.Difficulty = ptr("impossible") },
+		"grade too high":  func(m *Mountain) { m.TrailGrade = ptr(7) },
+		"grade negative":  func(m *Mountain) { m.TrailGrade = ptr(-1) },
 		"verified":        func(m *Mountain) { m.Verified = true },
 		"no sources":      func(m *Mountain) { m.Sources = nil },
 		"non-url source":  func(m *Mountain) { m.Sources = []string{"wikipedia"} },
@@ -78,7 +79,7 @@ func TestValidate(t *testing.T) {
 	for name, mut := range cases {
 		assert.Error(t, bad(mut), name)
 	}
-	assert.NoError(t, bad(func(m *Mountain) { m.Difficulty = ptr("expert"); m.Category = CategoryOther }))
+	assert.NoError(t, bad(func(m *Mountain) { m.TrailGrade = ptr(6); m.Category = CategoryOther }))
 
 	assert.Error(t, validDataset(validMountain("a", 3000), validMountain("a", 2000)).Validate(), "duplicate id")
 	assert.Error(t, validDataset().Validate(), "empty list")
@@ -154,7 +155,14 @@ func TestHandlerReturnsJSONWithETag(t *testing.T) {
 	assert.Equal(t, "yushan-main", out.Mountains[0].Id)
 	for _, m := range out.Mountains {
 		assert.False(t, m.Verified)
+		if m.TrailGrade != nil {
+			assert.GreaterOrEqual(t, *m.TrailGrade, 0, m.Id)
+			assert.LessOrEqual(t, *m.TrailGrade, 6, m.Id)
+		}
 	}
+	require.NotNil(t, out.Mountains[0].TrailGrade)
+	assert.Equal(t, 3, *out.Mountains[0].TrailGrade, "玉山 is grade 3 in the cited list")
+	assert.NotContains(t, rec.Body.String(), "difficulty")
 }
 
 func TestHandlerConditionalRequests(t *testing.T) {
