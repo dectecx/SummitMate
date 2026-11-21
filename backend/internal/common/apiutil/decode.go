@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"summitmate/internal/apperror"
 	"strings"
+	"summitmate/internal/apperror"
 )
 
 // DecodeBody 解析 HTTP request body 的 JSON，並自動將 JSON 解析錯誤

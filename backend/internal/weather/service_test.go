@@ -389,4 +389,3 @@ func TestWeatherService_FetchAndStore(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 }
-

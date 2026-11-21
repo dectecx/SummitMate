@@ -13,8 +13,8 @@ var ErrInvalidToken = errors.New("invalid token")
 
 // Claims 定義 JWT Token 的自訂 Payload。
 type Claims struct {
-	UserID    string `json:"user_id"` // 使用者 UUID
-	Email     string `json:"email"`   // 使用者 Email
+	UserID    string `json:"user_id"`              // 使用者 UUID
+	Email     string `json:"email"`                // 使用者 Email
 	TokenType string `json:"token_type,omitempty"` // "access" or "refresh"
 	jwt.RegisteredClaims
 }

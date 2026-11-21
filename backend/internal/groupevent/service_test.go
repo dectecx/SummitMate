@@ -37,11 +37,11 @@ type MockTx struct {
 	mock.Mock
 }
 
-func (m *MockTx) Begin(ctx context.Context) (pgx.Tx, error)   { return nil, nil }
-func (m *MockTx) Commit(ctx context.Context) error             { return m.Called(ctx).Error(0) }
-func (m *MockTx) Rollback(ctx context.Context) error           { return m.Called(ctx).Error(0) }
-func (m *MockTx) LargeObjects() pgx.LargeObjects               { return pgx.LargeObjects{} }
-func (m *MockTx) Conn() *pgx.Conn                              { return nil }
+func (m *MockTx) Begin(ctx context.Context) (pgx.Tx, error)                    { return nil, nil }
+func (m *MockTx) Commit(ctx context.Context) error                             { return m.Called(ctx).Error(0) }
+func (m *MockTx) Rollback(ctx context.Context) error                           { return m.Called(ctx).Error(0) }
+func (m *MockTx) LargeObjects() pgx.LargeObjects                               { return pgx.LargeObjects{} }
+func (m *MockTx) Conn() *pgx.Conn                                              { return nil }
 func (m *MockTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults { return nil }
 func (m *MockTx) CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error) {
 	return 0, nil
@@ -699,4 +699,3 @@ func TestGroupEventService_UpdateTripSnapshot(t *testing.T) {
 		mockTrip.AssertExpectations(t)
 	})
 }
-

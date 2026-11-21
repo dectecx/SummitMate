@@ -247,7 +247,6 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 	return updatedTrip, nil
 }
 
-
 func (s *tripService) DeleteTrip(ctx context.Context, tripID, userID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
@@ -681,7 +680,6 @@ func (s *tripService) TransferOwnership(ctx context.Context, tripID, currentOwne
 	s.logger.InfoContext(ctx, "行程所有權轉移成功", "trip_id", tripID, "from", currentOwnerID, "to", targetUserID)
 	return updatedTrip, nil
 }
-
 
 // --- Requests models used in service logic ---
 

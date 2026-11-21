@@ -271,4 +271,3 @@ func (s *pollService) VoteOption(ctx context.Context, tripID, pollID, optionID, 
 
 	return s.repo.GetPollByID(ctx, pollID)
 }
-

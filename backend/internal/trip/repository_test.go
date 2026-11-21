@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	pgxmock "github.com/pashagolub/pgxmock/v4"
+	pgxmock "github.com/pashagolub/pgxmock/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

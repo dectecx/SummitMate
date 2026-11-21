@@ -23,7 +23,7 @@ func TestCheckPasswordHash_Valid(t *testing.T) {
 		password := "testPass!@#456"
 		hash, err := HashPassword(password)
 		require.NoError(t, err)
-	
+
 		assert.True(t, CheckPasswordHash(password, hash), "正確密碼應比對成功")
 	})
 }
@@ -33,7 +33,7 @@ func TestCheckPasswordHash_Invalid(t *testing.T) {
 	t.Run("Given an incorrect password, When verifying against the hash, Then it should return false", func(t *testing.T) {
 		hash, err := HashPassword("correctPassword")
 		require.NoError(t, err)
-	
+
 		assert.False(t, CheckPasswordHash("wrongPassword", hash), "錯誤密碼應比對失敗")
 	})
 }
@@ -43,10 +43,10 @@ func TestHashPassword_DifferentHashes(t *testing.T) {
 	t.Run("Given the same password hashed twice, When comparing the hashes, Then they should be different due to salt", func(t *testing.T) {
 		hash1, err := HashPassword("samePassword")
 		require.NoError(t, err)
-	
+
 		hash2, err := HashPassword("samePassword")
 		require.NoError(t, err)
-	
+
 		assert.NotEqual(t, hash1, hash2, "bcrypt 每次應產生不同雜湊 (因為有 salt)")
 	})
 }

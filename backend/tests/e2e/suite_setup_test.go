@@ -49,7 +49,7 @@ func (s *APITestSuite) SetupSuite() {
 	// 1. 啟動 PostgreSQL 測試容器
 	// postgres module 會自帶適合的 wait strategy 判定 DB 是否就緒
 	pgContainer, err := tcpostgres.Run(ctx,
-		"postgres:18-alpine",
+		"postgres:19-alpine",
 		tcpostgres.WithDatabase("test_db"),
 		tcpostgres.WithUsername("test_user"),
 		tcpostgres.WithPassword("test_password"),

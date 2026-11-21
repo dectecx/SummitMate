@@ -90,11 +90,11 @@ func ToGroupEventResponse(e *GroupEvent, requesterID string) api.GroupEvent {
 // ToGroupEventApplicationResponse converts GroupEventApplication to api.GroupEventApplication
 func ToGroupEventApplicationResponse(a *GroupEventApplication) api.GroupEventApplication {
 	return api.GroupEventApplication{
-		Id:         uuid.MustParse(a.ID),
-		EventId:    uuid.MustParse(a.EventID),
-		UserId:     uuid.MustParse(a.UserID),
-		UserName:   a.UserName,
-		UserAvatar: a.UserAvatar,
+		Id:              uuid.MustParse(a.ID),
+		EventId:         uuid.MustParse(a.EventID),
+		UserId:          uuid.MustParse(a.UserID),
+		UserName:        a.UserName,
+		UserAvatar:      a.UserAvatar,
 		Status:          api.GroupEventApplicationStatus(a.Status),
 		Message:         a.Message,
 		RejectionReason: &a.RejectionReason,

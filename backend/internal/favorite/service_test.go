@@ -167,4 +167,3 @@ func TestFavoriteService_BatchUpdateFavorites(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 }
-

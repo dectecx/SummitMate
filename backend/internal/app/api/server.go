@@ -54,7 +54,7 @@ func NewServer(
 	hbH *heartbeat.HeartbeatHandler,
 	flagH *flag.FlagHandler,
 	gearSetH *gearset.GearSetHandler,
-	tm             *tokens.TokenManager,
+	tm *tokens.TokenManager,
 	tokenBlacklist cache.TokenBlacklist,
 ) *Server {
 	return &Server{

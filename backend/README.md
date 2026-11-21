@@ -8,9 +8,9 @@ SummitMate 後端 API 服務，為行動端 (Flutter) 提供 RESTful API。採�
 
 | 項目      | 技術               | 說明                                  |
 | :-------- | :----------------- | :------------------------------------ |
-| 語言      | **Go 1.26**        | 高效能、低記憶體                      |
+| 語言      | **Go 1.27**        | 高效能、低記憶體                      |
 | Web 框架  | **Chi**            | 輕量、相容 stdlib                     |
-| 資料庫    | **PostgreSQL 18**  | 關聯式資料、ACID                      |
+| 資料庫    | **PostgreSQL 19**  | 關聯式資料、ACID                      |
 | DB Driver | **pgx**            | 高效能 PostgreSQL driver + 連線池     |
 | DB 遷移   | **golang-migrate** | SQL-based schema migration            |
 | API 規格  | **OpenAPI 3.0.3**  | Spec-First (YAML)                     |
@@ -59,7 +59,7 @@ backend/
 
 ### 前置需求
 
-- Go 1.26+
+- Go 1.27+
 - Docker & Docker Compose (用於 PostgreSQL)
 
 ### 首次設定
@@ -208,7 +208,7 @@ docker build -t summitmate-api .
 | :------------- | :--------------------------------------------------------------- |
 | 平台           | GCP Cloud Run (`summitmate-api`, us-central1)                    |
 | Image Registry | GCP Artifact Registry (`summitmate-repo`)                        |
-| 資料庫         | GCP e2-micro VM + Docker (PostgreSQL 18)                         |
+| 資料庫         | GCP e2-micro VM + Docker (PostgreSQL 19)                         |
 | Secrets        | GCP Secret Manager (`DATABASE_URL`, `JWT_SECRET`, `CWA_API_KEY`) |
 
 ### CI/CD 自動部署

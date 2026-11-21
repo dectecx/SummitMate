@@ -1,3 +1,3 @@
-package main
+package summitmate
 
 //go:generate go run github.com/vektra/mockery/v2
