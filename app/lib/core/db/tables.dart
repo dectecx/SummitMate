@@ -162,3 +162,20 @@ class HttpCache extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+/// Offline map downloads: one row per region the person asked for. Absent = not downloaded.
+/// The tiles themselves live in the tile cache (one cache store per region, named after [id]).
+class OfflineRegions extends Table {
+  TextColumn get id => text()();
+  // 'queued' | 'downloading' | 'done' | 'failed' | 'interrupted'
+  TextColumn get state => text()();
+  IntColumn get tilesDone => integer().withDefault(const Constant(0))();
+  IntColumn get tilesTotal => integer().withDefault(const Constant(0))();
+  // Bytes of the tiles downloaded so far.
+  RealColumn get bytes => real().withDefault(const Constant(0))();
+  TextColumn get error => text().nullable()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

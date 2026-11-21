@@ -8,6 +8,7 @@ import '../features/account/verify_page.dart';
 import '../features/explore/explore_tab.dart';
 import '../features/explore/ui/mountain_detail_page.dart';
 import '../features/map/map_tab.dart';
+import '../features/map/ui/offline_maps_page.dart';
 import '../features/onboarding/welcome_page.dart';
 import '../features/trips/trips_tab.dart';
 import '../features/trips/ui/trip_detail_page.dart';
@@ -17,6 +18,7 @@ abstract final class Routes {
   static const welcome = '/welcome';
   static const trips = '/trips';
   static const map = '/map';
+  static const offlineMaps = '/map/offline';
   static const explore = '/explore';
   static String mountain(String id) => '/explore/$id';
   static const me = '/me';
@@ -52,7 +54,15 @@ GoRouter buildRouter({required String initialLocation}) {
               ),
             ],
           ),
-          StatefulShellBranch(routes: [GoRoute(path: Routes.map, builder: (_, _) => const MapTab())]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.map,
+                builder: (_, _) => const MapTab(),
+                routes: [GoRoute(path: 'offline', builder: (_, _) => const OfflineMapsPage())],
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [
               GoRoute(

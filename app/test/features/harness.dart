@@ -82,6 +82,13 @@ Future<T> act<T>(WidgetTester tester, Future<T> Function() action) async {
   return result;
 }
 
+/// Settles repeatedly until [finder] matches (data that arrives from a stream or the network).
+Future<void> settleUntil(WidgetTester tester, Finder finder, {int tries = 12}) async {
+  for (var i = 0; i < tries && finder.evaluate().isEmpty; i++) {
+    await settle(tester);
+  }
+}
+
 /// Runs [action] on real time (for direct database or repository calls inside a widget test).
 Future<T> real<T>(WidgetTester tester, Future<T> Function() action) async => (await tester.runAsync(action)) as T;
 
