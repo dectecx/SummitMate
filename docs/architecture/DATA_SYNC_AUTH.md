@@ -32,9 +32,9 @@
 | `trips` | owner_id、name、description、start_date、end_date、cover_image | 移除 `is_active`、`day_names` |
 | `trip_members` | trip_id、user_id、role（`owner` / `guide` / `member`）、joined_at | 可同步（含 tombstone） |
 | `itinerary_items` | trip_id、day_index（0 = D0）、name、est_minutes、altitude、distance、lat、lng、note、checked_in_at | 新增座標以支援離線地圖提示；用 `checked_in_at` 取代舊的兩個重複欄位 |
-| `gear_items` | trip_id、name、weight、category、quantity、is_checked、sort_order | |
-| `meal_plan_days` | trip_id、name、day_index | |
-| `meal_items` | trip_id、meal_plan_day_id、meal_type、name、weight、calories、quantity、note | |
+| `gear_items` | trip_id、**user_id**（這份裝備屬於誰）、name、weight、category、quantity、is_checked、sort_order | 個人資料 |
+| `meal_plan_days` | trip_id、**user_id**、name、day_index | 個人資料 |
+| `meal_items` | trip_id、**user_id**、meal_plan_day_id、meal_type、name、weight、calories、quantity、note | 個人資料 |
 | `processed_ops` | op_id PK、user_id、result JSONB、created_at | 冪等紀錄，保留 30 天 |
 
 裝備組合（可分享、含分享碼）在實作裝備功能時再設計，採用同一套同步欄位。
@@ -46,12 +46,17 @@
 | 操作 | owner | guide | member |
 | :-- | :-: | :-: | :-: |
 | 檢視行程 | ✓ | ✓ | ✓ |
-| 編輯節點、裝備、餐食 | ✓ | ✓ | |
+| 編輯行程、節點（共用資料） | ✓ | ✓ | |
+| 編輯**自己的**裝備、餐食（個人資料） | ✓ | ✓ | ✓ |
 | 邀請 / 移除成員 | ✓ | ✓ | |
 | 刪除行程、移交擁有者 | ✓ | | |
 | 建立行程 | 任何已登入使用者 | | |
 
-自己的勾選狀態（`is_checked`、打卡）之後視需求開放給 member，第一版先不開。
+資料分兩類：
+- **共用資料**（行程、成員、節點）：依角色判斷。
+- **個人資料**（裝備、餐食）：每筆帶 `user_id`，**只有該成員本人能新增、修改、刪除**，不分角色。
+- 第一版個人資料僅本人可見，`/sync/changes` 只回傳自己的裝備與餐食；之後若要讓團員互看，只需放寬拉取條件。
+- 行程被刪除或成員被移除時，該成員在此行程的個人資料一併成為 tombstone。
 
 ## 3. 同步 API
 
@@ -242,4 +247,5 @@ internal/
 | 3 | 取消「離線寬限期」概念 | 同意；App 本身離線可用，token 只影響同步 |
 | 4 | 登出時清空本機資料 | 同意，但有 pending 時需警告 |
 | 5 | 正式環境的驗證信寄送服務 | 之後決定；開發期先印 log |
-| 6 | 成員的勾選／打卡權限是否開放給 member | 第一版先不開 |
+| 6 | 裝備、餐食為個人資料，member 可編輯自己的；第一版僅本人可見 | 編輯權限已確認；可見範圍待確認 |
+| 7 | 是否導入 Redis | 待討論 |
