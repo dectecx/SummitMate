@@ -5,6 +5,7 @@ import '../data/offline_manager.dart';
 import '../domain/offline_regions.dart';
 import '../domain/offline_view.dart';
 import '../providers.dart';
+import 'rudy_download_card.dart';
 
 /// Everything about offline maps on one screen: what is downloading, what is on the phone, and what
 /// can still be downloaded. Progress is stored in the database, so it is all still here when the
@@ -40,6 +41,7 @@ class OfflineMapsPage extends ConsumerWidget {
               ),
             ),
           ),
+          const RudyDownloadCard(),
           if (sections.active.isNotEmpty) ...[
             header('下載中與待處理'),
             for (final e in sections.active) _ActiveTile(entry: e, manager: manager),

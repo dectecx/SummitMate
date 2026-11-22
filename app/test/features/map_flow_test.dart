@@ -166,6 +166,9 @@ void main() {
     });
 
     testWidgets('offline maps: downloads, progress, queue, failure, and deleting all live on one screen', (tester) async {
+      tester.view.physicalSize = const Size(800, 2600); // tall: the Rudy Map card above the list takes room
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       final app = await start(tester);
       await tapText(tester, '地圖');
       await openOffline(tester);

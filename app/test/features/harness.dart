@@ -11,6 +11,7 @@ import 'package:summitmate/core/settings/app_settings.dart';
 
 import '../core/auth_support.dart';
 import '../core/support.dart';
+import 'rudy_fakes.dart';
 
 /// A running app on an in-memory database with a fake auth server.
 class AppHarness {
@@ -21,7 +22,7 @@ class AppHarness {
   final MemoryTokenStore tokens;
   final ProviderContainer container;
 
-  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed, List<Override> overrides = const []}) async {
+  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed, List<Override> overrides = const [], FakeRudyInstaller? rudy, FakeMapHandle? mapHandle}) async {
     final db = memoryDb();
     final api = FakeAuthApi();
     seed?.call(api);
@@ -32,6 +33,7 @@ class AppHarness {
         tokenStoreProvider.overrideWithValue(tokens),
         authApiProvider.overrideWithValue(api),
         connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
+        ...rudyTestOverrides(installer: rudy, handle: mapHandle),
         ...overrides,
       ],
     );

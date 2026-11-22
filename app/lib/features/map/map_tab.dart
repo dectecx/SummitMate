@@ -8,6 +8,9 @@ import '../../app/router.dart';
 import '../explore/domain/mountain_models.dart';
 import '../explore/providers.dart';
 import 'data/location_service.dart';
+import 'maplibre/rudy_map_view.dart';
+import 'maplibre/rudy_providers.dart';
+import 'rudy/rudy_constants.dart';
 import 'domain/map_logic.dart';
 import 'data/offline_manager.dart';
 import 'providers.dart';
@@ -24,6 +27,8 @@ class _MapTabState extends ConsumerState<MapTab> {
   final _controller = MapController();
   LatLng? _me;
   bool _locating = false;
+  MapHandle? _rudy; // set while the Rudy Map is the one on screen
+  bool _usingRudy = false;
 
   @override
   void dispose() {
@@ -32,6 +37,10 @@ class _MapTabState extends ConsumerState<MapTab> {
   }
 
   void _zoom(double delta) {
+    if (_usingRudy) {
+      _rudy?.zoomBy(delta);
+      return;
+    }
     final cam = _controller.camera;
     _controller.move(cam.center, (cam.zoom + delta).clamp(6, 18));
   }
@@ -45,7 +54,12 @@ class _MapTabState extends ConsumerState<MapTab> {
     switch (result) {
       case LocationFound(:final lat, :final lng):
         setState(() => _me = LatLng(lat, lng));
-        _controller.move(LatLng(lat, lng), _controller.camera.zoom < 13 ? 13 : _controller.camera.zoom);
+        if (_usingRudy) {
+          _rudy?.setMe(lat, lng);
+          _rudy?.moveTo(lat, lng, minZoom: 13);
+        } else {
+          _controller.move(LatLng(lat, lng), _controller.camera.zoom < 13 ? 13 : _controller.camera.zoom);
+        }
       case LocationDenied(:final permanent):
         _say(permanent ? '位置權限已被關閉，請到系統設定開啟。' : '需要位置權限才能顯示你的位置。');
       case LocationDisabled():
@@ -65,11 +79,27 @@ class _MapTabState extends ConsumerState<MapTab> {
     };
     final busy = (ref.watch(offlineRegionsProvider).value ?? const []).any((r) => r.state == OfflineState.downloading || r.state == OfflineState.queued);
     final scheme = Theme.of(context).colorScheme;
+    final source = ref.watch(mapSourceProvider);
+    ref.watch(rudyReadyProvider); // keep it loaded so the menu knows whether the files are there
+    final rudyStyle = source == MapSource.rudy ? ref.watch(rudyStyleProvider).value : null;
+    _usingRudy = rudyStyle != null;
+    if (!_usingRudy) _rudy = null;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('地圖'),
         actions: [
+          PopupMenuButton<MapSource>(
+            key: const ValueKey('map-source'),
+            tooltip: '底圖',
+            icon: const Icon(Icons.layers_outlined),
+            initialValue: source,
+            onSelected: _chooseSource,
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: MapSource.nlsc, child: Text('政府底圖（國土測繪中心）')),
+              PopupMenuItem(value: MapSource.rudy, child: Text('魯地圖（登山地形圖）')),
+            ],
+          ),
           IconButton(
             tooltip: '離線地圖',
             onPressed: () => context.push(Routes.offlineMaps),
@@ -79,7 +109,13 @@ class _MapTabState extends ConsumerState<MapTab> {
       ),
       body: Stack(
         children: [
-          FlutterMap(
+          if (rudyStyle != null)
+            ref.watch(rudyMapBuilderProvider)(context, rudyStyle, mountains, _onPeaksTapped, (h) {
+              _rudy = h;
+              h.setMe(_me?.latitude, _me?.longitude);
+            })
+          else
+            FlutterMap(
             mapController: _controller,
             options: const MapOptions(initialCenter: LatLng(23.7, 121.0), initialZoom: 7.5, minZoom: 6, maxZoom: 18),
             children: [
@@ -120,7 +156,7 @@ class _MapTabState extends ConsumerState<MapTab> {
               decoration: BoxDecoration(color: scheme.surface.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(6)),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text('地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）', style: Theme.of(context).textTheme.labelSmall),
+                child: Text(_usingRudy ? rudyAttribution : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）', style: Theme.of(context).textTheme.labelSmall),
               ),
             ),
           ),
@@ -153,9 +189,28 @@ class _MapTabState extends ConsumerState<MapTab> {
     );
   }
 
+  Future<void> _chooseSource(MapSource s) async {
+    if (s == MapSource.rudy && !(ref.read(rudyReadyProvider).value ?? false)) {
+      // Needs a download first: the offline maps page has it.
+      _say('魯地圖需要先下載，請在「離線地圖」頁下載。');
+      context.push(Routes.offlineMaps);
+      return;
+    }
+    await ref.read(mapSourceProvider.notifier).choose(s);
+  }
+
+  void _onPeaksTapped(List<Mountain> near) {
+    if (near.length == 1) return _showMountain(near.first);
+    _showNear(near);
+  }
+
   void _onPeakTap(Mountain m, List<Mountain> all) {
     final near = peaksNear(all, m.latitude, m.longitude, _controller.camera.zoom);
     if (near.length <= 1) return _showMountain(m);
+    _showNear(near);
+  }
+
+  void _showNear(List<Mountain> near) {
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,

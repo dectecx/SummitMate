@@ -5,6 +5,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/widgets.dart';
 
 import '../domain/offline_regions.dart';
+import 'download_updates.dart';
 import 'offline_tile_store.dart';
 import 'tile_cache.dart';
 import 'tile_downloader.dart';
@@ -85,7 +86,7 @@ class BackgroundTileDownloader implements TileDownloader {
       }
     }
 
-    final sub = downloader.updates.listen((u) async {
+    final sub = DownloadUpdates.stream.listen((u) async {
       if (u is! TaskStatusUpdate ||
           u.task.group != group ||
           !u.status.isFinalState) {
