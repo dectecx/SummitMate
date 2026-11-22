@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../library/providers.dart';
+import '../../library/ui/library_suggestions.dart';
 import '../domain/gear_logic.dart';
 import '../providers.dart';
 
@@ -51,6 +53,7 @@ class _GearFormSheetState extends ConsumerState<GearFormSheet> {
     final quantity = int.tryParse(_quantity.text.trim()) ?? 1;
     if (widget.item == null) {
       await repo.add(widget.tripId, name: _name.text.trim(), weight: weight, category: _category.key, quantity: quantity);
+      await ref.read(libraryRepositoryProvider).remember(kind: 'gear', name: _name.text, category: _category.key, weight: weight);
     } else {
       await repo.update(widget.item!.id, name: _name.text.trim(), weight: weight, category: _category.key, quantity: quantity);
     }
@@ -83,6 +86,16 @@ class _GearFormSheetState extends ConsumerState<GearFormSheet> {
                 validator: (v) => (v ?? '').trim().isEmpty ? '請輸入裝備名稱' : null,
                 decoration: const InputDecoration(labelText: '名稱', hintText: '例如：睡袋'),
               ),
+              if (!editing)
+                LibrarySuggestions(
+                  kind: 'gear',
+                  controller: _name,
+                  onPick: (i) => setState(() {
+                    _name.text = i.name;
+                    _category = GearCategory.fromKey(i.category);
+                    _weight.text = i.weight == 0 ? '' : _trim(i.weight);
+                  }),
+                ),
               const SizedBox(height: 16),
               DropdownButtonFormField<GearCategory>(
                 initialValue: _category,

@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../features/library/ui/library_page.dart';
+import '../features/library/ui/templates_page.dart';
 import '../features/account/help_page.dart';
 import '../features/account/account_tab.dart';
 import '../features/account/login_page.dart';
@@ -24,6 +26,9 @@ abstract final class Routes {
   static String mountain(String id) => '/explore/$id';
   static const me = '/me';
   static const help = '/me/help';
+  static const library = '/me/library';
+  static const templates = '/me/templates';
+  static String template(String id) => '/me/templates/$id';
   static String trip(String id) => '/trips/$id';
   static const login = '/login';
   static const register = '/register';
@@ -79,7 +84,15 @@ GoRouter buildRouter({required String initialLocation}) {
               GoRoute(
                 path: Routes.me,
                 builder: (_, _) => const AccountTab(),
-                routes: [GoRoute(path: 'help', builder: (_, _) => const HelpPage())],
+                routes: [
+                  GoRoute(path: 'help', builder: (_, _) => const HelpPage()),
+                  GoRoute(path: 'library', builder: (_, _) => const LibraryPage()),
+                  GoRoute(
+                    path: 'templates',
+                    builder: (_, _) => const TemplatesPage(),
+                    routes: [GoRoute(path: ':id', builder: (_, s) => TemplateDetailPage(templateId: s.pathParameters['id']!))],
+                  ),
+                ],
               ),
             ],
           ),

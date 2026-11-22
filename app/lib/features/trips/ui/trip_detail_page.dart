@@ -11,6 +11,7 @@ import '../../meals/ui/meals_view.dart';
 import '../../members/ui/members_view.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
+import '../../library/ui/template_actions.dart';
 import 'gpx_actions.dart';
 import 'itinerary_view.dart';
 import 'item_form_sheet.dart';
@@ -25,8 +26,10 @@ class TripDetailPage extends ConsumerStatefulWidget {
   ConsumerState<TripDetailPage> createState() => _TripDetailPageState();
 }
 
-class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 4, vsync: this)..addListener(() => setState(() {}));
+class _TripDetailPageState extends ConsumerState<TripDetailPage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabs = TabController(length: 4, vsync: this)
+    ..addListener(() => setState(() {}));
   int? _day;
   int _mealDay = 1;
 
@@ -39,7 +42,9 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
   int _initialDay(Trip trip) {
     final n = ref.read(clockProvider)();
     final today = DateTime(n.year, n.month, n.day);
-    if (phaseOf(trip, today) == TripPhase.ongoing) return today.difference(trip.start).inDays + 1;
+    if (phaseOf(trip, today) == TripPhase.ongoing) {
+      return today.difference(trip.start).inDays + 1;
+    }
     return 1;
   }
 
@@ -50,7 +55,12 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
     if (trip == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: tripAsync.isLoading ? const Center(child: CircularProgressIndicator()) : const ComingSoon(icon: Icons.search_off, message: '找不到這個行程，可能已被刪除'),
+        body: tripAsync.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : const ComingSoon(
+                icon: Icons.search_off,
+                message: '找不到這個行程，可能已被刪除',
+              ),
       );
     }
     final role = ref.watch(myRoleProvider(trip.id)) ?? TripRole.member;
@@ -60,38 +70,62 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
       appBar: AppBar(
         title: Text(trip.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
-          if (role.canEditShared)
-            PopupMenuButton<String>(
-              tooltip: '更多',
-              onSelected: (v) {
-                if (v == 'edit') showTripFormSheet(context, trip: trip);
-                if (v == 'gpx') exportGpx(context, trip, ref.read(itineraryProvider(trip.id)).value ?? const []);
-                if (v == 'delete') _delete(context, trip);
-              },
-              itemBuilder: (_) => [
+          PopupMenuButton<String>(
+            tooltip: '更多',
+            onSelected: (v) {
+              if (v == 'edit') showTripFormSheet(context, trip: trip);
+              if (v == 'save-template') saveTripAsTemplate(context, ref, trip);
+              if (v == 'apply-template') {
+                applyTemplateToTrip(context, ref, trip);
+              }
+              if (v == 'gpx') {
+                exportGpx(context, trip, ref.read(itineraryProvider(trip.id)).value ?? const []);
+              }
+              if (v == 'delete') _delete(context, trip);
+            },
+            itemBuilder: (_) => [
+              if (role.canEditShared)
                 const PopupMenuItem(value: 'edit', child: Text('編輯行程')),
-                const PopupMenuItem(value: 'gpx', child: Text('匯出 GPX')),
-                if (role.canDeleteTrip) const PopupMenuItem(value: 'delete', child: Text('刪除行程')),
-              ],
-            ),
+              const PopupMenuItem(value: 'save-template', child: Text('存成範本')),
+              const PopupMenuItem(value: 'apply-template', child: Text('套用範本')),
+              const PopupMenuItem(value: 'gpx', child: Text('匯出 GPX')),
+              if (role.canDeleteTrip)
+                const PopupMenuItem(value: 'delete', child: Text('刪除行程')),
+            ],
+          ),
         ],
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [Tab(text: '行程'), Tab(text: '裝備'), Tab(text: '餐食'), Tab(text: '成員與天氣')],
+          tabs: const [
+            Tab(text: '行程'),
+            Tab(text: '裝備'),
+            Tab(text: '餐食'),
+            Tab(text: '成員與天氣'),
+          ],
         ),
       ),
       body: TabBarView(
         controller: _tabs,
         children: [
-          ItineraryView(trip: trip, role: role, day: day, onDayChanged: (d) => setState(() => _day = d)),
+          ItineraryView(
+            trip: trip,
+            role: role,
+            day: day,
+            onDayChanged: (d) => setState(() => _day = d),
+          ),
           GearView(tripId: trip.id),
-          MealsView(trip: trip, day: _mealDay, onDayChanged: (d) => setState(() => _mealDay = d)),
+          MealsView(
+            trip: trip,
+            day: _mealDay,
+            onDayChanged: (d) => setState(() => _mealDay = d),
+          ),
           MembersView(trip: trip, role: role),
         ],
       ),
       floatingActionButton: switch (_tabs.index) {
         0 when role.canEditShared => FloatingActionButton.extended(
-          onPressed: () => showItemFormSheet(context, trip: trip, initialDay: day),
+          onPressed: () =>
+              showItemFormSheet(context, trip: trip, initialDay: day),
           icon: const Icon(Icons.add_location_alt_outlined),
           label: const Text('新增節點'),
         ),
@@ -102,7 +136,8 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
           label: const Text('新增裝備'),
         ),
         2 => FloatingActionButton.extended(
-          onPressed: () => showMealFormSheet(context, tripId: trip.id, dayIndex: _mealDay),
+          onPressed: () =>
+              showMealFormSheet(context, tripId: trip.id, dayIndex: _mealDay),
           icon: const Icon(Icons.add),
           label: const Text('新增餐點'),
         ),
@@ -116,11 +151,20 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('刪除這個行程？'),
-        content: Text(trip.isSample ? '範例行程會從這支手機移除。' : '「${trip.name}」與它的所有節點都會刪除，無法復原。'),
+        content: Text(
+          trip.isSample ? '範例行程會從這支手機移除。' : '「${trip.name}」與它的所有節點都會刪除，無法復原。',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(minimumSize: const Size(88, 44), backgroundColor: Theme.of(ctx).colorScheme.error, foregroundColor: Theme.of(ctx).colorScheme.onError),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(88, 44),
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('刪除'),
           ),

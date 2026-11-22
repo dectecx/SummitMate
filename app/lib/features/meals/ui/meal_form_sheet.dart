@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../library/providers.dart';
+import '../../library/ui/library_suggestions.dart';
 import '../domain/meal_logic.dart';
 import '../providers.dart';
 
@@ -58,6 +60,7 @@ class _MealFormSheetState extends ConsumerState<MealFormSheet> {
     final quantity = int.tryParse(_quantity.text.trim()) ?? 1;
     if (_item == null) {
       await repo.add(widget.tripId, dayIndex: widget.dayIndex, name: _name.text.trim(), mealType: _type.key, weight: weight, calories: calories, quantity: quantity, note: _note.text.trim());
+      await ref.read(libraryRepositoryProvider).remember(kind: 'meal', name: _name.text, category: _type.key, weight: weight, calories: calories);
     } else {
       await repo.update(_item!.id, name: _name.text.trim(), mealType: _type.key, weight: weight, calories: calories, quantity: quantity, note: _note.text.trim());
     }
@@ -91,6 +94,17 @@ class _MealFormSheetState extends ConsumerState<MealFormSheet> {
                 validator: (v) => (v ?? '').trim().isEmpty ? '請輸入餐點名稱' : null,
                 decoration: const InputDecoration(labelText: '名稱', hintText: '例如：燕麥粥'),
               ),
+              if (!editing)
+                LibrarySuggestions(
+                  kind: 'meal',
+                  controller: _name,
+                  onPick: (i) => setState(() {
+                    _name.text = i.name;
+                    _type = MealType.fromKey(i.category);
+                    _weight.text = _num(i.weight);
+                    _calories.text = _num(i.calories);
+                  }),
+                ),
               const SizedBox(height: 16),
               DropdownButtonFormField<MealType>(
                 initialValue: _type,
