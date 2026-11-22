@@ -65,5 +65,8 @@ var (
 	ErrInvalidEmail        = New(http.StatusBadRequest, TypeValidation, "invalid_email", "Email 格式不正確").WithParam("email")
 	ErrPasswordTooShort    = New(http.StatusBadRequest, TypeValidation, "password_too_short", "密碼長度至少需要 8 個字元").WithParam("password")
 	ErrPasswordTooWeak     = New(http.StatusBadRequest, TypeValidation, "password_too_weak", "密碼需同時包含字母與數字").WithParam("password")
+	ErrTripNotFound        = New(http.StatusNotFound, TypeBusinessLogic, "trip_not_found", "找不到這個行程")
+	ErrNotTripOwner        = New(http.StatusForbidden, TypeBusinessLogic, "not_trip_owner", "只有團長可以移交團長")
+	ErrTransferTarget      = New(http.StatusBadRequest, TypeBusinessLogic, "invalid_transfer_target", "只能移交給行程中的其他成員").WithParam("user_id")
 	ErrPasswordMismatch    = New(http.StatusBadRequest, TypeValidation, "wrong_current_password", "目前密碼不正確").WithParam("current_password")
 )

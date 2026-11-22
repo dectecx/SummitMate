@@ -196,6 +196,28 @@ paths:
                 items: { $ref: "#/components/schemas/PublicUser" }
         "401": { $ref: "#/components/responses/Error" }
 
+  /trips/{trip_id}/transfer-owner:
+    post:
+      operationId: transferTripOwner
+      summary: Hand a trip over to another member (owner only). The previous owner becomes a guide.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TransferOwnerRequest" }
+      responses:
+        "204": { description: Transferred }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
   /sync/changes:
     get:
       operationId: pullChanges
@@ -385,6 +407,12 @@ components:
       properties:
         current_password: { type: string }
         new_password: { type: string, minLength: 8, maxLength: 72 }
+
+    TransferOwnerRequest:
+      type: object
+      required: [user_id]
+      properties:
+        user_id: { type: string, format: uuid, description: The member who becomes the owner }
 
     UpdateProfileRequest:
       type: object

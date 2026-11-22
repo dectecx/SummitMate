@@ -3,6 +3,8 @@ package sync
 import (
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"summitmate/api"
 	"summitmate/internal/auth"
 	"summitmate/internal/platform/apperror"
@@ -84,4 +86,22 @@ func (h *Handler) PushOps(w http.ResponseWriter, r *http.Request) {
 		out = append(out, pr)
 	}
 	httpx.WriteJSON(w, http.StatusOK, api.PushResponse{Results: out})
+}
+
+func (h *Handler) TransferTripOwner(w http.ResponseWriter, r *http.Request, tripID uuid.UUID) {
+	userID, ok := auth.UserID(r.Context())
+	if !ok {
+		httpx.WriteError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+	var req api.TransferOwnerRequest
+	if err := httpx.Decode(w, r, &req); err != nil {
+		httpx.WriteError(w, r, err)
+		return
+	}
+	if err := h.svc.TransferOwner(r.Context(), userID, tripID, req.UserId); err != nil {
+		httpx.WriteError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

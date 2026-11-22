@@ -255,6 +255,12 @@ type TokenPair struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// TransferOwnerRequest defines model for TransferOwnerRequest.
+type TransferOwnerRequest struct {
+	// UserId The member who becomes the owner
+	UserId openapi_types.UUID `json:"user_id"`
+}
+
 // UpdateProfileRequest defines model for UpdateProfileRequest.
 type UpdateProfileRequest struct {
 	Avatar      *string `json:"avatar,omitempty"`
@@ -374,6 +380,9 @@ type VerifyEmailJSONRequestBody = VerifyEmailRequest
 // PushOpsJSONRequestBody defines body for PushOps for application/json ContentType.
 type PushOpsJSONRequestBody = PushRequest
 
+// TransferTripOwnerJSONRequestBody defines body for TransferTripOwner for application/json ContentType.
+type TransferTripOwnerJSONRequestBody = TransferOwnerRequest
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// ChangePassword Change password and revoke all refresh tokens
@@ -418,6 +427,9 @@ type ServerInterface interface {
 	// PushOps Apply a batch of client operations (idempotent by op_id)
 	// (POST /sync/push)
 	PushOps(w http.ResponseWriter, r *http.Request)
+	// TransferTripOwner Hand a trip over to another member (owner only). The previous owner becomes a guide.
+	// (POST /trips/{trip_id}/transfer-owner)
+	TransferTripOwner(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
 	// SearchUsers Find users by exact email (for inviting members)
 	// (GET /users/search)
 	SearchUsers(w http.ResponseWriter, r *http.Request, params SearchUsersParams)
@@ -511,6 +523,12 @@ func (_ Unimplemented) PullChanges(w http.ResponseWriter, r *http.Request, param
 // PushOps Apply a batch of client operations (idempotent by op_id)
 // (POST /sync/push)
 func (_ Unimplemented) PushOps(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// TransferTripOwner Hand a trip over to another member (owner only). The previous owner becomes a guide.
+// (POST /trips/{trip_id}/transfer-owner)
+func (_ Unimplemented) TransferTripOwner(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -790,6 +808,32 @@ func (siw *ServerInterfaceWrapper) PushOps(w http.ResponseWriter, r *http.Reques
 	handler.ServeHTTP(w, r)
 }
 
+// TransferTripOwner operation middleware
+func (siw *ServerInterfaceWrapper) TransferTripOwner(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "trip_id" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "trip_id", chi.URLParam(r, "trip_id"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "trip_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.TransferTripOwner(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // SearchUsers operation middleware
 func (siw *ServerInterfaceWrapper) SearchUsers(w http.ResponseWriter, r *http.Request) {
 
@@ -1043,6 +1087,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/users/search", wrapper.SearchUsers)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/trips/{trip_id}/transfer-owner", wrapper.TransferTripOwner)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/sync/changes", wrapper.PullChanges)
