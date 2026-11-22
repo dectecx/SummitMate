@@ -2,6 +2,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../features/library/ui/library_page.dart';
+import '../features/library/ui/shared_set_detail_page.dart';
+import '../features/library/ui/shared_sets_page.dart';
 import '../features/library/ui/templates_page.dart';
 import '../features/account/help_page.dart';
 import '../features/account/account_tab.dart';
@@ -29,6 +31,8 @@ abstract final class Routes {
   static const library = '/me/library';
   static const templates = '/me/templates';
   static String template(String id) => '/me/templates/$id';
+  static const sharedSets = '/me/shared';
+  static String sharedSet(String id) => '/me/shared/$id';
   static String trip(String id) => '/trips/$id';
   static const login = '/login';
   static const register = '/register';
@@ -87,6 +91,11 @@ GoRouter buildRouter({required String initialLocation}) {
                 routes: [
                   GoRoute(path: 'help', builder: (_, _) => const HelpPage()),
                   GoRoute(path: 'library', builder: (_, _) => const LibraryPage()),
+                  GoRoute(
+                    path: 'shared',
+                    builder: (_, _) => const SharedSetsPage(),
+                    routes: [GoRoute(path: ':id', builder: (_, s) => SharedSetDetailPage(setId: s.pathParameters['id']!))],
+                  ),
                   GoRoute(
                     path: 'templates',
                     builder: (_, _) => const TemplatesPage(),

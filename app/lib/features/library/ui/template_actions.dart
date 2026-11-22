@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../data/shared_sets_api.dart';
 import '../data/template_repository.dart';
 import '../domain/set_item.dart';
 import '../providers.dart';
@@ -91,3 +92,99 @@ Future<String?> _askTitle(BuildContext context, {String initial = ''}) {
 
 /// Same dialog for renaming.
 Future<String?> askTemplateTitle(BuildContext context, {String initial = ''}) => _askTitle(context, initial: initial);
+
+/// Shares a template to the cloud (needs a signed-in person and a connection).
+Future<void> shareTemplate(BuildContext context, WidgetRef ref, Template template, {required bool signedIn}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  if (!signedIn) {
+    messenger.showSnackBar(const SnackBar(content: Text('登入後才能分享到雲端。')));
+    return;
+  }
+  final items = decodeSetItems(template.items);
+  if (items.isEmpty) {
+    messenger.showSnackBar(const SnackBar(content: Text('這份範本是空的，沒有東西可以分享。')));
+    return;
+  }
+  final choice = await showDialog<({String title, SharedVisibility visibility, String? key})>(
+    context: context,
+    builder: (_) => _ShareDialog(initialTitle: template.title),
+  );
+  if (choice == null) return;
+  try {
+    final s = await ref.read(sharedSetsApiProvider).create(title: choice.title, visibility: choice.visibility, key: choice.key, items: items);
+    final hint = s.visibility == SharedVisibility.protected ? '（Key：${choice.key}，請告訴想給的人）' : '';
+    messenger.showSnackBar(SnackBar(content: Text('已分享「${s.title}」（${s.visibility.label}）$hint')));
+  } on SharedSetsException catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(e.text)));
+  }
+}
+
+class _ShareDialog extends StatefulWidget {
+  const _ShareDialog({required this.initialTitle});
+  final String initialTitle;
+
+  @override
+  State<_ShareDialog> createState() => _ShareDialogState();
+}
+
+class _ShareDialogState extends State<_ShareDialog> {
+  late final _title = TextEditingController(text: widget.initialTitle);
+  final _key = TextEditingController();
+  SharedVisibility _visibility = SharedVisibility.public;
+  String? _error;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _key.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final title = _title.text.trim();
+    final key = _key.text.trim();
+    if (title.isEmpty) return setState(() => _error = '請輸入標題');
+    if (_visibility == SharedVisibility.protected && !RegExp(r'^[A-Za-z0-9]{4,12}$').hasMatch(key)) {
+      return setState(() => _error = 'Key 要 4 到 12 個英文字母或數字');
+    }
+    Navigator.pop(context, (title: title, visibility: _visibility, key: _visibility == SharedVisibility.protected ? key : null));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('分享到雲端'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(controller: _title, maxLength: 200, decoration: const InputDecoration(labelText: '標題')),
+            const SizedBox(height: 8),
+            SegmentedButton<SharedVisibility>(
+              key: const ValueKey('share-visibility'),
+              segments: [for (final v in SharedVisibility.values) ButtonSegment(value: v, label: Text(v.label))],
+              selected: {_visibility},
+              onSelectionChanged: (s) => setState(() {
+                _visibility = s.first;
+                _error = null;
+              }),
+            ),
+            const SizedBox(height: 8),
+            Text(switch (_visibility) {
+              SharedVisibility.public => '所有人都找得到，也看得到內容。',
+              SharedVisibility.protected => '所有人找得到標題，但要輸入 Key 才看得到內容。',
+              SharedVisibility.private => '只有你看得到，等於雲端備份一份。',
+            }, style: Theme.of(context).textTheme.bodySmall),
+            if (_visibility == SharedVisibility.protected) TextField(controller: _key, decoration: const InputDecoration(labelText: 'Key（4 到 12 個英數字）')),
+            if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error))),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+        FilledButton(key: const ValueKey('share-confirm'), style: FilledButton.styleFrom(minimumSize: const Size(88, 44)), onPressed: _submit, child: const Text('分享')),
+      ],
+    );
+  }
+}

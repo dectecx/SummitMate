@@ -1,0 +1,181 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../../core/db/app_database.dart';
+import '../../gear/domain/gear_logic.dart';
+import '../../meals/domain/meal_logic.dart';
+import '../../trips/providers.dart';
+import '../data/shared_sets_api.dart';
+import '../providers.dart';
+import 'shared_sets_page.dart';
+import 'template_actions.dart';
+
+/// One shared set: its content and what can be done with it.
+class SharedSetDetailPage extends ConsumerStatefulWidget {
+  const SharedSetDetailPage({super.key, required this.setId});
+  final String setId;
+
+  @override
+  ConsumerState<SharedSetDetailPage> createState() => _SharedSetDetailPageState();
+}
+
+class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
+  SharedSetDetail? _detail;
+  SharedSetsException? _error;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _open();
+  }
+
+  /// Opens the set, asking for the Key when the set needs one.
+  Future<void> _open({String? key}) async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final d = await ref.read(sharedSetsApiProvider).get(widget.setId, key: key);
+      if (!mounted) return;
+      setState(() {
+        _detail = d;
+        _loading = false;
+      });
+    } on SharedSetsException catch (e) {
+      if (!mounted) return;
+      if (e.needsKey || e.wrongKey) {
+        final typed = await _askKey(wrong: e.wrongKey);
+        if (!mounted) return;
+        if (typed != null) return _open(key: typed);
+      }
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<String?> _askKey({required bool wrong}) {
+    final c = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('這份組合需要 Key'),
+        content: TextField(controller: c, autofocus: true, decoration: InputDecoration(labelText: 'Key', errorText: wrong ? 'Key 不正確' : null)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(style: FilledButton.styleFrom(minimumSize: const Size(88, 44)), onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('開啟')),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveAsTemplate(SharedSetDetail d) async {
+    await ref.read(templateRepositoryProvider).create(title: d.summary.title, items: d.items);
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已存成我的範本「${d.summary.title}」')));
+  }
+
+  Future<void> _addToTrip(SharedSetDetail d) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final trips = ref.read(tripsProvider).value ?? const <Trip>[];
+    if (trips.isEmpty) {
+      messenger.showSnackBar(const SnackBar(content: Text('還沒有行程可以加入。')));
+      return;
+    }
+    final trip = await showModalBottomSheet<Trip>(
+      context: context,
+      useRootNavigator: true,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Padding(padding: const EdgeInsets.fromLTRB(24, 0, 24, 8), child: Text('加到哪個行程？', style: Theme.of(ctx).textTheme.titleLarge)),
+            for (final t in trips) ListTile(key: ValueKey('add-trip-${t.id}'), title: Text(t.name), onTap: () => Navigator.pop(ctx, t)),
+          ],
+        ),
+      ),
+    );
+    if (trip == null) return;
+    final r = await ref.read(templateRepositoryProvider).applyToTrip(trip.id, d.items);
+    messenger.showSnackBar(SnackBar(content: Text('${trip.name}：${resultText(r)}')));
+  }
+
+  Future<void> _delete(SharedSetDetail d) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('取消分享？'),
+        content: Text('「${d.summary.title}」會從雲端刪除，其他人就看不到了。你自己的範本不受影響。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(88, 44), backgroundColor: Theme.of(ctx).colorScheme.error, foregroundColor: Theme.of(ctx).colorScheme.onError),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('取消分享'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(sharedSetsApiProvider).delete(d.summary.id);
+      if (mounted) context.pop();
+    } on SharedSetsException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.text)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final d = _detail;
+    if (d == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error?.text ?? '無法開啟', textAlign: TextAlign.center), const SizedBox(height: 12), OutlinedButton(onPressed: () => _open(), child: const Text('重試'))]),
+                ),
+              ),
+      );
+    }
+    final gear = d.items.where((i) => i.isGear).toList();
+    final meals = d.items.where((i) => i.isMeal).toList()..sort((a, b) => a.day.compareTo(b.day));
+    return Scaffold(
+      appBar: AppBar(title: Text(d.summary.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 32),
+        children: [
+          Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: Text('${d.summary.authorName}  ·  ${d.summary.visibility.label}\n${summaryText(d.summary)}', style: theme.textTheme.bodyMedium)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(key: const ValueKey('shared-save'), onPressed: () => _saveAsTemplate(d), icon: const Icon(Icons.inventory_2_outlined), label: const Text('存成我的範本')),
+                FilledButton.tonalIcon(key: const ValueKey('shared-add'), onPressed: () => _addToTrip(d), icon: const Icon(Icons.playlist_add), label: const Text('加到行程')),
+                if (d.summary.mine) OutlinedButton.icon(key: const ValueKey('shared-delete'), onPressed: () => _delete(d), icon: const Icon(Icons.cloud_off_outlined), label: const Text('取消分享')),
+              ],
+            ),
+          ),
+          if (gear.isNotEmpty) ...[
+            Padding(padding: const EdgeInsets.fromLTRB(16, 20, 16, 4), child: Text('裝備', style: theme.textTheme.titleSmall)),
+            for (final i in gear) ListTile(dense: true, title: Text(i.quantity > 1 ? '${i.name} × ${i.quantity}' : i.name), subtitle: Text('${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}')),
+          ],
+          if (meals.isNotEmpty) ...[
+            Padding(padding: const EdgeInsets.fromLTRB(16, 20, 16, 4), child: Text('餐點', style: theme.textTheme.titleSmall)),
+            for (final i in meals) ListTile(dense: true, title: Text(i.quantity > 1 ? '${i.name} × ${i.quantity}' : i.name), subtitle: Text('D${i.day}  ·  ${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal')),
+          ],
+        ],
+      ),
+    );
+  }
+}

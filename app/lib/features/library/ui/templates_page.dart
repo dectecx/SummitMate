@@ -63,6 +63,8 @@ class TemplateDetailPage extends ConsumerWidget {
               if (v == 'rename') {
                 final title = await askTemplateTitle(context, initial: t.title);
                 if (title != null) await repo.update(t.id, title: title);
+              } else if (v == 'share') {
+                await shareTemplate(context, ref, t, signedIn: ref.read(accountIdProvider) != null);
               } else if (v == 'delete') {
                 final ok = await showDialog<bool>(
                   context: context,
@@ -85,7 +87,11 @@ class TemplateDetailPage extends ConsumerWidget {
                 }
               }
             },
-            itemBuilder: (_) => const [PopupMenuItem(value: 'rename', child: Text('改名')), PopupMenuItem(value: 'delete', child: Text('刪除範本'))],
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'rename', child: Text('改名')),
+              PopupMenuItem(value: 'share', child: Text('分享到雲端')),
+              PopupMenuItem(value: 'delete', child: Text('刪除範本')),
+            ],
           ),
         ],
       ),
