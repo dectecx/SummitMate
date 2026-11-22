@@ -6,6 +6,7 @@
 
 | 文件 | 說明 |
 | :-- | :-- |
+| [功能清單與進度](./project/FEATURE_STATUS.md) | **要開發什麼、做到哪**：舊功能對照、延後項目、待決定、上線前待辦 |
 | [重建盤點](./project/REBUILD_INVENTORY.md) | 舊系統功能盤點與取捨決策 |
 | [技術決策](./project/TECH_DECISIONS.md) | 前後端技術選型 |
 | [新手引導與導覽](./ui/ONBOARDING_NAVIGATION.md) | 導覽結構、歡迎頁、情境提示 |
