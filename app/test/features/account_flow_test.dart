@@ -165,6 +165,9 @@ void main() {
     });
 
     testWidgets('signing out is refused softly while changes are waiting to upload', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400); // tall: the help entry pushes the list down
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
       final app = await AppHarness.start(tester, welcomeSeen: true, seed: (api) => api.addAccount('a@x.co', 'Passw0rd1'));
       await real(tester, () => app.container.read(authRepositoryProvider).login(email: 'a@x.co', password: 'Passw0rd1'));
       await real(tester, () => localCreate(app.db, OutboxWriter(app.db), tripsEntity, tripRow('t1')));
