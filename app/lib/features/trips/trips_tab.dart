@@ -73,6 +73,7 @@ class _EmptyState extends ConsumerWidget {
               },
               child: const Text('用範例行程試試看'),
             ),
+            TextButton(key: const ValueKey('empty-import-gpx'), onPressed: () => importGpx(context, ref), child: const Text('匯入 GPX 檔')),
           ],
         ),
       ),

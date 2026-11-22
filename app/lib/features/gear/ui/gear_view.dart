@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../shared/hint_banner.dart';
 import '../domain/gear_logic.dart';
 import '../providers.dart';
 import 'gear_form_sheet.dart';
@@ -33,6 +34,7 @@ class GearView extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 96),
       children: [
+        const HintBanner(hintId: 'gear-pack', icon: Icons.backpack_outlined, text: '勾選代表已打包；這份清單只有你看得到，隊友看不到。'),
         _Summary(items: items),
         for (final g in groups) ...[
           Padding(

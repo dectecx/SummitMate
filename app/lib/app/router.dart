@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../features/account/help_page.dart';
 import '../features/account/account_tab.dart';
 import '../features/account/login_page.dart';
 import '../features/account/register_page.dart';
@@ -22,6 +23,7 @@ abstract final class Routes {
   static const explore = '/explore';
   static String mountain(String id) => '/explore/$id';
   static const me = '/me';
+  static const help = '/me/help';
   static String trip(String id) => '/trips/$id';
   static const login = '/login';
   static const register = '/register';
@@ -72,7 +74,15 @@ GoRouter buildRouter({required String initialLocation}) {
               ),
             ],
           ),
-          StatefulShellBranch(routes: [GoRoute(path: Routes.me, builder: (_, _) => const AccountTab())]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.me,
+                builder: (_, _) => const AccountTab(),
+                routes: [GoRoute(path: 'help', builder: (_, _) => const HelpPage())],
+              ),
+            ],
+          ),
         ],
       ),
     ],

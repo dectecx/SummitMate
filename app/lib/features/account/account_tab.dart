@@ -31,6 +31,7 @@ class AccountTab extends ConsumerWidget {
           const _SyncTile(),
           const Divider(height: 32),
           const _ThemeTile(),
+          ListTile(leading: const Icon(Icons.help_outline), title: const Text('使用說明'), onTap: () => context.push(Routes.help)),
           ListTile(
             leading: const Icon(Icons.lightbulb_outline),
             title: const Text('重新顯示新手提示'),

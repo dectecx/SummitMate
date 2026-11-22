@@ -1,0 +1,61 @@
+import 'package:material_ui/material_ui.dart';
+
+/// Static help: short answers to the questions people actually have. Not an interactive tutorial.
+class HelpPage extends StatelessWidget {
+  const HelpPage({super.key});
+
+  static const topics = <({String question, String answer})>[
+    (
+      question: '沒有訊號也能用嗎？',
+      answer: '行程、裝備、糧食和已下載的地圖都存在手機裡，沒有訊號也能查看與修改。有網路時會自動同步，沒有登入就只存在這支手機。',
+    ),
+    (
+      question: '怎麼下載離線地圖？',
+      answer: '到「地圖」分頁右上角的下載圖示。選要去的山區按「下載」，可以先排好幾個區域，會一個一個下載，切到背景也會繼續。建議用 Wi-Fi，出發前先下載。',
+    ),
+    (
+      question: '魯地圖和 3D 視角怎麼用？',
+      answer: '在「地圖 → 離線地圖」下載「魯地圖」（約 410 MB）。想看 3D 就再下載「3D 地形資料」。之後在地圖右上角的圖層選單選魯地圖，右下角的 3D 鈕可以傾斜視角。',
+    ),
+    (
+      question: '主要山頭有什麼用？',
+      answer: '行程可以設定一座主要山頭。設定後，「成員與天氣」會顯示那座山的天氣，並提醒你下載那一區的離線地圖，新增節點時也會推薦你以前在同一座山用過的節點名稱。',
+    ),
+    (
+      question: '怎麼匯入或匯出 GPX？',
+      answer: '「行程」列表右上角的圖示可以選一個 GPX 檔建立行程，會自動產生節點和海拔剖面圖。進入行程後，右上角選單的「匯出 GPX」可以把行程分享給其他 App 或朋友。',
+    ),
+    (
+      question: '訪客和登入有什麼差別？',
+      answer: '訪客的資料只存在這支手機。登入後會自動備份，換手機也找得回來，還能邀請隊友一起規劃。登入前建立的行程會在登入後一併備份。',
+    ),
+    (
+      question: '隊友可以做什麼？',
+      answer: '團長和嚮導可以編輯行程；隊員可以查看。裝備和餐食是每個人自己的清單，只有自己看得到。團長可以在成員選單把團長交給其他人（需要網路）。',
+    ),
+    (
+      question: '提示看過就不見了，怎麼再看？',
+      answer: '到「我」分頁，點「重新顯示新手提示」，提示會再出現一次。',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('使用說明')),
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
+        children: [
+          for (final t in topics)
+            ExpansionTile(
+              key: ValueKey('help-${t.question}'),
+              title: Text(t.question),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(t.answer)],
+            ),
+        ],
+      ),
+    );
+  }
+}
