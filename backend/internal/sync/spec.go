@@ -54,6 +54,7 @@ var entities = map[string]entity{
 		"start_date":  {kind: kDate, required: true},
 		"end_date":    {kind: kDate, nullable: true},
 		"mountain_id": {kind: kText, nullable: true},
+		"track":       {kind: kText, nullable: true},
 		"cover_image": {kind: kText, nullable: true},
 	}},
 	"trip_members": {table: "trip_members", access: accessMember, cols: map[string]column{

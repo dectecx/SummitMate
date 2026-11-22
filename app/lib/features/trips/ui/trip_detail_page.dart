@@ -11,6 +11,7 @@ import '../../meals/ui/meals_view.dart';
 import '../../members/ui/members_view.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
+import 'gpx_actions.dart';
 import 'itinerary_view.dart';
 import 'item_form_sheet.dart';
 import 'trip_form_sheet.dart';
@@ -64,10 +65,12 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage> with SingleTick
               tooltip: '更多',
               onSelected: (v) {
                 if (v == 'edit') showTripFormSheet(context, trip: trip);
+                if (v == 'gpx') exportGpx(context, trip, ref.read(itineraryProvider(trip.id)).value ?? const []);
                 if (v == 'delete') _delete(context, trip);
               },
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'edit', child: Text('編輯行程')),
+                const PopupMenuItem(value: 'gpx', child: Text('匯出 GPX')),
                 if (role.canDeleteTrip) const PopupMenuItem(value: 'delete', child: Text('刪除行程')),
               ],
             ),

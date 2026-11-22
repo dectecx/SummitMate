@@ -44,6 +44,7 @@ const tripsEntity = SyncEntity(
     'start_date': Col(ColType.date),
     'end_date': Col(ColType.date, nullable: true),
     'mountain_id': Col(ColType.text, nullable: true),
+    'track': Col(ColType.text, nullable: true),
     'cover_image': Col(ColType.text, nullable: true),
   },
 );

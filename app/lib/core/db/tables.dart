@@ -18,6 +18,8 @@ class Trips extends Table {
   TextColumn get endDate => text().nullable()();
   // Main mountain (an id from the explore list); weather and map hints follow it.
   TextColumn get mountainId => text().nullable()();
+  // Simplified GPX track as compact JSON [[lat,lng,ele],...]; see features/trips/domain/track_codec.dart.
+  TextColumn get track => text().nullable()();
   TextColumn get coverImage => text().nullable()();
   // Local only: the bundled example trip. Never enters the outbox.
   BoolColumn get isSample => boolean().withDefault(const Constant(false))();

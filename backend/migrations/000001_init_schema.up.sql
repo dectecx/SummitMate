@@ -73,6 +73,8 @@ CREATE TABLE trips (
     end_date    DATE,
     -- Main mountain of the trip (an id from the explore list); weather and map hints follow it.
     mountain_id VARCHAR(64),
+    -- Simplified GPX track of the trip as compact JSON [[lat,lng,ele],...] (about 500 points at most).
+    track       TEXT,
     cover_image TEXT,
     deleted_at  TIMESTAMPTZ,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),

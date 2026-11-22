@@ -8,6 +8,7 @@ import '../../core/db/app_database.dart';
 import '../../shared/hint_banner.dart';
 import 'domain/trip_logic.dart';
 import 'providers.dart';
+import 'ui/gpx_actions.dart';
 import 'ui/trip_form_sheet.dart';
 
 /// "行程": the person's trips, grouped by when they happen.
@@ -18,7 +19,10 @@ class TripsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final trips = ref.watch(tripsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('行程')),
+      appBar: AppBar(
+        title: const Text('行程'),
+        actions: [IconButton(key: const ValueKey('import-gpx'), tooltip: '匯入 GPX', icon: const Icon(Icons.file_open_outlined), onPressed: () => importGpx(context, ref))],
+      ),
       body: trips.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('讀取行程失敗：$e')),

@@ -6,6 +6,9 @@ import '../../../core/db/app_database.dart';
 import '../../../shared/hint_banner.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
+import '../../gpx/domain/elevation_profile.dart';
+import '../../gpx/ui/elevation_profile_chart.dart';
+import '../domain/gpx_trip.dart';
 import 'item_form_sheet.dart';
 
 /// Day chips and the timeline of the selected day.
@@ -48,6 +51,7 @@ class ItineraryView extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.only(bottom: 96),
             children: [
+              _TrackProfile(trip: trip),
               if (role.canEditShared)
                 const HintBanner(hintId: 'edit-node', icon: Icons.touch_app_outlined, text: '點一下節點就能編輯；點右邊的圓圈代表已抵達。'),
               if (dayItems.isEmpty)
@@ -156,5 +160,41 @@ class _ItemTile extends ConsumerWidget {
   static String _clock(DateTime utc) {
     final l = utc.toLocal();
     return '${l.hour.toString().padLeft(2, '0')}:${l.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+/// Elevation profile and totals of the trip's stored GPX track (nothing when the trip has none).
+class _TrackProfile extends StatelessWidget {
+  const _TrackProfile({required this.trip});
+  final Trip trip;
+
+  @override
+  Widget build(BuildContext context) {
+    final track = decodeTrack(trip.track);
+    if (track.length < 2) return const SizedBox.shrink();
+    final stats = profileStats(track);
+    final theme = Theme.of(context);
+    return Card(
+      key: const ValueKey('track-profile'),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('海拔剖面', style: theme.textTheme.titleMedium),
+            if (stats != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '${stats.distanceKm.toStringAsFixed(1)} km  ·  爬升 ${stats.ascent.round()} m  ·  下降 ${stats.descent.round()} m  ·  最高 ${stats.maxEle.round()} m',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+            const SizedBox(height: 12),
+            ElevationProfileChart(profile: elevationProfile(track)),
+          ],
+        ),
+      ),
+    );
   }
 }

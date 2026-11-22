@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/features/explore/providers.dart';
+import 'package:summitmate/features/gpx/domain/gpx_models.dart';
+import 'package:summitmate/features/trips/domain/gpx_trip.dart';
 import 'package:summitmate/features/trips/providers.dart';
 
 import 'explore_test.dart' show FakeExploreApi, m, payloadOf;
@@ -212,6 +214,19 @@ void main() {
     expect(find.widgetWithText(TextFormField, '黑水塘'), findsOneWidget);
     expect(find.widgetWithText(TextFormField, '2710'), findsOneWidget, reason: 'the altitude used last time');
     expect(find.byKey(const ValueKey('route-point-黑水塘')), findsNothing, reason: 'already chosen');
+    await app.dispose(tester);
+  });
+
+  testWidgets('a trip with a stored track shows its elevation profile with totals', (tester) async {
+    final app = await AppHarness.start(tester, welcomeSeen: true, overrides: [clockProvider.overrideWithValue(() => DateTime(2026, 5, 10, 9))]);
+    final track = encodeTrack([for (var i = 0; i < 40; i++) GpxPoint(lat: 23.3 + i * 0.001, lng: 121.0, ele: 2000 + i * 20.0)]);
+    await act(tester, () => app.container.read(tripRepositoryProvider).create(name: '有軌跡', start: DateTime(2026, 5, 10), track: track));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('import-gpx')), findsOneWidget);
+    await tapText(tester, '有軌跡');
+    expect(find.byKey(const ValueKey('track-profile')), findsOneWidget);
+    expect(find.textContaining('爬升 780 m'), findsOneWidget);
+    expect(find.textContaining('最高 2780 m'), findsOneWidget);
     await app.dispose(tester);
   });
 }
