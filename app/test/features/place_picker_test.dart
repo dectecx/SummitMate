@@ -170,4 +170,48 @@ void main() {
     expect(find.byKey(const ValueKey('trip-offline-download')), findsNothing, reason: 'the button goes away once queued');
     await app.dispose(tester);
   });
+
+  testWidgets('route points come only from trips to the same mountain, most used first, and fill the node', (tester) async {
+    final app = await AppHarness.start(
+      tester,
+      welcomeSeen: true,
+      overrides: [exploreApiProvider.overrideWithValue(FakeExploreApi(payloadOf(_list))), clockProvider.overrideWithValue(() => DateTime(2026, 5, 10, 9))],
+    );
+    final trips = app.container.read(tripRepositoryProvider);
+    final items = app.container.read(itineraryRepositoryProvider);
+    await act(tester, () async {
+      final a = await trips.create(name: '玉山舊', start: DateTime(2026, 4, 1), mountainId: 'yushan-main');
+      final b = await trips.create(name: '雪山舊', start: DateTime(2026, 4, 2), mountainId: 'xueshan-main');
+      await items.add(a, dayIndex: 1, name: '黑水塘', altitude: 2700);
+      await items.add(a, dayIndex: 1, name: '涼亭');
+      await items.add(a, dayIndex: 2, name: '黑水塘', altitude: 2710);
+      await items.add(b, dayIndex: 1, name: '雪山獨有');
+      await trips.create(name: '玉山新', start: DateTime(2026, 5, 10), mountainId: 'yushan-main');
+      await trips.create(name: '沒山頭', start: DateTime(2026, 5, 11));
+    });
+    await settle(tester);
+
+    await tapText(tester, '沒山頭');
+    await tapText(tester, '新增節點');
+    expect(find.byType(ActionChip), findsNothing);
+    await tester.tapAt(const Offset(5, 5)); // close the sheet
+    await settle(tester);
+    await tester.pageBack();
+    await settle(tester);
+
+    await tapText(tester, '玉山新');
+    await tapText(tester, '新增節點');
+    await settle(tester);
+    expect(find.byKey(const ValueKey('route-point-黑水塘')), findsOneWidget);
+    expect(find.byKey(const ValueKey('route-point-涼亭')), findsOneWidget);
+    expect(find.byKey(const ValueKey('route-point-雪山獨有')), findsNothing, reason: 'other mountains do not leak in');
+    expect(tester.getTopLeft(find.byKey(const ValueKey('route-point-黑水塘'))).dx, lessThan(tester.getTopLeft(find.byKey(const ValueKey('route-point-涼亭'))).dx), reason: 'most used first');
+
+    await tester.tap(find.byKey(const ValueKey('route-point-黑水塘')));
+    await settle(tester);
+    expect(find.widgetWithText(TextFormField, '黑水塘'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, '2710'), findsOneWidget, reason: 'the altitude used last time');
+    expect(find.byKey(const ValueKey('route-point-黑水塘')), findsNothing, reason: 'already chosen');
+    await app.dispose(tester);
+  });
 }

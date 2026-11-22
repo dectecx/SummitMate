@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/db/app_database.dart';
 import '../../explore/domain/mountain_models.dart';
 import '../../explore/providers.dart';
+import '../domain/route_points.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
 
@@ -45,6 +46,12 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
   late int _day = widget.item?.dayIndex ?? widget.initialDay;
   late int? _minutes = widget.item?.estMinutes;
   bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _name.addListener(() => setState(() {})); // keeps the route-point chips in step with what is typed
+  }
 
   @override
   void dispose() {
@@ -114,6 +121,18 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
     });
   }
 
+  void _pickRoutePoint(RoutePoint p) {
+    setState(() {
+      _name.text = p.name;
+      _placeName = null;
+      if (_altitude.text.trim().isEmpty && p.altitude > 0) _altitude.text = '${p.altitude}';
+      if (!_hasPlace && p.lat != null && p.lng != null) {
+        _lat.text = p.lat!.toStringAsFixed(5);
+        _lng.text = p.lng!.toStringAsFixed(5);
+      }
+    });
+  }
+
   void _clearPlace() => setState(() {
     _placeName = null;
     _lat.clear();
@@ -133,6 +152,25 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
     },
     decoration: InputDecoration(labelText: label, hintText: label == '緯度' ? '23.4' : '121.0'),
   );
+
+  /// Names used before on trips to the same mountain, so 1K處 or 涼亭 is one tap and never mixes up routes.
+  Widget _routePointChips() {
+    final points = ref.watch(routePointsProvider(widget.trip.mountainId!)).value ?? const <RoutePoint>[];
+    final name = _name.text.trim();
+    final shown = points.where((p) => p.name != name).take(8).toList();
+    if (shown.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 0,
+        children: [
+          for (final p in shown)
+            ActionChip(key: ValueKey('route-point-${p.name}'), label: Text(p.name), onPressed: () => _pickRoutePoint(p)),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -200,6 +238,7 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
                   ),
                 ),
               ),
+              if (!ro && widget.trip.mountainId != null) _routePointChips(),
               if (_hasPlace)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),

@@ -5,6 +5,7 @@ import '../../core/db/app_database.dart';
 import '../../core/providers.dart';
 import 'data/itinerary_repository.dart';
 import 'data/trip_repository.dart';
+import 'domain/route_points.dart';
 import 'domain/trip_logic.dart';
 
 /// "Now", replaceable in tests.
@@ -16,6 +17,11 @@ final itineraryRepositoryProvider = Provider((ref) => ItineraryRepository(ref.wa
 final tripsProvider = StreamProvider<List<Trip>>((ref) => ref.watch(tripRepositoryProvider).watchAll());
 final tripProvider = StreamProvider.family<Trip?, String>((ref, id) => ref.watch(tripRepositoryProvider).watch(id));
 final tripMembersProvider = StreamProvider.family<List<TripMember>, String>((ref, id) => ref.watch(tripRepositoryProvider).watchMembers(id));
+/// Node names used on trips to a mountain, most used first.
+final routePointsProvider = StreamProvider.family<List<RoutePoint>, String>(
+  (ref, mountainId) => ref.watch(itineraryRepositoryProvider).watchForMountain(mountainId).map(routePointsFrom),
+);
+
 final itineraryProvider = StreamProvider.family<List<ItineraryItem>, String>((ref, id) => ref.watch(itineraryRepositoryProvider).watch(id));
 
 /// The signed-in person's id, or null for a guest.

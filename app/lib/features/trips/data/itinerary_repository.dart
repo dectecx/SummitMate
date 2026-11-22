@@ -15,6 +15,14 @@ class ItineraryRepository {
 
   Stream<List<ItineraryItem>> watch(String tripId) => (_db.select(_db.itineraryItems)..where((i) => i.tripId.equals(tripId))).watch();
 
+  /// Every node of every trip whose main mountain is [mountainId], oldest first.
+  Stream<List<ItineraryItem>> watchForMountain(String mountainId) {
+    final q = _db.select(_db.itineraryItems).join([innerJoin(_db.trips, _db.trips.id.equalsExp(_db.itineraryItems.tripId))])
+      ..where(_db.trips.mountainId.equals(mountainId))
+      ..orderBy([OrderingTerm.asc(_db.itineraryItems.id)]); // ids are time-ordered (uuid v7)
+    return q.watch().map((rows) => [for (final r in rows) r.readTable(_db.itineraryItems)]);
+  }
+
   Future<String> add(
     String tripId, {
     required int dayIndex,
