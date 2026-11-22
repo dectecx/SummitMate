@@ -55,6 +55,8 @@ dependencies:
   xml: ^7.1.0
   share_plus: ^13.3.1
   file_picker: ^13.4.1
+  maplibre_gl: 0.28.0
+  archive: ^4.7.1
 
 dev_dependencies:
   flutter_test:

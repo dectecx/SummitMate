@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "maplibre-gl-native-distribution",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/maplibre/maplibre-gl-native-distribution.git",
+      "state" : {
+        "revision" : "c2e6e6bd24efa037a8ab13463d8ad047b929eb9f",
+        "version" : "7.0.0"
+      }
+    },
+    {
       "identity" : "swift-package-manager-google-mobile-ads",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/googleads/swift-package-manager-google-mobile-ads",
