@@ -52,6 +52,7 @@ dependencies:
   uuid: ^4.6.0
   intl: ^0.20.3
   background_downloader: 9.6.6
+  maplibre_gl: 0.28.0
 
 dev_dependencies:
   flutter_test:
