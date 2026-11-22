@@ -1,8 +1,11 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
 import 'app/router.dart';
+import 'core/ads/ads.dart';
 import 'core/auth/token_store.dart';
 import 'core/db/app_database.dart';
 import 'core/providers.dart';
@@ -12,17 +15,18 @@ import 'features/map/providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(await buildApp());
+  runApp(await buildApp(ads: true));
 }
 
 /// Builds the app widget: restores the session, starts the sync triggers and picks the first screen.
 /// The parameters let integration tests run the real app on an in-memory database and a fake keychain.
-Future<Widget> buildApp({AppDatabase? database, TokenStore? tokens, String? apiBaseUrl, TileCache? tileCache}) async {
+Future<Widget> buildApp({AppDatabase? database, TokenStore? tokens, String? apiBaseUrl, TileCache? tileCache, bool ads = false}) async {
   final cache = tileCache ?? await FmtcTileCache.initialise();
   final container = ProviderContainer(
     overrides: [
       appDatabaseProvider.overrideWithValue(database ?? AppDatabase.open()),
       tileCacheProvider.overrideWithValue(cache),
+      if (ads && (Platform.isIOS || Platform.isAndroid)) adBannerBuilderProvider.overrideWithValue(initialiseAdMob()),
       if (tokens != null) tokenStoreProvider.overrideWithValue(tokens),
       if (apiBaseUrl != null) apiBaseUrlProvider.overrideWithValue(apiBaseUrl),
     ],

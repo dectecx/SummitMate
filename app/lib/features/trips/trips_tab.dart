@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../app/router.dart';
+import '../../core/ads/ads.dart';
 import '../../core/db/app_database.dart';
 import '../../shared/hint_banner.dart';
 import 'domain/trip_logic.dart';
@@ -23,6 +24,7 @@ class TripsTab extends ConsumerWidget {
         error: (e, _) => Center(child: Text('讀取行程失敗：$e')),
         data: (list) => list.isEmpty ? const _EmptyState() : _TripList(trips: list),
       ),
+      bottomNavigationBar: const AdBannerSlot(),
       floatingActionButton: (trips.value?.isNotEmpty ?? false)
           ? FloatingActionButton.extended(
               onPressed: () => _create(context),

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../app/router.dart';
+import '../../core/ads/ads.dart';
 import '../../shared/coming_soon.dart';
 import 'domain/mountain_models.dart';
 import 'providers.dart';
@@ -30,6 +31,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
     final state = ref.watch(mountainsProvider).value ?? const MountainsLoading();
     return Scaffold(
       appBar: AppBar(title: const Text('探索')),
+      bottomNavigationBar: const AdBannerSlot(),
       body: switch (state) {
         MountainsLoading() => const Center(child: CircularProgressIndicator()),
         MountainsUnavailable() => ComingSoon(icon: Icons.cloud_off_outlined, message: '第一次使用需要連上網路載入山岳資料。\n連線後再回來看看。'),
