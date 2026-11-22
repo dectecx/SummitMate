@@ -1,0 +1,24 @@
+/// Constants for the Rudy Map (魯地圖) download client.
+///
+/// Rules from the author: always download via [rudyHomeUrl] (never hard-code
+/// a mirror), send `AppName/version (+contact URL)` as User-Agent on every
+/// request, and never charge for downloads.
+library;
+
+const rudyHomeUrl = 'https://rudymap.tw';
+const rudyDownloadBase = 'https://rudymap.tw/v1/';
+
+const rudyPmtilesFile = 'MOI_OSM_Taiwan_TOPO_Rudy.pmtiles';
+const rudyStyleZipFile = 'MOI_OSM_Taiwan_TOPO_Rudy_pmtiles_style.zip';
+const rudyDemPmtilesFile = 'taiwan_dem.pmtiles';
+
+/// Placeholder: glyphs are not published on the mirrors yet.
+const rudyGlyphsZipFile = 'MOI_OSM_Taiwan_TOPO_Rudy_glyphs.zip';
+
+const rudyAttribution =
+    '地圖：魯地圖 Rudy Map（https://rudymap.tw）｜資料 © OpenStreetMap contributors (ODbL)'
+    '｜等高線與 DEM：內政部 20 公尺 DTM｜樣式基於 OpenAndroMaps Elevate（Tobias Kühn）';
+
+/// `SummitMate/<version> (+<contact>)`.
+String rudyUserAgent({required String appVersion, required String contactUrl}) =>
+    'SummitMate/$appVersion (+$contactUrl)';
