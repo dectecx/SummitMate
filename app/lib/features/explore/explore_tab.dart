@@ -1,3 +1,5 @@
+import '../favorites/providers.dart';
+import '../favorites/ui/favorite_heart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -23,6 +25,7 @@ class ExploreTab extends ConsumerStatefulWidget {
 class _ExploreTabState extends ConsumerState<ExploreTab> {
   final _search = TextEditingController();
   MountainFilter _filter = MountainFilter.all;
+  bool _onlyFavorites = false;
   _Segment _segment = _Segment.mountains;
 
   @override
@@ -72,7 +75,9 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
   }
 
   Widget _content(MountainList data, bool refreshFailed) {
-    final results = searchMountains(data.mountains, query: _search.text, filter: _filter);
+    final favorites = ref.watch(favoriteMountainIdsProvider);
+    final found = searchMountains(data.mountains, query: _search.text, filter: _filter);
+    final results = _onlyFavorites ? [for (final m in found) if (favorites.contains(m.id)) m] : found;
     final theme = Theme.of(context);
     return Column(
       children: [
@@ -99,6 +104,16 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(label: Text(label), selected: _filter == f, onSelected: (_) => setState(() => _filter = f)),
                 ),
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  key: const ValueKey('filter-favorites'),
+                  avatar: const Icon(Icons.favorite, size: 16),
+                  label: const Text('已收藏'),
+                  selected: _onlyFavorites,
+                  onSelected: (v) => setState(() => _onlyFavorites = v),
+                ),
+              ),
             ],
           ),
         ),
@@ -106,7 +121,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
           Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 4), child: Text('目前無法更新，顯示上次載入的資料。', style: theme.textTheme.bodySmall)),
         Expanded(
           child: results.isEmpty
-              ? const Center(child: Text('沒有符合的山'))
+              ? Center(child: Text(_onlyFavorites && favorites.isEmpty ? '還沒有收藏的山，點山岳右邊的愛心就能收藏。' : '沒有符合的山'))
               : ListView.builder(
                   itemCount: results.length,
                   itemBuilder: (_, i) {
@@ -122,6 +137,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
                         children: [
                           if (m.beginnerFriendly) const _Badge('新手'),
                           if (m.trailGrade != null) _Badge('${m.trailGrade} 級'),
+                          FavoriteHeart(mountainId: m.id, compact: true),
                           const Icon(Icons.chevron_right),
                         ],
                       ),

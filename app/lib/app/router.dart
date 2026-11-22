@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../features/events/ui/applications_page.dart';
 import '../features/events/ui/event_detail_page.dart';
 import '../features/events/ui/event_form_page.dart';
+import '../features/favorites/ui/favorites_page.dart';
 import '../features/library/ui/library_page.dart';
 import '../features/library/ui/shared_set_detail_page.dart';
 import '../features/library/ui/shared_sets_page.dart';
@@ -36,6 +37,7 @@ abstract final class Routes {
   static const me = '/me';
   static const help = '/me/help';
   static const library = '/me/library';
+  static const favorites = '/me/favorites';
   static const templates = '/me/templates';
   static String template(String id) => '/me/templates/$id';
   static const sharedSets = '/me/shared';
@@ -110,6 +112,7 @@ GoRouter buildRouter({required String initialLocation}) {
                 routes: [
                   GoRoute(path: 'help', builder: (_, _) => const HelpPage()),
                   GoRoute(path: 'library', builder: (_, _) => const LibraryPage()),
+                  GoRoute(path: 'favorites', builder: (_, _) => const FavoritesPage()),
                   GoRoute(
                     path: 'shared',
                     builder: (_, _) => const SharedSetsPage(),

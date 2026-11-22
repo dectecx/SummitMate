@@ -10,7 +10,12 @@ import 'package:summitmate/core/sync/dio_sync_api.dart';
 import 'package:summitmate/core/sync/outbox_writer.dart';
 import 'package:summitmate/core/sync/sync_engine.dart';
 import 'package:summitmate/core/sync/sync_entity.dart';
+import 'package:summitmate/features/collab/data/message_repository.dart';
+import 'package:summitmate/features/collab/data/poll_repository.dart';
 import 'package:summitmate/features/events/data/events_api.dart';
+import 'package:summitmate/features/favorites/data/favorite_repository.dart';
+import 'package:summitmate/features/members/data/member_repository.dart';
+import 'package:summitmate/features/members/domain/member_logic.dart';
 import 'package:summitmate/features/library/data/shared_sets_api.dart';
 import 'package:summitmate/features/library/domain/set_item.dart';
 import 'package:uuid/uuid.dart';
@@ -193,6 +198,69 @@ void main() {
       expect((await apiB.get(created.id)).privateMessageLocked, isTrue);
     } finally {
       if (eventId != null) await apiA.cancel(eventId);
+      await localDelete(dbA, writerA, tripsEntity, trip);
+      await engineA.sync();
+      await engineOther.dispose();
+      await dbOther.close();
+    }
+  }, skip: enabled && Platform.environment['E2E_TOKEN_2'] != null ? false : 'set E2E_BASE_URL, E2E_TOKEN and E2E_TOKEN_2');
+
+  test('discussion and favorites converge between two members through the real server', () async {
+    final token2 = Platform.environment['E2E_TOKEN_2']!;
+    Dio dioFor(String tk) => Dio(BaseOptions(baseUrl: baseUrl!, headers: {'Authorization': 'Bearer $tk'}, validateStatus: (s) => s != null && s < 400));
+    final meA = (await dioFor(token!).get<Map<String, dynamic>>('/auth/me')).data!['id'] as String;
+    final meB = (await dioFor(token2).get<Map<String, dynamic>>('/auth/me')).data!['id'] as String;
+    final dbOther = memoryDb();
+    await dbOther.customStatement('UPDATE app_meta SET account_id = ? WHERE id = 1', [meB]);
+    await dbA.customStatement('UPDATE app_meta SET account_id = ? WHERE id = 1', [meA]);
+    final writerOther = OutboxWriter(dbOther);
+    final engineOther = SyncEngine(db: dbOther, api: DioSyncApi(dioFor(token2)), gate: FakeGate());
+    final messagesA = MessageRepository(dbA, writerA, () => meA), messagesB = MessageRepository(dbOther, writerOther, () => meB);
+    final pollsA = PollRepository(dbA, writerA, () => meA), pollsB = PollRepository(dbOther, writerOther, () => meB);
+    final favoritesB = FavoriteRepository(dbOther, writerOther);
+    const uuid = Uuid();
+    final trip = uuid.v7();
+    try {
+      await localCreate(dbA, writerA, tripsEntity, tripRow(trip, name: '討論行程'));
+      await MemberRepository(dbA, writerA).invite(trip, FoundUser(id: meB, displayName: 'B', avatar: '🦊'));
+      final message = await messagesA.add(trip, '大家好');
+      final pollId = await pollsA.create(trip, title: '哪天出發？', options: ['週五', '週六'], allowMultiple: false);
+      expect(await engineA.sync(), SyncOutcome.success);
+      expect(await opSummary(dbA), isEmpty);
+
+      // B receives everything, replies, and votes for an option.
+      expect(await engineOther.sync(), SyncOutcome.success);
+      expect((await select(dbOther, 'SELECT body FROM trip_messages')).single['body'], '大家好');
+      final options = await select(dbOther, 'SELECT id, text FROM poll_options ORDER BY text');
+      expect(options.length, 2);
+      await messagesB.add(trip, '我週六可以', parentId: message);
+      final saturday = options.firstWhere((o) => o['text'] == '週六')['id']! as String;
+      await pollsB.vote(saturday);
+      await favoritesB.toggle(FavoriteKind.mountain, 'yushan-main');
+      expect(await engineOther.sync(), SyncOutcome.success);
+      expect(await opSummary(dbOther), isEmpty);
+
+      // A sees the reply and B's vote with B's identity.
+      expect(await engineA.sync(), SyncOutcome.success);
+      expect((await select(dbA, 'SELECT body FROM trip_messages WHERE parent_id IS NOT NULL')).single['body'], '我週六可以');
+      final votes = await select(dbA, 'SELECT option_id, user_id FROM poll_votes');
+      expect([votes.single['option_id'], votes.single['user_id']], [saturday, meB]);
+      expect(await select(dbA, 'SELECT id FROM favorites'), isEmpty, reason: 'favorites are personal');
+
+      // B changes the vote (single choice) and takes it back.
+      final friday = options.firstWhere((o) => o['text'] == '週五')['id']! as String;
+      await pollsB.vote(friday);
+      await engineOther.sync();
+      await engineA.sync();
+      final now = await select(dbA, 'SELECT option_id FROM poll_votes');
+      expect(now.map((r) => r['option_id']), [friday]);
+      await pollsB.toggle(friday);
+      await pollsB.toggle(friday); // revive the same vote
+      await engineOther.sync();
+      await engineA.sync();
+      expect((await select(dbA, 'SELECT option_id FROM poll_votes')).map((r) => r['option_id']), [friday]);
+      expect(pollId, isNotEmpty);
+    } finally {
       await localDelete(dbA, writerA, tripsEntity, trip);
       await engineA.sync();
       await engineOther.dispose();

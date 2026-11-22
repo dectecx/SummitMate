@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/coming_soon.dart';
+import '../../favorites/ui/favorite_heart.dart';
 import '../../weather/ui/weather_card.dart';
 import '../domain/mountain_models.dart';
 import '../providers.dart';
@@ -24,7 +25,7 @@ class MountainDetailPage extends ConsumerWidget {
     }
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(mountain.name)),
+      appBar: AppBar(title: Text(mountain.name), actions: [FavoriteHeart(mountainId: mountain.id)]),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

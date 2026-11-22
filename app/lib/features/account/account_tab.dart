@@ -31,6 +31,7 @@ class AccountTab extends ConsumerWidget {
           const _SyncTile(),
           const Divider(height: 32),
           const _ThemeTile(),
+          ListTile(leading: const Icon(Icons.favorite_border), title: const Text('我的收藏'), onTap: () => context.push(Routes.favorites)),
           ListTile(leading: const Icon(Icons.bookmark_outline), title: const Text('我的裝備庫'), onTap: () => context.push(Routes.library)),
           ListTile(leading: const Icon(Icons.inventory_2_outlined), title: const Text('我的範本'), onTap: () => context.push(Routes.templates)),
           ListTile(leading: const Icon(Icons.cloud_outlined), title: const Text('雲端裝備組合'), onTap: () => context.push(Routes.sharedSets)),
