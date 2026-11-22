@@ -8,6 +8,7 @@ import '../../core/db/app_database.dart';
 import '../../shared/hint_banner.dart';
 import 'domain/trip_logic.dart';
 import 'providers.dart';
+import 'ui/copy_trip.dart';
 import 'ui/gpx_actions.dart';
 import 'ui/trip_form_sheet.dart';
 
@@ -142,6 +143,7 @@ class _TripCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push(Routes.trip(trip.id)),
+        onLongPress: () => copyTrip(context, ref, trip),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(

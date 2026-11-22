@@ -4,7 +4,9 @@ import '../../core/auth/auth_state.dart';
 import '../../core/db/app_database.dart';
 import '../../core/providers.dart';
 import 'data/itinerary_repository.dart';
+import 'data/trip_copier.dart';
 import 'data/trip_repository.dart';
+import '../library/providers.dart';
 import 'domain/route_points.dart';
 import 'domain/trip_logic.dart';
 
@@ -40,3 +42,5 @@ final myRoleProvider = Provider.family<TripRole?, String>((ref, tripId) {
   final members = ref.watch(tripMembersProvider(tripId)).value ?? const [];
   return roleFor(trip: trip, accountId: ref.watch(accountIdProvider), members: members);
 });
+
+final tripCopierProvider = Provider((ref) => TripCopier(ref.watch(tripRepositoryProvider), ref.watch(itineraryRepositoryProvider), ref.watch(templateRepositoryProvider)));

@@ -12,6 +12,7 @@ import '../../members/ui/members_view.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
 import '../../library/ui/template_actions.dart';
+import 'copy_trip.dart';
 import 'gpx_actions.dart';
 import 'itinerary_view.dart';
 import 'item_form_sheet.dart';
@@ -74,6 +75,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
             tooltip: '更多',
             onSelected: (v) {
               if (v == 'edit') showTripFormSheet(context, trip: trip);
+              if (v == 'copy') copyTrip(context, ref, trip);
               if (v == 'save-template') saveTripAsTemplate(context, ref, trip);
               if (v == 'apply-template') {
                 applyTemplateToTrip(context, ref, trip);
@@ -86,6 +88,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
             itemBuilder: (_) => [
               if (role.canEditShared)
                 const PopupMenuItem(value: 'edit', child: Text('編輯行程')),
+              const PopupMenuItem(value: 'copy', child: Text('複製行程')),
               const PopupMenuItem(value: 'save-template', child: Text('存成範本')),
               const PopupMenuItem(value: 'apply-template', child: Text('套用範本')),
               const PopupMenuItem(value: 'gpx', child: Text('匯出 GPX')),
