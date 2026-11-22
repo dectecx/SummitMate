@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../explore/domain/mountain_models.dart';
+import '../../explore/providers.dart';
 import '../../trips/domain/trip_logic.dart';
 import '../../trips/providers.dart';
 import '../domain/weather_models.dart';
@@ -21,7 +23,7 @@ import '../providers.dart';
   _ => (label: '—', icon: Icons.help_outline),
 };
 
-/// Forecast for the first itinerary node that has coordinates.
+/// Forecast for the trip's main mountain, else for the first itinerary node that has coordinates.
 class WeatherCard extends ConsumerWidget {
   const WeatherCard({super.key, required this.trip});
   final Trip trip;
@@ -29,12 +31,18 @@ class WeatherCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final items = ref.watch(itineraryProvider(trip.id)).value ?? const <ItineraryItem>[];
-    final query = weatherLocationOf(items);
+    final mountain = trip.mountainId == null
+        ? null
+        : switch (ref.watch(mountainsProvider).value) {
+            MountainsReady(:final data) => data.byId(trip.mountainId!),
+            _ => null,
+          };
+    final query = mountain != null ? (lat: mountain.latitude, lng: mountain.longitude, elevation: mountain.elevation) : weatherLocationOf(items);
     final theme = Theme.of(context);
 
     Widget body;
     if (query == null) {
-      body = const Text('在行程節點選擇山岳地點後，這裡就會顯示該地的天氣預報。');
+      body = const Text('編輯行程並設定「主要山頭」，這裡就會顯示該山的天氣預報。');
     } else {
       body = PlaceWeather(query: query, from: trip.start, to: trip.end);
     }

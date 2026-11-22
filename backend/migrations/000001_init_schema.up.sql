@@ -71,6 +71,8 @@ CREATE TABLE trips (
     description TEXT         NOT NULL DEFAULT '',
     start_date  DATE         NOT NULL,
     end_date    DATE,
+    -- Main mountain of the trip (an id from the explore list); weather and map hints follow it.
+    mountain_id VARCHAR(64),
     cover_image TEXT,
     deleted_at  TIMESTAMPTZ,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),

@@ -121,4 +121,32 @@ void main() {
     expect((await real(tester, () => app.db.select(app.db.itineraryItems).get())).single.name, '玉山');
     await app.dispose(tester);
   });
+
+  testWidgets('a trip can be given a main mountain from a searchable list, and clear it again', (tester) async {
+    final app = await AppHarness.start(
+      tester,
+      welcomeSeen: true,
+      overrides: [exploreApiProvider.overrideWithValue(FakeExploreApi(payloadOf(_list))), clockProvider.overrideWithValue(() => DateTime(2026, 5, 10, 9))],
+    );
+    await act(tester, () => app.container.read(tripRepositoryProvider).create(name: '主山頭', start: DateTime(2026, 5, 10)));
+    await settle(tester);
+    await tapText(tester, '主山頭');
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await settle(tester);
+    await tapText(tester, '編輯行程');
+    await settle(tester);
+
+    await tester.tap(find.byKey(const ValueKey('trip-mountain')));
+    await settle(tester);
+    await tester.enterText(find.widgetWithText(TextField, '搜尋山名'), '雪山');
+    await settle(tester);
+    expect(find.byKey(const ValueKey('trip-mountain-yushan-main')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('trip-mountain-xueshan-main')));
+    await settle(tester);
+    expect(find.textContaining('雪山  ·  3885 m'), findsOneWidget);
+
+    await tapText(tester, '儲存');
+    expect((await real(tester, () => app.db.select(app.db.trips).getSingle())).mountainId, 'xueshan-main');
+    await app.dispose(tester);
+  });
 }

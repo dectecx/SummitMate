@@ -28,7 +28,7 @@
 
 | 表 | 欄位（除 `id`） | 備註 |
 | :-- | :-- | :-- |
-| `trips` | `owner_id`（可空）、`name`、`description`、`start_date`、`end_date?`、`cover_image?`、`is_sample`（僅本地） | 訪客建立的行程 `owner_id` 為空；同步後由伺服器值覆蓋 |
+| `trips` | `owner_id`（可空）、`name`、`description`、`start_date`、`end_date?`、`mountain_id?`（主要山頭，天氣依此顯示）、`cover_image?`、`is_sample`（僅本地） | 訪客建立的行程 `owner_id` 為空；同步後由伺服器值覆蓋 |
 | `trip_members` | `trip_id`、`user_id`、`role`、`display_name`、`avatar` | 唯讀快取，只由拉取寫入；client 邀請 / 移除時才送 outbox |
 | `itinerary_items` | `trip_id`、`day_index`、`name`、`est_minutes?`、`altitude`、`distance`、`lat?`、`lng?`、`note`、`checked_in_at?` | |
 | `gear_items` | `trip_id`、`name`、`weight`、`category`、`quantity`、`is_checked`、`sort_order` | |
@@ -154,7 +154,7 @@ sealed class SyncStatus {
 const tripsEntity = SyncEntity(
   name: 'trips', table: 'trips', access: Access.root,
   columns: {'name': Col.text, 'description': Col.text, 'start_date': Col.date,
-            'end_date': Col.dateNullable, 'cover_image': Col.textNullable, 'owner_id': Col.textNullable},
+            'end_date': Col.dateNullable, 'mountain_id': Col.textNullable, 'cover_image': Col.textNullable, 'owner_id': Col.textNullable},
 );
 ```
 

@@ -29,7 +29,7 @@
 | `users` | email（小寫唯一）、password_hash、display_name、avatar、is_verified、is_active、last_login_at | 移除 `role_id` |
 | `refresh_tokens` | id、user_id、token_hash、expires_at、revoked_at、replaced_by | 見第 5 節 |
 | `email_verifications` | user_id、code_hash、expires_at、attempts | 6 位數，30 分鐘 |
-| `trips` | owner_id、name、description、start_date、end_date、cover_image | 移除 `is_active`、`day_names` |
+| `trips` | owner_id、name、description、start_date、end_date、mountain_id（選填，主要山頭）、cover_image | 移除 `is_active`、`day_names` |
 | `trip_members` | trip_id、user_id、role（`owner` / `guide` / `member`）、joined_at | 可同步（含 tombstone） |
 | `itinerary_items` | trip_id、day_index（0 = D0）、name、est_minutes、altitude、distance、lat、lng、note、checked_in_at | 新增座標以支援離線地圖提示；用 `checked_in_at` 取代舊的兩個重複欄位 |
 | `gear_items` | trip_id、**user_id**（這份裝備屬於誰）、name、weight、category、quantity、is_checked、sort_order | 個人資料 |

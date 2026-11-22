@@ -16,6 +16,8 @@ class Trips extends Table {
   // YYYY-MM-DD. Date-only, never converted through a time zone.
   TextColumn get startDate => text()();
   TextColumn get endDate => text().nullable()();
+  // Main mountain (an id from the explore list); weather and map hints follow it.
+  TextColumn get mountainId => text().nullable()();
   TextColumn get coverImage => text().nullable()();
   // Local only: the bundled example trip. Never enters the outbox.
   BoolColumn get isSample => boolean().withDefault(const Constant(false))();

@@ -22,7 +22,7 @@ class TripRepository {
   Stream<List<TripMember>> watchMembers(String tripId) => (_db.select(_db.tripMembers)..where((m) => m.tripId.equals(tripId))).watch();
 
   /// Creates a trip and returns its id.
-  Future<String> create({required String name, required DateTime start, DateTime? end, String description = ''}) async {
+  Future<String> create({required String name, required DateTime start, DateTime? end, String description = '', String? mountainId}) async {
     final id = _uuid.v7();
     final endDate = end != null && end.isAfter(start) ? end : null;
     await _db.transaction(() async {
@@ -33,12 +33,13 @@ class TripRepository {
           description: Value(description),
           startDate: formatDate(start),
           endDate: Value(endDate == null ? null : formatDate(endDate)),
+          mountainId: Value(mountainId),
         ),
       );
       await _outbox.upsert(
         'trips',
         id,
-        {'name': name, 'description': description, 'start_date': formatDate(start), 'end_date': endDate == null ? null : formatDate(endDate)},
+        {'name': name, 'description': description, 'start_date': formatDate(start), 'end_date': endDate == null ? null : formatDate(endDate), 'mountain_id': ?mountainId},
         isCreate: true,
       );
     });
@@ -52,12 +53,14 @@ class TripRepository {
     String? description,
     DateTime? start,
     Value<DateTime?> end = const Value.absent(),
+    Value<String?> mountainId = const Value.absent(),
   }) async {
     final patch = <String, Object?>{
       'name': ?name,
       'description': ?description,
       if (start != null) 'start_date': formatDate(start),
       if (end.present) 'end_date': end.value == null ? null : formatDate(end.value!),
+      if (mountainId.present) 'mountain_id': mountainId.value,
     };
     if (patch.isEmpty) return;
     await _db.transaction(() async {
@@ -67,6 +70,7 @@ class TripRepository {
           description: Value.absentIfNull(description),
           startDate: start == null ? const Value.absent() : Value(formatDate(start)),
           endDate: end.present ? Value(end.value == null ? null : formatDate(end.value!)) : const Value.absent(),
+          mountainId: mountainId,
         ),
       );
       await _outbox.upsert('trips', id, patch);

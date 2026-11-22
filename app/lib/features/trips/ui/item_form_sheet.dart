@@ -172,7 +172,7 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
                   readOnly: ro,
                   textInputAction: TextInputAction.next,
                   validator: (v) => (v ?? '').trim().isEmpty ? '請輸入名稱' : null,
-                  decoration: const InputDecoration(labelText: '名稱', hintText: '例如：玉山（輸入山名可選擇地點）'),
+                  decoration: const InputDecoration(labelText: '名稱', hintText: '例如：1K處、涼亭、黑水塘'),
                 ),
                 optionsViewBuilder: (context, onSelected, options) => Align(
                   alignment: Alignment.topLeft,

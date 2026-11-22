@@ -75,7 +75,7 @@ void main() {
     expect(find.textContaining('登入後才能邀請隊友'), findsOneWidget);
     expect(find.text('邀請'), findsNothing);
     expect(find.text('成員（0）'), findsOneWidget);
-    expect(find.textContaining('選擇山岳地點'), findsOneWidget);
+    expect(find.textContaining('主要山頭'), findsOneWidget);
     await app.dispose(tester);
   });
 

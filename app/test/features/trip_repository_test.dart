@@ -30,6 +30,17 @@ void main() {
     expect(patchOf(op), {'name': '嘉明湖', 'description': 'x', 'start_date': '2026-05-01', 'end_date': '2026-05-03'});
   });
 
+  test('the main mountain is stored, uploaded, and can be cleared', () async {
+    final id = await trips.create(name: 'a', start: DateTime(2026, 5, 1), mountainId: 'yushan-main');
+    expect((await db.select(db.trips).getSingle()).mountainId, 'yushan-main');
+    expect(patchOf((await db.select(db.outbox).get()).single)['mountain_id'], 'yushan-main');
+
+    await db.delete(db.outbox).go();
+    await trips.update(id, mountainId: const Value(null));
+    expect((await db.select(db.trips).getSingle()).mountainId, isNull);
+    expect(patchOf((await db.select(db.outbox).get()).single), {'mountain_id': null});
+  });
+
   test('an end date that is not after the start means a one-day trip', () async {
     await trips.create(name: 'a', start: DateTime(2026, 5, 1), end: DateTime(2026, 5, 1));
     await trips.create(name: 'b', start: DateTime(2026, 5, 1), end: DateTime(2026, 4, 1));
