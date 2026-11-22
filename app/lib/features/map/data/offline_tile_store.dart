@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 /// Tiles of downloaded regions, stored as plain files: `<root>/<region>/<z>/<x>/<y>.tile`. Files rather than a
 /// database so the system's background transfer service can write them while the app is not running.
 class OfflineTileStore {
-  OfflineTileStore(this.root) {
+  OfflineTileStore(this.root, {this.relativeRoot = defaultRelativeRoot}) {
     if (root.existsSync()) {
       for (final e in root.listSync()) {
         if (e is Directory) _regions.add(e.uri.pathSegments.where((s) => s.isNotEmpty).last);
@@ -13,19 +13,25 @@ class OfflineTileStore {
     }
   }
 
-  /// Where downloaded tiles live, relative to the app support directory (the downloader's base directory).
-  static const relativeRoot = 'offline_tiles';
+  /// Where downloaded map tiles live, relative to the app support directory (the downloader's base directory).
+  static const defaultRelativeRoot = 'offline_tiles';
+
+  /// Where the elevation tiles of the 3D view live (a separate store so they are never mistaken for map tiles).
+  static const demRelativeRoot = 'dem_tiles';
 
   final Directory root;
+
+  /// [root] relative to the app support directory.
+  final String relativeRoot;
   final _regions = <String>{};
 
-  static Future<OfflineTileStore> open() async {
+  static Future<OfflineTileStore> open({String relativeRoot = defaultRelativeRoot}) async {
     final support = await getApplicationSupportDirectory();
-    return OfflineTileStore(Directory('${support.path}/$relativeRoot'));
+    return OfflineTileStore(Directory('${support.path}/$relativeRoot'), relativeRoot: relativeRoot);
   }
 
   /// Directory and file name of a tile, for the downloader (relative to the app support directory).
-  static String tileDirectory(String regionId, int z, int x) => '$relativeRoot/$regionId/$z/$x';
+  String tileDirectory(String regionId, int z, int x) => '$relativeRoot/$regionId/$z/$x';
   static String tileFilename(int y) => '$y.tile';
 
   File tileFile(String regionId, int z, int x, int y) => File('${root.path}/$regionId/$z/$x/$y.tile');

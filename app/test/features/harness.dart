@@ -22,7 +22,7 @@ class AppHarness {
   final MemoryTokenStore tokens;
   final ProviderContainer container;
 
-  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed, List<Override> overrides = const [], FakeRudyInstaller? rudy, FakeMapHandle? mapHandle}) async {
+  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed, List<Override> overrides = const [], FakeRudyInstaller? rudy, FakeMapHandle? mapHandle, bool demInstalled = false}) async {
     final db = memoryDb();
     final api = FakeAuthApi();
     seed?.call(api);
@@ -33,7 +33,7 @@ class AppHarness {
         tokenStoreProvider.overrideWithValue(tokens),
         authApiProvider.overrideWithValue(api),
         connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
-        ...rudyTestOverrides(installer: rudy, handle: mapHandle),
+        ...rudyTestOverrides(installer: rudy, handle: mapHandle, demInstalled: demInstalled),
         ...overrides,
       ],
     );

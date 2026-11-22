@@ -12,6 +12,9 @@ abstract interface class MapHandle {
   Future<void> zoomBy(double delta);
   Future<void> moveTo(double lat, double lng, {double? minZoom});
   Future<void> setMe(double? lat, double? lng);
+
+  /// Camera tilt in degrees (0 = looking straight down). Only meaningful with elevation data installed.
+  Future<void> setTilt(double degrees);
 }
 
 /// The Rudy Map drawn by MapLibre from local files, with the mountains and the person's position on top.
@@ -47,6 +50,11 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
   @override
   Future<void> moveTo(double lat, double lng, {double? minZoom}) async {
     await _c?.animateCamera(CameraUpdate.newLatLngZoom(LatLng(lat, lng), math.max(zoom, minZoom ?? 0)));
+  }
+
+  @override
+  Future<void> setTilt(double degrees) async {
+    await _c?.animateCamera(CameraUpdate.tiltTo(degrees));
   }
 
   @override

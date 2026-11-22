@@ -22,8 +22,11 @@ abstract interface class TileCache {
 /// downloader); everything else is fetched from the network and kept in a small flutter_map_tile_caching
 /// 'browse' store, so tiles seen while panning also work offline for a while.
 class FmtcTileCache implements TileCache {
-  FmtcTileCache._(this._store) : downloader = BackgroundTileDownloader(_store);
+  FmtcTileCache._(this._store, this.demStore) : downloader = BackgroundTileDownloader(_store, demStore);
   final OfflineTileStore _store;
+
+  /// Where the elevation tiles of the 3D view are stored.
+  final OfflineTileStore demStore;
 
   /// Where downloaded region tiles are stored.
   OfflineTileStore get store => _store;
@@ -36,7 +39,7 @@ class FmtcTileCache implements TileCache {
     final browse = const FMTCStore(_browseStore);
     if (!await browse.manage.ready) await browse.manage.create(maxLength: 8000);
     await BackgroundTileDownloader.configure();
-    return FmtcTileCache._(await OfflineTileStore.open());
+    return FmtcTileCache._(await OfflineTileStore.open(), await OfflineTileStore.open(relativeRoot: OfflineTileStore.demRelativeRoot));
   }
 
   @override

@@ -12,6 +12,7 @@ import 'maplibre/rudy_map_view.dart';
 import 'maplibre/rudy_providers.dart';
 import 'rudy/rudy_constants.dart';
 import 'domain/map_logic.dart';
+import 'domain/offline_regions.dart';
 import 'data/offline_manager.dart';
 import 'providers.dart';
 
@@ -29,6 +30,7 @@ class _MapTabState extends ConsumerState<MapTab> {
   bool _locating = false;
   MapHandle? _rudy; // set while the Rudy Map is the one on screen
   bool _usingRudy = false;
+  bool _tilted = false;
 
   @override
   void dispose() {
@@ -83,7 +85,11 @@ class _MapTabState extends ConsumerState<MapTab> {
     ref.watch(rudyReadyProvider); // keep it loaded so the menu knows whether the files are there
     final rudyStyle = source == MapSource.rudy ? ref.watch(rudyStyleProvider).value : null;
     _usingRudy = rudyStyle != null;
-    if (!_usingRudy) _rudy = null;
+    if (!_usingRudy) {
+      _rudy = null;
+      _tilted = false;
+    }
+    final has3d = _usingRudy && (ref.watch(rudyDemDirProvider).value != null);
 
     return Scaffold(
       appBar: AppBar(
@@ -112,6 +118,7 @@ class _MapTabState extends ConsumerState<MapTab> {
           if (rudyStyle != null)
             ref.watch(rudyMapBuilderProvider)(context, rudyStyle, mountains, _onPeaksTapped, (h) {
               _rudy = h;
+              _tilted = false;
               h.setMe(_me?.latitude, _me?.longitude);
             })
           else
@@ -156,7 +163,7 @@ class _MapTabState extends ConsumerState<MapTab> {
               decoration: BoxDecoration(color: scheme.surface.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(6)),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(_usingRudy ? rudyAttribution : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）', style: Theme.of(context).textTheme.labelSmall),
+                child: Text(_usingRudy ? (has3d ? '$rudyAttribution｜$terrainAttribution' : rudyAttribution) : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）', style: Theme.of(context).textTheme.labelSmall),
               ),
             ),
           ),
@@ -176,6 +183,18 @@ class _MapTabState extends ConsumerState<MapTab> {
                     onPressed: _locate,
                     icon: _locating ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.my_location),
                   ),
+                  if (has3d) ...[
+                    const Divider(height: 1),
+                    IconButton(
+                      key: const ValueKey('map-3d'),
+                      tooltip: _tilted ? '平面視角' : '3D 視角',
+                      onPressed: () {
+                        setState(() => _tilted = !_tilted);
+                        _rudy?.setTilt(_tilted ? 60 : 0);
+                      },
+                      icon: Icon(_tilted ? Icons.map_outlined : Icons.terrain),
+                    ),
+                  ],
                   const Divider(height: 1),
                   IconButton(tooltip: '放大', onPressed: () => _zoom(1), icon: const Icon(Icons.add)),
                   const Divider(height: 1),

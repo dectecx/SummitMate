@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/core/providers.dart';
@@ -15,10 +17,25 @@ import 'rudy_fakes.dart';
 
 void main() {
   test('the style template gets file URIs, with spaces and Chinese characters escaped', () {
-    final s = fillRudyStyle('{"u":"pmtiles://{{PMTILES}}","g":"{{GLYPHS}}/{fontstack}/{range}.pbf"}', pmtilesPath: '/data/Application Support/rudy/map.pmtiles', glyphsDir: '/data/Application Support/rudy/glyphs');
+    final s = fillRudyStyle('{"u":"pmtiles://{{PMTILES}}","g":"{{GLYPHS}}/{fontstack}/{range}.pbf"}', pmtilesPath: '/data/Application Support/rudy/map.pmtiles', glyphsDir: '/data/Application Support/rudy/glyphs', demDir: '/data/dem');
     expect(s, contains('pmtiles://file:///data/Application%20Support/rudy/map.pmtiles'));
     expect(s, contains('file:///data/Application%20Support/rudy/glyphs/{fontstack}/{range}.pbf'), reason: 'the MapLibre placeholders stay untouched');
     expect(s.contains('{{'), isFalse);
+  });
+
+  test('without elevation data the style has no hillshade, DEM source or terrain; with it they point at the local tiles', () {
+    const template =
+        '{"version":8,"glyphs":"{{GLYPHS}}/{fontstack}/{range}.pbf","sources":{"topo":{"type":"vector","url":"pmtiles://{{PMTILES}}"},"dem":{"type":"raster-dem","tiles":["{{DEM}}/{z}/{x}/{y}.tile"]}},'
+        '"terrain":{"source":"dem"},"layers":[{"id":"land","type":"fill","source":"topo"},{"id":"hillshade","type":"hillshade","source":"dem"}]}';
+    final without = jsonDecode(fillRudyStyle(template, pmtilesPath: '/d/a b/m.pmtiles', glyphsDir: '/d/a b/g')) as Map<String, dynamic>;
+    expect((without['sources'] as Map).keys, ['topo']);
+    expect((without['layers'] as List).map((l) => (l as Map)['id']), ['land']);
+    expect(without.containsKey('terrain'), isFalse);
+
+    final withDem = fillRudyStyle(template, pmtilesPath: '/d/a b/m.pmtiles', glyphsDir: '/d/a b/g', demDir: '/d/a b/dem');
+    expect(withDem, contains('file:///d/a%20b/dem/{z}/{x}/{y}.tile'));
+    expect(withDem, contains('"terrain"'));
+    expect(withDem.contains('{{'), isFalse);
   });
 
   group('screens', () {
@@ -26,7 +43,7 @@ void main() {
     late FakeMapHandle handle;
     late FakeLocation location;
 
-    Future<AppHarness> start(WidgetTester tester, {bool installed = false, String? saved}) async {
+    Future<AppHarness> start(WidgetTester tester, {bool installed = false, String? saved, bool dem = false}) async {
       tester.view.physicalSize = const Size(800, 2600);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -38,6 +55,7 @@ void main() {
         welcomeSeen: true,
         rudy: installer,
         mapHandle: handle,
+        demInstalled: dem,
         overrides: [
           tileCacheProvider.overrideWithValue(FakeTileCache(FakeDownloader())),
           locationServiceProvider.overrideWithValue(location),
@@ -139,6 +157,28 @@ void main() {
       await tester.tap(find.byKey(fakeRudyMapKey), warnIfMissed: false);
       await settle(tester);
       expect(find.textContaining('附近的山（2）'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('the 3D button appears only with elevation data, tilts the map and levels it again', (tester) async {
+      var app = await start(tester, installed: true, saved: 'rudy');
+      await tapText(tester, '地圖');
+      await settle(tester);
+      expect(find.byKey(const ValueKey('map-3d')), findsNothing, reason: 'no elevation data downloaded');
+      expect(find.textContaining('Mapzen'), findsNothing);
+      await app.dispose(tester);
+
+      app = await start(tester, installed: true, saved: 'rudy', dem: true);
+      await tapText(tester, '地圖');
+      await settle(tester);
+      expect(find.byKey(const ValueKey('map-3d')), findsOneWidget);
+      expect(find.textContaining('Mapzen'), findsOneWidget, reason: 'the elevation data is credited');
+      await tester.tap(find.byTooltip('3D 視角'));
+      await settle(tester);
+      expect(handle.calls, contains('tilt:60.0'));
+      await tester.tap(find.byTooltip('平面視角'));
+      await settle(tester);
+      expect(handle.calls, contains('tilt:0.0'));
       await app.dispose(tester);
     });
 

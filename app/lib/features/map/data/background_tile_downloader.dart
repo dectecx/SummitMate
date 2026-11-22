@@ -14,8 +14,11 @@ import 'tile_downloader.dart';
 /// so a download keeps going when the app is in the background. What is on disk is the truth: a retry, or the app
 /// coming back, only fetches the tiles that are missing and never queues one that is already in flight.
 class BackgroundTileDownloader implements TileDownloader {
-  BackgroundTileDownloader(this._store);
+  BackgroundTileDownloader(this._store, this._demStore);
   final OfflineTileStore _store;
+  final OfflineTileStore _demStore;
+
+  OfflineTileStore _storeFor(TileSource source) => source == TileSource.terrain ? _demStore : _store;
 
   static String _group(String regionId) => 'offline-$regionId';
   static String _taskId(String regionId, TileId t) =>
@@ -37,7 +40,9 @@ class BackgroundTileDownloader implements TileDownloader {
   Stream<DownloadUpdate> download(OfflineRegionDef region) async* {
     final downloader = FileDownloader();
     final group = _group(region.id);
-    _store.register(region.id);
+    final store = _storeFor(region.source);
+    store.register(region.id);
+    final urlTemplate = region.source == TileSource.terrain ? terrainTileUrl : nlscTileUrl;
     final tiles = tilesFor(
       region.bounds,
       region.minZoom,
@@ -52,7 +57,7 @@ class BackgroundTileDownloader implements TileDownloader {
     var bytes = 0.0;
     for (final t in tiles) {
       final id = _taskId(region.id, t);
-      final file = _store.tileFile(region.id, t.z, t.x, t.y);
+      final file = store.tileFile(region.id, t.z, t.x, t.y);
       if (file.existsSync()) {
         bytes += file.lengthSync();
         continue;
@@ -62,12 +67,12 @@ class BackgroundTileDownloader implements TileDownloader {
         toQueue.add(
           DownloadTask(
             taskId: id,
-            url: nlscTileUrl
+            url: urlTemplate
                 .replaceAll('{z}', '${t.z}')
                 .replaceAll('{y}', '${t.y}')
                 .replaceAll('{x}', '${t.x}'),
             baseDirectory: BaseDirectory.applicationSupport,
-            directory: OfflineTileStore.tileDirectory(region.id, t.z, t.x),
+            directory: store.tileDirectory(region.id, t.z, t.x),
             filename: OfflineTileStore.tileFilename(t.y),
             group: group,
             updates: Updates.status,
@@ -131,7 +136,7 @@ class BackgroundTileDownloader implements TileDownloader {
   @override
   Future<void> deleteTiles(String regionId) async {
     await cancel(regionId);
-    await _store.delete(regionId);
+    await _storeFor(offlineRegionById(regionId)?.source ?? TileSource.nlsc).delete(regionId);
   }
 }
 

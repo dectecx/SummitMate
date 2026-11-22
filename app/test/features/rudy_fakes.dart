@@ -56,24 +56,31 @@ class FakeMapHandle implements MapHandle {
   @override
   Future<void> moveTo(double lat, double lng, {double? minZoom}) async => calls.add('move');
   @override
+  Future<void> setTilt(double degrees) async => calls.add('tilt:$degrees');
+  @override
   Future<void> setMe(double? lat, double? lng) async => calls.add('me');
 }
 
 const fakeRudyMapKey = Key('fake-rudy-map');
 
 /// Overrides that keep the Rudy providers away from the file system and the platform view.
-List<Override> rudyTestOverrides({FakeRudyInstaller? installer, FakeMapHandle? handle}) {
+List<Override> rudyTestOverrides({FakeRudyInstaller? installer, FakeMapHandle? handle, bool demInstalled = false}) {
   final fake = installer ?? FakeRudyInstaller();
+  var created = false;
   return [
     rudyInstallerProvider.overrideWith((ref) async => fake),
     rudyReadyProvider.overrideWith((ref) async {
       ref.watch(rudyInstallStateProvider);
       return fake.installed;
     }),
+    rudyDemDirProvider.overrideWith((ref) async => demInstalled ? '/dem' : null),
     rudyStyleProvider.overrideWith((ref) async => (await ref.watch(rudyReadyProvider.future)) ? '{"version":8,"sources":{},"layers":[]}' : null),
     rudyMapBuilderProvider.overrideWithValue((context, style, mountains, onPeaks, onCreated) {
       final h = handle ?? FakeMapHandle();
-      WidgetsBinding.instance.addPostFrameCallback((_) => onCreated(h));
+      if (!created) {
+        created = true; // the real map reports its creation once
+        WidgetsBinding.instance.addPostFrameCallback((_) => onCreated(h));
+      }
       return GestureDetector(
         key: fakeRudyMapKey,
         behavior: HitTestBehavior.opaque,

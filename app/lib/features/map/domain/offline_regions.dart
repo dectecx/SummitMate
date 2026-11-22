@@ -13,18 +13,34 @@ class GeoBounds {
       GeoBounds(south: lat - halfSizeDeg, west: lng - halfSizeDeg, north: lat + halfSizeDeg, east: lng + halfSizeDeg);
 }
 
+/// Which tile server a region comes from.
+enum TileSource { nlsc, terrain }
+
 /// What can be downloaded for offline use.
 class OfflineRegionDef {
-  const OfflineRegionDef({required this.id, required this.name, required this.description, required this.bounds, required this.minZoom, required this.maxZoom});
+  const OfflineRegionDef({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.bounds,
+    required this.minZoom,
+    required this.maxZoom,
+    this.source = TileSource.nlsc,
+    this.tileBytes = averageTileBytes,
+  });
   final String id;
   final String name;
   final String description;
   final GeoBounds bounds;
   final int minZoom;
   final int maxZoom;
+  final TileSource source;
+
+  /// Average size of one tile of this region, for the size estimate.
+  final double tileBytes;
 
   int get estimatedTiles => countTiles(bounds, minZoom, maxZoom);
-  double get estimatedBytes => estimatedTiles * averageTileBytes;
+  double get estimatedBytes => estimatedTiles * tileBytes;
 }
 
 /// Average size of an NLSC tile, measured on a handful of samples (13 to 33 KB each).
@@ -60,8 +76,25 @@ final popularRegions = <OfflineRegionDef>[
   _area('beidawu', '北大武山', '北大武山', 22.63, 120.76, 0.08),
 ];
 
+/// Elevation data for the 3D view of the Rudy Map: terrarium tiles of the island (Mapzen/Tilezen terrain tiles on
+/// AWS open data), about 76 m per pixel at the highest zoom. Shown in the same list as the map areas.
+const terrainDem = OfflineRegionDef(
+  id: 'terrain-dem',
+  name: '3D 地形資料',
+  description: '魯地圖的 3D 立體與陰影效果需要，全台灣',
+  bounds: GeoBounds(south: 21.8, west: 119.9, north: 25.4, east: 122.1),
+  minZoom: 6,
+  maxZoom: 11,
+  source: TileSource.terrain,
+  tileBytes: 52 * 1024,
+);
+
+/// Terrarium elevation tiles on the AWS open data bucket. Note the z/x/y order.
+const terrainTileUrl = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+const terrainAttribution = '高程：Mapzen 地形圖磚（SRTM、NASADEM、JAXA AW3D30 等）';
+
 /// Everything that can be downloaded, the island first.
-final allOfflineRegions = <OfflineRegionDef>[taiwanBase, ...popularRegions];
+final allOfflineRegions = <OfflineRegionDef>[taiwanBase, ...popularRegions, terrainDem];
 
 OfflineRegionDef? offlineRegionById(String id) {
   for (final r in allOfflineRegions) {
