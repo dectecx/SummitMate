@@ -6,6 +6,7 @@ import '../../../app/router.dart';
 import '../../../core/auth/auth_state.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
+import '../../map/ui/trip_offline_hint.dart';
 import '../../trips/domain/trip_logic.dart';
 import '../../weather/ui/weather_card.dart';
 import '../domain/member_logic.dart';
@@ -74,6 +75,7 @@ class MembersView extends ConsumerWidget {
             ),
           ),
         const Divider(height: 40),
+        TripOfflineHint(trip: trip),
         WeatherCard(trip: trip),
       ],
     );

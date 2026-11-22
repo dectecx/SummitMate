@@ -70,6 +70,23 @@ OfflineRegionDef? offlineRegionById(String id) {
   return null;
 }
 
+/// The detailed area that contains a point, or null when no area covers it (the island base map still does).
+/// When several overlap, the one whose centre is closest wins.
+OfflineRegionDef? offlineRegionFor(double lat, double lng) {
+  OfflineRegionDef? best;
+  var bestDistance = double.infinity;
+  for (final r in popularRegions) {
+    final b = r.bounds;
+    if (lat < b.south || lat > b.north || lng < b.west || lng > b.east) continue;
+    final d = math.pow((b.south + b.north) / 2 - lat, 2) + math.pow((b.west + b.east) / 2 - lng, 2);
+    if (d < bestDistance) {
+      best = r;
+      bestDistance = d.toDouble();
+    }
+  }
+  return best;
+}
+
 /// Number of tiles covering [bounds] for zoom levels [minZoom] to [maxZoom] (standard web-mercator tile grid).
 int countTiles(GeoBounds bounds, int minZoom, int maxZoom) {
   var total = 0;

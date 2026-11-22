@@ -149,4 +149,25 @@ void main() {
     expect((await real(tester, () => app.db.select(app.db.trips).getSingle())).mountainId, 'xueshan-main');
     await app.dispose(tester);
   });
+
+  testWidgets('a trip with a main mountain reminds to download that area and can start it', (tester) async {
+    final app = await AppHarness.start(
+      tester,
+      welcomeSeen: true,
+      overrides: [exploreApiProvider.overrideWithValue(FakeExploreApi(payloadOf(_list))), clockProvider.overrideWithValue(() => DateTime(2026, 5, 10, 9))],
+    );
+    await act(tester, () => app.container.read(tripRepositoryProvider).create(name: '離線提醒', start: DateTime(2026, 5, 10), mountainId: 'yushan-main'));
+    await settle(tester);
+    await tapText(tester, '離線提醒');
+    await tapText(tester, '成員與天氣');
+    expect(find.byKey(const ValueKey('trip-offline-hint')), findsOneWidget);
+    expect(find.textContaining('出發前先下載「玉山」離線地圖'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('trip-offline-download')));
+    await settle(tester);
+    final rows = await real(tester, () => app.db.select(app.db.offlineRegions).get());
+    expect(rows.map((r) => r.id), ['yushan']);
+    expect(find.byKey(const ValueKey('trip-offline-download')), findsNothing, reason: 'the button goes away once queued');
+    await app.dispose(tester);
+  });
 }
