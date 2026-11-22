@@ -56,7 +56,7 @@ class FakeMapHandle implements MapHandle {
   @override
   Future<void> moveTo(double lat, double lng, {double? minZoom}) async => calls.add('move');
   @override
-  Future<void> setTilt(double degrees) async => calls.add('tilt:$degrees');
+  Future<void> setTilt(double degrees, {double? minZoom}) async => calls.add('tilt:$degrees');
   @override
   Future<void> setMe(double? lat, double? lng) async => calls.add('me');
 }

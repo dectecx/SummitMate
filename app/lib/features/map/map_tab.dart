@@ -190,7 +190,7 @@ class _MapTabState extends ConsumerState<MapTab> {
                       tooltip: _tilted ? '平面視角' : '3D 視角',
                       onPressed: () {
                         setState(() => _tilted = !_tilted);
-                        _rudy?.setTilt(_tilted ? 60 : 0);
+                        _rudy?.setTilt(_tilted ? 72 : 0, minZoom: _tilted ? 12 : null);
                       },
                       icon: Icon(_tilted ? Icons.map_outlined : Icons.terrain),
                     ),

@@ -175,7 +175,7 @@ void main() {
       expect(find.textContaining('Mapzen'), findsOneWidget, reason: 'the elevation data is credited');
       await tester.tap(find.byTooltip('3D 視角'));
       await settle(tester);
-      expect(handle.calls, contains('tilt:60.0'));
+      expect(handle.calls, contains('tilt:72.0'));
       await tester.tap(find.byTooltip('平面視角'));
       await settle(tester);
       expect(handle.calls, contains('tilt:0.0'));
