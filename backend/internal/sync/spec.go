@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 
@@ -42,6 +43,9 @@ const (
 	accessShared                 // trip content: owner or guide
 	accessPersonal               // belongs to one member (user_id)
 	accessOwner                  // belongs to one user (user_id), no trip involved
+	accessAuthor                 // trip_messages: member-written, author edits, author or editor deletes
+	accessOption                 // poll_options: editors, or members for options they created
+	accessVote                   // poll_votes: deterministic id, only the voter writes
 )
 
 type entity struct {
@@ -116,6 +120,80 @@ var entities = map[string]entity{
 		"note":  {kind: kText},
 		"items": {kind: kText},
 	}},
+	"trip_messages": {table: "trip_messages", access: accessAuthor, validate: validateMessage, cols: map[string]column{
+		"trip_id":   {kind: kUUID, required: true, immutable: true},
+		"parent_id": {kind: kUUID, nullable: true, immutable: true},
+		"body":      {kind: kText, required: true},
+	}},
+	"polls": {table: "polls", access: accessShared, validate: validatePoll, cols: map[string]column{
+		"trip_id":          {kind: kUUID, required: true, immutable: true},
+		"title":            {kind: kText, required: true},
+		"description":      {kind: kText},
+		"deadline":         {kind: kTime, nullable: true},
+		"allow_multiple":   {kind: kBool},
+		"allow_add_option": {kind: kBool},
+		"blind":            {kind: kBool},
+		"status":           {kind: kText},
+	}},
+	"poll_options": {table: "poll_options", access: accessOption, validate: validatePollOption, cols: map[string]column{
+		"poll_id":    {kind: kUUID, required: true, immutable: true},
+		"trip_id":    {kind: kUUID, required: true, immutable: true},
+		"text":       {kind: kText, required: true},
+		"sort_order": {kind: kInt},
+	}},
+	"poll_votes": {table: "poll_votes", access: accessVote, cols: map[string]column{
+		"poll_id":   {kind: kUUID, required: true, immutable: true},
+		"option_id": {kind: kUUID, required: true, immutable: true},
+		"trip_id":   {kind: kUUID, required: true, immutable: true},
+	}},
+	"favorites": {table: "favorites", access: accessOwner, validate: validateFavorite, cols: map[string]column{
+		"kind":      {kind: kText, required: true, immutable: true},
+		"target_id": {kind: kText, required: true, immutable: true},
+	}},
+}
+
+// textLen reports whether v (if present as a string) has 1..max characters.
+func textLen(vals map[string]any, key string, max int) bool {
+	s, ok := vals[key].(string)
+	if !ok {
+		return true
+	}
+	n := utf8.RuneCountInString(s)
+	return n >= 1 && n <= max
+}
+
+func validateMessage(vals map[string]any) string {
+	if !textLen(vals, "body", 1000) {
+		return "留言內容需為 1～1000 字"
+	}
+	return ""
+}
+
+func validatePoll(vals map[string]any) string {
+	if !textLen(vals, "title", 200) {
+		return "投票標題需為 1～200 字"
+	}
+	if st, ok := vals["status"].(string); ok && st != "open" && st != "closed" {
+		return "status must be open or closed"
+	}
+	return ""
+}
+
+func validatePollOption(vals map[string]any) string {
+	if !textLen(vals, "text", 100) {
+		return "選項需為 1～100 字"
+	}
+	return ""
+}
+
+func validateFavorite(vals map[string]any) string {
+	if k, ok := vals["kind"].(string); ok && k != "mountain" {
+		return "kind must be mountain"
+	}
+	if !textLen(vals, "target_id", 100) {
+		return "target_id must be 1 to 100 characters"
+	}
+	return ""
 }
 
 // validateLibraryItem checks library_items values.
@@ -137,7 +215,8 @@ func validateTemplate(vals map[string]any) string {
 }
 
 // pullOrder is the order entities are returned (parents before children).
-var pullOrder = []string{"trips", "trip_members", "itinerary_items", "meal_plan_days", "gear_items", "meal_items", "library_items", "templates"}
+var pullOrder = []string{"trips", "trip_members", "itinerary_items", "meal_plan_days", "gear_items", "meal_items", "library_items", "templates",
+	"trip_messages", "polls", "poll_options", "poll_votes", "favorites"}
 
 // memberNamespace seeds deterministic trip_members IDs:
 // id = UUIDv5(memberNamespace, "<trip_id>:<user_id>"). Clients must use the same rule,
@@ -147,6 +226,16 @@ var memberNamespace = uuid.MustParse("6f1c2a52-6d3a-4f5e-9d9a-3b9d8c0a7e11")
 // MemberID returns the deterministic trip_members ID for a (trip, user) pair.
 func MemberID(tripID, userID uuid.UUID) uuid.UUID {
 	return uuid.NewSHA1(memberNamespace, []byte(tripID.String()+":"+userID.String()))
+}
+
+// voteNamespace seeds deterministic poll_votes IDs:
+// id = UUIDv5(voteNamespace, "<option_id>:<user_id>"). Clients must use the same rule,
+// so retracting and re-voting reuses one row.
+var voteNamespace = uuid.MustParse("b3a7d1f4-2c58-4e0a-8f6b-5d1e9c3a7b42")
+
+// VoteID returns the deterministic poll_votes ID for an (option, user) pair.
+func VoteID(optionID, userID uuid.UUID) uuid.UUID {
+	return uuid.NewSHA1(voteNamespace, []byte(optionID.String()+":"+userID.String()))
 }
 
 // coerce converts a decoded JSON value to the Go type pgx should bind for c.

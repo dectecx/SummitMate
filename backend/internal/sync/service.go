@@ -88,6 +88,17 @@ var pullQueries = map[string]string{
 		WHERE t.user_id = $1 AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
 	"templates": `SELECT updated_at, to_jsonb(t) FROM templates t
 		WHERE t.user_id = $1 AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
+	// Trip discussion is shared with all active members and vanishes with the trip or the membership.
+	"trip_messages": `SELECT t.updated_at, to_jsonb(t) FROM trip_messages t
+		WHERE t.trip_id IN ` + activeTrips + ` AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
+	"polls": `SELECT t.updated_at, to_jsonb(t) FROM polls t
+		WHERE t.trip_id IN ` + activeTrips + ` AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
+	"poll_options": `SELECT t.updated_at, to_jsonb(t) FROM poll_options t
+		WHERE t.trip_id IN ` + activeTrips + ` AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
+	"poll_votes": `SELECT t.updated_at, to_jsonb(t) FROM poll_votes t
+		WHERE t.trip_id IN ` + activeTrips + ` AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
+	"favorites": `SELECT updated_at, to_jsonb(t) FROM favorites t
+		WHERE t.user_id = $1 AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
 }
 
 // Pull returns rows changed after since (all rows when since is nil).
@@ -268,7 +279,7 @@ type existing struct {
 	found   bool
 	deleted bool
 	tripID  uuid.UUID
-	userID  uuid.UUID // personal rows: the owner; trip_members: the member
+	userID  uuid.UUID // personal rows: the owner; trip_members: the member; poll_options: the creator
 	role    string    // trip_members only
 }
 
@@ -284,7 +295,10 @@ func loadExisting(ctx context.Context, tx pgx.Tx, e entity, id uuid.UUID) (exist
 			Scan(&ex.tripID, &ex.userID, &ex.role, &deletedAt)
 	case accessShared:
 		err = tx.QueryRow(ctx, `SELECT trip_id, deleted_at FROM `+e.table+` WHERE id = $1 FOR UPDATE`, id).Scan(&ex.tripID, &deletedAt)
-	case accessPersonal:
+	case accessOption:
+		err = tx.QueryRow(ctx, `SELECT trip_id, created_by, deleted_at FROM `+e.table+` WHERE id = $1 FOR UPDATE`, id).
+			Scan(&ex.tripID, &ex.userID, &deletedAt)
+	case accessPersonal, accessAuthor, accessVote:
 		err = tx.QueryRow(ctx, `SELECT trip_id, user_id, deleted_at FROM `+e.table+` WHERE id = $1 FOR UPDATE`, id).
 			Scan(&ex.tripID, &ex.userID, &deletedAt)
 	case accessOwner:
@@ -334,8 +348,15 @@ func canWrite(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, ex exi
 		return isEditor(role), nil
 	case accessShared:
 		return isEditor(role), nil
-	case accessPersonal:
+	case accessPersonal, accessVote:
 		return role != "" && ex.userID == userID, nil
+	case accessAuthor:
+		if forDelete && isEditor(role) {
+			return true, nil
+		}
+		return role != "" && ex.userID == userID, nil
+	case accessOption:
+		return isEditor(role) || (role != "" && ex.userID == userID), nil
 	case accessMember:
 		if ex.role == "owner" {
 			return false, nil // the owner's membership is never edited or removed through sync
@@ -367,8 +388,8 @@ func applyDelete(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op 
 }
 
 func applyUpsert(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op Op, ex existing) (Result, error) {
-	// Revive: re-inviting a removed member reuses the same deterministic row.
-	revive := e.access == accessMember && ex.found && ex.deleted
+	// Revive: re-inviting a removed member (or re-casting a retracted vote) reuses the same deterministic row.
+	revive := (e.access == accessMember || e.access == accessVote) && ex.found && ex.deleted
 	if ex.found && ex.deleted && !revive {
 		return Result{Status: StatusGone}, nil
 	}
@@ -416,7 +437,14 @@ func updateRow(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op Op
 	if !ok {
 		return forbidden("not allowed to modify this item")
 	}
-	if e.access == accessMember && !revive && len(vals) == 0 {
+	if revive && e.access == accessVote {
+		if msg, err := voteTargetProblem(ctx, tx, op.EntityID); err != nil {
+			return Result{}, err
+		} else if msg != "" {
+			return invalid(msg)
+		}
+	}
+	if (e.access == accessMember || e.access == accessVote) && !revive && len(vals) == 0 {
 		row, err := rowJSON(ctx, tx, e, op.EntityID)
 		return Result{Status: StatusApplied, Row: row}, err
 	}
@@ -458,11 +486,13 @@ func insertRow(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op Op
 	forced := map[string]any{"id": op.EntityID, "created_by": userID, "updated_by": userID}
 
 	var tripID uuid.UUID
+	var role string
 	if e.access == accessOwner {
 		forced["user_id"] = userID
 	} else if e.access != accessRoot {
 		tripID = vals["trip_id"].(uuid.UUID)
-		role, err := tripRole(ctx, tx, tripID, userID)
+		var err error
+		role, err = tripRole(ctx, tx, tripID, userID)
 		if err != nil {
 			return Result{}, err
 		}
@@ -471,11 +501,15 @@ func insertRow(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op Op
 			if !isEditor(role) {
 				return forbidden("not allowed to add to this trip")
 			}
-		case accessPersonal:
+		case accessPersonal, accessAuthor, accessVote:
 			if role == "" {
 				return forbidden("not a member of this trip")
 			}
 			forced["user_id"] = userID
+		case accessOption:
+			if role == "" {
+				return forbidden("not a member of this trip")
+			}
 		}
 	}
 
@@ -498,6 +532,9 @@ func insertRow(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op Op
 		if err != nil {
 			return Result{}, err
 		}
+	}
+	if res, done, err := insertChecks(ctx, tx, userID, e, op, tripID, role, vals); err != nil || done {
+		return res, err
 	}
 	if e.access == accessPersonal && op.Entity == "meal_items" {
 		var one int

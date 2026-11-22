@@ -220,19 +220,26 @@ func (e SharedVisibility) Valid() bool {
 
 // Defines values for SyncEntity.
 const (
+	Favorites      SyncEntity = "favorites"
 	GearItems      SyncEntity = "gear_items"
 	ItineraryItems SyncEntity = "itinerary_items"
 	LibraryItems   SyncEntity = "library_items"
 	MealItems      SyncEntity = "meal_items"
 	MealPlanDays   SyncEntity = "meal_plan_days"
+	PollOptions    SyncEntity = "poll_options"
+	PollVotes      SyncEntity = "poll_votes"
+	Polls          SyncEntity = "polls"
 	Templates      SyncEntity = "templates"
 	TripMembers    SyncEntity = "trip_members"
+	TripMessages   SyncEntity = "trip_messages"
 	Trips          SyncEntity = "trips"
 )
 
 // Valid indicates whether the value is a known member of the SyncEntity enum.
 func (e SyncEntity) Valid() bool {
 	switch e {
+	case Favorites:
+		return true
 	case GearItems:
 		return true
 	case ItineraryItems:
@@ -243,9 +250,17 @@ func (e SyncEntity) Valid() bool {
 		return true
 	case MealPlanDays:
 		return true
+	case PollOptions:
+		return true
+	case PollVotes:
+		return true
+	case Polls:
+		return true
 	case Templates:
 		return true
 	case TripMembers:
+		return true
+	case TripMessages:
 		return true
 	case Trips:
 		return true

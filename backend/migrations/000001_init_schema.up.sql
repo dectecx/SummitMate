@@ -216,6 +216,90 @@ CREATE TABLE templates (
 
 CREATE INDEX idx_templates_user_updated ON templates(user_id, updated_at);
 
+-- Trip discussion. Rows are shared by all active members of the trip (trip_id); user_id is the
+-- author / voter and is forced to the pushing user. Row-level rules live in the sync service.
+-- parent_id allows one level of replies only (the parent itself has no parent).
+CREATE TABLE trip_messages (
+    id         UUID PRIMARY KEY,
+    trip_id    UUID          NOT NULL REFERENCES trips(id),
+    user_id    UUID          NOT NULL REFERENCES users(id),
+    parent_id  UUID          REFERENCES trip_messages(id),
+    body       VARCHAR(1000) NOT NULL CHECK (char_length(body) >= 1),
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ   NOT NULL DEFAULT clock_timestamp(),
+    created_by UUID          NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ   NOT NULL DEFAULT clock_timestamp(),
+    updated_by UUID          NOT NULL REFERENCES users(id)
+);
+
+CREATE INDEX idx_trip_messages_trip_updated ON trip_messages(trip_id, updated_at);
+
+CREATE TABLE polls (
+    id               UUID PRIMARY KEY,
+    trip_id          UUID         NOT NULL REFERENCES trips(id),
+    title            VARCHAR(200) NOT NULL CHECK (char_length(title) >= 1),
+    description      TEXT         NOT NULL DEFAULT '',
+    deadline         TIMESTAMPTZ,
+    allow_multiple   BOOLEAN      NOT NULL DEFAULT FALSE,
+    allow_add_option BOOLEAN      NOT NULL DEFAULT FALSE,
+    blind            BOOLEAN      NOT NULL DEFAULT FALSE,
+    status           VARCHAR(10)  NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed')),
+    deleted_at       TIMESTAMPTZ,
+    created_at       TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    created_by       UUID         NOT NULL REFERENCES users(id),
+    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    updated_by       UUID         NOT NULL REFERENCES users(id)
+);
+
+CREATE INDEX idx_polls_trip_updated ON polls(trip_id, updated_at);
+
+CREATE TABLE poll_options (
+    id         UUID PRIMARY KEY,
+    poll_id    UUID         NOT NULL REFERENCES polls(id),
+    trip_id    UUID         NOT NULL REFERENCES trips(id),
+    text       VARCHAR(100) NOT NULL CHECK (char_length(text) >= 1),
+    sort_order INT          NOT NULL DEFAULT 0,
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    created_by UUID         NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    updated_by UUID         NOT NULL REFERENCES users(id)
+);
+
+CREATE INDEX idx_poll_options_trip_updated ON poll_options(trip_id, updated_at);
+
+-- One user's vote for one option. id = UUIDv5(voteNamespace, "<option_id>:<user_id>"), so
+-- re-voting revives the same row; deleted_at means the vote was retracted.
+CREATE TABLE poll_votes (
+    id         UUID PRIMARY KEY,
+    poll_id    UUID        NOT NULL REFERENCES polls(id),
+    option_id  UUID        NOT NULL REFERENCES poll_options(id),
+    trip_id    UUID        NOT NULL REFERENCES trips(id),
+    user_id    UUID        NOT NULL REFERENCES users(id),
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    created_by UUID        NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    updated_by UUID        NOT NULL REFERENCES users(id)
+);
+
+CREATE INDEX idx_poll_votes_trip_updated ON poll_votes(trip_id, updated_at);
+
+-- Favorites: personal, belongs to no trip. target_id is the mountain id for kind 'mountain'.
+CREATE TABLE favorites (
+    id         UUID PRIMARY KEY,
+    user_id    UUID         NOT NULL REFERENCES users(id),
+    kind       VARCHAR(20)  NOT NULL CHECK (kind IN ('mountain')),
+    target_id  VARCHAR(100) NOT NULL CHECK (char_length(target_id) >= 1),
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    created_by UUID         NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    updated_by UUID         NOT NULL REFERENCES users(id)
+);
+
+CREATE INDEX idx_favorites_user_updated ON favorites(user_id, updated_at);
+
 CREATE TRIGGER trg_trips_updated_at           BEFORE INSERT OR UPDATE ON trips           FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_trip_members_updated_at    BEFORE INSERT OR UPDATE ON trip_members    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_itinerary_items_updated_at BEFORE INSERT OR UPDATE ON itinerary_items FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -224,6 +308,11 @@ CREATE TRIGGER trg_meal_plan_days_updated_at  BEFORE INSERT OR UPDATE ON meal_pl
 CREATE TRIGGER trg_meal_items_updated_at      BEFORE INSERT OR UPDATE ON meal_items      FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_library_items_updated_at   BEFORE INSERT OR UPDATE ON library_items   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_templates_updated_at       BEFORE INSERT OR UPDATE ON templates       FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_trip_messages_updated_at BEFORE INSERT OR UPDATE ON trip_messages FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_polls_updated_at BEFORE INSERT OR UPDATE ON polls FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_poll_options_updated_at BEFORE INSERT OR UPDATE ON poll_options FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_poll_votes_updated_at BEFORE INSERT OR UPDATE ON poll_votes FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_favorites_updated_at BEFORE INSERT OR UPDATE ON favorites FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Idempotency record for POST /sync/push.
 CREATE TABLE processed_ops (
