@@ -1,6 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../features/events/ui/applications_page.dart';
+import '../features/events/ui/event_detail_page.dart';
+import '../features/events/ui/event_form_page.dart';
 import '../features/library/ui/library_page.dart';
 import '../features/library/ui/shared_set_detail_page.dart';
 import '../features/library/ui/shared_sets_page.dart';
@@ -26,6 +29,10 @@ abstract final class Routes {
   static const offlineMaps = '/map/offline';
   static const explore = '/explore';
   static String mountain(String id) => '/explore/$id';
+  static const eventNew = '/explore/events/new';
+  static String event(String id) => '/explore/events/$id';
+  static String eventEdit(String id) => '/explore/events/$id/edit';
+  static String eventApplications(String id) => '/explore/events/$id/applications';
   static const me = '/me';
   static const help = '/me/help';
   static const library = '/me/library';
@@ -79,7 +86,19 @@ GoRouter buildRouter({required String initialLocation}) {
               GoRoute(
                 path: Routes.explore,
                 builder: (_, _) => const ExploreTab(),
-                routes: [GoRoute(path: ':id', builder: (_, s) => MountainDetailPage(mountainId: s.pathParameters['id']!))],
+                routes: [
+                  // Group events first: `events/new` must not be taken for a mountain id.
+                  GoRoute(path: 'events/new', builder: (_, _) => const EventFormPage()),
+                  GoRoute(
+                    path: 'events/:id',
+                    builder: (_, s) => EventDetailPage(eventId: s.pathParameters['id']!),
+                    routes: [
+                      GoRoute(path: 'edit', builder: (_, s) => EventFormPage(eventId: s.pathParameters['id'])),
+                      GoRoute(path: 'applications', builder: (_, s) => ApplicationsPage(eventId: s.pathParameters['id']!)),
+                    ],
+                  ),
+                  GoRoute(path: ':id', builder: (_, s) => MountainDetailPage(mountainId: s.pathParameters['id']!)),
+                ],
               ),
             ],
           ),

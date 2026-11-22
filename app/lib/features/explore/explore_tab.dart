@@ -5,10 +5,14 @@ import 'package:material_ui/material_ui.dart';
 import '../../app/router.dart';
 import '../../core/ads/ads.dart';
 import '../../shared/coming_soon.dart';
+import '../events/ui/event_widgets.dart';
+import '../events/ui/events_view.dart';
 import 'domain/mountain_models.dart';
 import 'providers.dart';
 
-/// "探索": browse and search mountains.
+enum _Segment { mountains, events }
+
+/// "探索": browse and search mountains, or group events.
 class ExploreTab extends ConsumerStatefulWidget {
   const ExploreTab({super.key});
 
@@ -19,6 +23,7 @@ class ExploreTab extends ConsumerStatefulWidget {
 class _ExploreTabState extends ConsumerState<ExploreTab> {
   final _search = TextEditingController();
   MountainFilter _filter = MountainFilter.all;
+  _Segment _segment = _Segment.mountains;
 
   @override
   void dispose() {
@@ -28,16 +33,42 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(mountainsProvider).value ?? const MountainsLoading();
     return Scaffold(
       appBar: AppBar(title: const Text('探索')),
       bottomNavigationBar: const AdBannerSlot(),
-      body: switch (state) {
-        MountainsLoading() => const Center(child: CircularProgressIndicator()),
-        MountainsUnavailable() => ComingSoon(icon: Icons.cloud_off_outlined, message: '第一次使用需要連上網路載入山岳資料。\n連線後再回來看看。'),
-        MountainsReady(:final data, :final refreshFailed) => _content(data, refreshFailed),
-      },
+      floatingActionButton: _segment == _Segment.events
+          ? FloatingActionButton.extended(key: const ValueKey('events-create'), onPressed: () => openCreateEvent(context, ref), icon: const Icon(Icons.add), label: const Text('建立揪團'))
+          : null,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: SegmentedButton<_Segment>(
+              key: const ValueKey('explore-segment'),
+              showSelectedIcon: false,
+              segments: const [ButtonSegment(value: _Segment.mountains, label: Text('山岳')), ButtonSegment(value: _Segment.events, label: Text('揪團'))],
+              selected: {_segment},
+              onSelectionChanged: (s) => setState(() => _segment = s.first),
+            ),
+          ),
+          Expanded(
+            child: switch (_segment) {
+              _Segment.mountains => _mountains(),
+              _Segment.events => const EventsView(),
+            },
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _mountains() {
+    final state = ref.watch(mountainsProvider).value ?? const MountainsLoading();
+    return switch (state) {
+      MountainsLoading() => const Center(child: CircularProgressIndicator()),
+      MountainsUnavailable() => ComingSoon(icon: Icons.cloud_off_outlined, message: '第一次使用需要連上網路載入山岳資料。\n連線後再回來看看。'),
+      MountainsReady(:final data, :final refreshFailed) => _content(data, refreshFailed),
+    };
   }
 
   Widget _content(MountainList data, bool refreshFailed) {
