@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:summitmate/core/auth/auth_api.dart';
 import 'package:summitmate/core/providers.dart';
 import 'package:summitmate/core/sync/local_store.dart';
+import 'package:summitmate/core/sync/sync_coordinator.dart';
 import 'package:summitmate/core/sync/sync_entity.dart';
+import 'package:summitmate/features/members/data/trip_owner_api.dart';
 import 'package:summitmate/features/members/data/user_search_api.dart';
 import 'package:summitmate/features/members/domain/member_logic.dart';
 import 'package:summitmate/features/members/providers.dart';
@@ -20,6 +23,24 @@ class FakeSearch implements UserSearchApi {
   final users = <String, FoundUser>{'bob@x.co': const FoundUser(id: 'bob-id', displayName: 'Bob', avatar: '🦊')};
   @override
   Future<List<FoundUser>> findByEmail(String email) async => [if (users[email] != null) users[email]!];
+}
+
+/// The harness has no network, so syncing is a no-op here.
+class NoSync implements SyncCoordinator {
+  @override
+  Future<void> refresh() async {}
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
+}
+
+class FakeOwnerApi implements TripOwnerApi {
+  final calls = <String>[];
+  Object? failWith;
+  @override
+  Future<void> transfer(String tripId, String newOwnerId) async {
+    if (failWith != null) throw failWith!;
+    calls.add('$tripId>$newOwnerId');
+  }
 }
 
 class FakeWeather implements WeatherApi {
@@ -39,7 +60,7 @@ class FakeWeather implements WeatherApi {
 
 final _now = DateTime(2026, 5, 10, 9);
 
-Future<AppHarness> start(WidgetTester tester, {bool signedIn = true, FakeWeather? weather, FakeSearch? search}) async {
+Future<AppHarness> start(WidgetTester tester, {bool signedIn = true, FakeWeather? weather, FakeSearch? search, FakeOwnerApi? owner}) async {
   final app = await AppHarness.start(
     tester,
     welcomeSeen: true,
@@ -48,6 +69,8 @@ Future<AppHarness> start(WidgetTester tester, {bool signedIn = true, FakeWeather
       clockProvider.overrideWithValue(() => _now),
       userSearchApiProvider.overrideWithValue(search ?? FakeSearch()),
       weatherApiProvider.overrideWithValue(weather ?? FakeWeather()),
+      tripOwnerApiProvider.overrideWithValue(owner ?? FakeOwnerApi()),
+      syncCoordinatorProvider.overrideWithValue(NoSync()),
     ],
   );
   if (signedIn) await real(tester, () => app.container.read(authRepositoryProvider).login(email: 'a@x.co', password: 'Passw0rd1'));
@@ -224,6 +247,45 @@ void main() {
     await tapText(tester, '新增');
     final row = (await real(tester, () => app.db.select(app.db.itineraryItems).get())).single;
     expect([row.lat, row.lng], [23.4, 121.0]);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the owner can hand the trip to a member, and sees why when it fails', (tester) async {
+    final owner = FakeOwnerApi();
+    final app = await start(tester, owner: owner);
+    final store = LocalStore(app.db);
+    await act(tester, () async {
+      await store.upsertFromServer(tripsEntity, tripRow('t1', name: '移交', ownerId: 'id-a', start: '2026-05-10'));
+      for (final m in [('mo', 'id-a', 'owner', 'Anna'), ('mm', 'm1', 'member', 'Mia')]) {
+        await store.upsertFromServer(tripMembersEntity, {'id': m.$1, 'trip_id': 't1', 'user_id': m.$2, 'role': m.$3, 'display_name': m.$4, 'avatar': '🐻'});
+      }
+    });
+    await settle(tester);
+    await tapText(tester, '移交');
+    await tapText(tester, '成員與天氣');
+
+    await tester.tap(find.byTooltip('管理 Mia'));
+    await settle(tester);
+    await tapText(tester, '移交團長');
+    expect(find.textContaining('Mia 會成為團長'), findsOneWidget);
+    await tapText(tester, '取消');
+    expect(owner.calls, isEmpty);
+
+    owner.failWith = const AuthNetworkException('connectionError');
+    await tester.tap(find.byTooltip('管理 Mia'));
+    await settle(tester);
+    await tapText(tester, '移交團長');
+    await tapText(tester, '移交');
+    expect(find.textContaining('移交團長需要網路'), findsOneWidget);
+
+    owner.failWith = null;
+    await tester.pump(const Duration(seconds: 5));
+    await tester.tap(find.byTooltip('管理 Mia'));
+    await settle(tester);
+    await tapText(tester, '移交團長');
+    await tapText(tester, '移交');
+    expect(owner.calls, ['t1>m1']);
+    expect(find.text('已把團長交給 Mia'), findsOneWidget);
     await app.dispose(tester);
   });
 }

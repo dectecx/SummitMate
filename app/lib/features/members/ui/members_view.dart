@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/router.dart';
+import '../../../core/auth/auth_api.dart';
 import '../../../core/auth/auth_state.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
@@ -103,6 +104,8 @@ class _MemberTile extends ConsumerWidget {
                 switch (v) {
                   case 'guide' || 'member':
                     await repo.setRole(trip.id, line.userId, v);
+                  case 'transfer':
+                    await _transfer(context, ref, trip, line);
                   case 'remove':
                     final ok = await _confirm(context, title: '移除 ${line.displayName}？', message: '對方會失去這個行程，也看不到之後的更新。', action: '移除');
                     if (ok == true) await repo.remove(trip.id, line.userId);
@@ -111,11 +114,35 @@ class _MemberTile extends ConsumerWidget {
               itemBuilder: (_) => [
                 if (line.role != TripRole.guide && myRole == TripRole.owner) const PopupMenuItem(value: 'guide', child: Text('設為嚮導')),
                 if (line.role != TripRole.member) const PopupMenuItem(value: 'member', child: Text('設為隊員')),
+                if (myRole == TripRole.owner && ref.watch(authStateProvider).value is SignedIn) const PopupMenuItem(value: 'transfer', child: Text('移交團長')),
                 const PopupMenuItem(value: 'remove', child: Text('移除成員')),
               ],
             )
           : null,
     );
+  }
+}
+
+/// Online only: pushes pending changes first (the server must know the trip and the member), then hands over.
+Future<void> _transfer(BuildContext context, WidgetRef ref, Trip trip, MemberLine to) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final ok = await _confirm(
+    context,
+    title: '把團長交給 ${to.displayName}？',
+    message: '${to.displayName} 會成為團長，你會變成嚮導：仍可編輯行程，但不能刪除行程或移交團長。需要連上網路。',
+    action: '移交',
+  );
+  if (ok != true) return;
+  final sync = ref.read(syncCoordinatorProvider);
+  try {
+    await sync.refresh();
+    await ref.read(tripOwnerApiProvider).transfer(trip.id, to.userId);
+    await sync.refresh();
+    messenger.showSnackBar(SnackBar(content: Text('已把團長交給 ${to.displayName}')));
+  } on AuthNetworkException {
+    messenger.showSnackBar(const SnackBar(content: Text('目前無法連線，移交團長需要網路。')));
+  } on AuthException catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(e.message.isNotEmpty ? e.message : '移交失敗（${e.code}）')));
   }
 }
 
