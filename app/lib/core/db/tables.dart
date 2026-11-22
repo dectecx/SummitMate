@@ -71,6 +71,34 @@ class GearItems extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// A reusable item of the person's own library: a piece of gear or a food they use often.
+class LibraryItems extends Table {
+  TextColumn get id => text()();
+  // 'gear' or 'meal'
+  TextColumn get kind => text()();
+  TextColumn get name => text().withDefault(const Constant(''))();
+  // Gear: a GearCategory key. Meal: a MealType key.
+  TextColumn get category => text().withDefault(const Constant('other'))();
+  RealColumn get weight => real().withDefault(const Constant(0))();
+  RealColumn get calories => real().withDefault(const Constant(0))();
+  TextColumn get note => text().withDefault(const Constant(''))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// A saved packing list and meal plan the person can apply to any trip. `items` is a JSON array
+/// (see features/library/domain/set_item.dart).
+class Templates extends Table {
+  TextColumn get id => text()();
+  TextColumn get title => text().withDefault(const Constant(''))();
+  TextColumn get note => text().withDefault(const Constant(''))();
+  TextColumn get items => text().withDefault(const Constant('[]'))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 class MealPlanDays extends Table {
   TextColumn get id => text()();
   TextColumn get tripId => text().references(Trips, #id, onDelete: KeyAction.cascade)();

@@ -20,7 +20,7 @@ void main() {
   });
 
   test('every Drift sync table has a descriptor', () {
-    final synced = {'trips', 'trip_members', 'itinerary_items', 'gear_items', 'meal_plan_days', 'meal_items'};
+    final synced = {'trips', 'trip_members', 'itinerary_items', 'gear_items', 'meal_plan_days', 'meal_items', 'library_items', 'templates'};
     expect(syncEntities.map((e) => e.name).toSet(), synced);
     final infra = {'outbox', 'app_meta', 'app_settings', 'weather_cache', 'http_cache', 'offline_regions'};
     expect(db.allTables.map((t) => t.actualTableName).toSet(), {...synced, ...infra});

@@ -35,6 +35,8 @@ class LocalAccountStore {
   /// sync cursor, the profile). App settings are kept. Used on sign-out and account switch.
   Future<void> resetLocalData() => _db.transaction(() async {
     await _db.delete(_db.trips).go(); // children cascade
+    await _db.delete(_db.libraryItems).go();
+    await _db.delete(_db.templates).go();
     await _db.delete(_db.outbox).go();
     await (_db.update(_db.appMeta)..where((m) => m.id.equals(1))).write(
       const AppMetaCompanion(
@@ -48,7 +50,7 @@ class LocalAccountStore {
     );
     // Cascades are invisible to Drift; refresh listeners of the child tables.
     _db.notifyUpdates({
-      for (final t in <TableInfo<Table, dynamic>>[_db.tripMembers, _db.itineraryItems, _db.gearItems, _db.mealPlanDays, _db.mealItems])
+      for (final t in <TableInfo<Table, dynamic>>[_db.tripMembers, _db.itineraryItems, _db.gearItems, _db.mealPlanDays, _db.mealItems, _db.libraryItems, _db.templates])
         TableUpdate.onTable(t, kind: UpdateKind.delete),
     });
   });

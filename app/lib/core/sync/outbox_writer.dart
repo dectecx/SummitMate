@@ -15,6 +15,9 @@ import 'sync_entity.dart';
 /// Call [delete] **before** removing the local row: it needs the row to find the owning
 /// trip and the children whose pending operations must be dropped.
 class OutboxWriter {
+  /// Entities that belong to a trip (personal data such as the library has no trip).
+  static final _tripChildren = syncEntities.where((e) => e.name != 'trips' && e.columns.containsKey('trip_id')).toList();
+
   OutboxWriter(this._db, {Uuid uuid = const Uuid(), DateTime Function()? now})
     : _store = LocalStore(_db),
       _uuid = uuid,
@@ -68,7 +71,7 @@ class OutboxWriter {
       if (await _belongsToSample(entity, id, const {})) return;
       switch (entity) {
         case 'trips':
-          for (final child in syncEntities.where((e) => e.name != 'trips')) {
+          for (final child in _tripChildren) {
             for (final childId in await _store.childIds(child.name, 'trip_id', id)) {
               await _removeOps(child.name, childId);
             }
@@ -88,7 +91,7 @@ class OutboxWriter {
   /// Drops every pending operation of a trip's content (not the trip itself). Used when the person
   /// leaves a trip: whatever they had queued for it can no longer be accepted by the server.
   Future<void> dropTripWork(String tripId) => _db.transaction(() async {
-    for (final child in syncEntities.where((e) => e.name != 'trips')) {
+    for (final child in _tripChildren) {
       for (final childId in await _store.childIds(child.name, 'trip_id', tripId)) {
         await _removeOps(child.name, childId);
       }
@@ -104,7 +107,7 @@ class OutboxWriter {
     if (op == null) return;
     if (op.type == 'upsert' && op.isCreate) {
       if (op.entity == 'trips') {
-        for (final child in syncEntities.where((e) => e.name != 'trips')) {
+        for (final child in _tripChildren) {
           for (final childId in await _store.childIds(child.name, 'trip_id', op.entityId)) {
             await _removeOps(child.name, childId);
           }
@@ -160,6 +163,8 @@ class OutboxWriter {
 
   /// True when the entity lives in the bundled sample trip, which never syncs.
   Future<bool> _belongsToSample(String entity, String id, Map<String, Object?> patch) async {
+    final known = syncEntityByName[entity];
+    if (known != null && entity != 'trips' && !known.columns.containsKey('trip_id')) return false; // personal data outside any trip
     final tripId = entity == 'trips' ? id : (patch['trip_id'] as String? ?? await _store.tripIdOf(entity, id));
     return tripId != null && await _store.isSampleTrip(tripId);
   }

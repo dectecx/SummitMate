@@ -117,6 +117,27 @@ const mealItemsEntity = SyncEntity(
   },
 );
 
+const libraryItemsEntity = SyncEntity(
+  name: 'library_items',
+  columns: {
+    'kind': Col(ColType.text),
+    'name': Col(ColType.text),
+    'category': Col(ColType.text),
+    'weight': Col(ColType.real),
+    'calories': Col(ColType.real),
+    'note': Col(ColType.text),
+  },
+);
+
+const templatesEntity = SyncEntity(
+  name: 'templates',
+  columns: {
+    'title': Col(ColType.text),
+    'note': Col(ColType.text),
+    'items': Col(ColType.text),
+  },
+);
+
 /// All entities in pull/parent-first order.
 const syncEntities = <SyncEntity>[
   tripsEntity,
@@ -125,6 +146,8 @@ const syncEntities = <SyncEntity>[
   mealPlanDaysEntity,
   gearItemsEntity,
   mealItemsEntity,
+  libraryItemsEntity,
+  templatesEntity,
 ];
 
 final Map<String, SyncEntity> syncEntityByName = {for (final e in syncEntities) e.name: e};
