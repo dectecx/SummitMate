@@ -98,6 +98,22 @@ int countTiles(GeoBounds bounds, int minZoom, int maxZoom) {
   return total;
 }
 
+/// One map tile in the standard web-mercator grid.
+typedef TileId = ({int z, int x, int y});
+
+/// Every tile covering [bounds] for zoom levels [minZoom] to [maxZoom].
+Iterable<TileId> tilesFor(GeoBounds bounds, int minZoom, int maxZoom) sync* {
+  for (var z = minZoom; z <= maxZoom; z++) {
+    final x0 = _tileX(bounds.west, z), x1 = _tileX(bounds.east, z);
+    final y0 = _tileY(bounds.north, z), y1 = _tileY(bounds.south, z);
+    for (var x = x0; x <= x1; x++) {
+      for (var y = y0; y <= y1; y++) {
+        yield (z: z, x: x, y: y);
+      }
+    }
+  }
+}
+
 int _tileX(double lng, int z) => ((lng + 180) / 360 * (1 << z)).floor();
 
 int _tileY(double lat, int z) {

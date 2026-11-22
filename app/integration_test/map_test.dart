@@ -3,9 +3,10 @@
 //   flutter test integration_test/map_test.dart -d <device> --dart-define=E2E_API=http://localhost:8080/api/v1
 //
 // Needs the backend (for the mountain list) and internet access. It downloads only a handful of tiles.
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -66,10 +67,15 @@ void main() {
     final updates = await downloader.download(tiny).toList();
     expect(updates, isNotEmpty);
     expect(updates.last.done, updates.last.total);
-    final store = FMTCStore('region-device-test');
-    expect(await store.stats.length, greaterThan(0), reason: 'tiles were stored');
+    final dir = Directory('${cache.store.root.path}/device-test');
+    final files = dir.listSync(recursive: true).whereType<File>().toList();
+    expect(files.length, updates.last.total, reason: 'every tile is a file on disk');
+    expect(files.every((f) => f.lengthSync() > 0), isTrue);
+    final parts = files.first.path.split('/');
+    final y = int.parse(parts.last.split('.').first), x = int.parse(parts[parts.length - 2]), z = int.parse(parts[parts.length - 3]);
+    expect(cache.store.find(z, x, y)?.path, files.first.path, reason: 'the map finds the downloaded tile');
     await downloader.deleteTiles('device-test');
-    expect(await store.manage.ready, isFalse, reason: 'the region store is gone');
+    expect(dir.existsSync(), isFalse, reason: 'the region is gone');
 
     expect(find.byType(FlutterMap), findsOneWidget);
   });

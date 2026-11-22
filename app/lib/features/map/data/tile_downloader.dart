@@ -15,6 +15,10 @@ abstract interface class TileDownloader {
   /// as a whole. Cancelling (see [cancel]) just ends the stream.
   Stream<DownloadUpdate> download(OfflineRegionDef region);
 
+  /// Whether this region still has downloads running outside the app's own process state, for example
+  /// ones the system kept going while the app was in the background.
+  Future<bool> isRunning(String regionId);
+
   /// Stops a running download. The tiles already stored stay until [deleteTiles].
   Future<void> cancel(String regionId);
 

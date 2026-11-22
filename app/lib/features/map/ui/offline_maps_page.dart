@@ -35,7 +35,7 @@ class OfflineMapsPage extends ConsumerWidget {
                 children: [
                   Text('已下載 ${sections.done.length} 個區域，使用 ${formatBytes(sections.usedBytes)}', style: theme.textTheme.titleMedium),
                   const SizedBox(height: 8),
-                  Text('地圖來源：內政部國土測繪中心。山上沒有訊號，出發前先下載。建議使用 Wi-Fi，下載進行中請保持 App 開啟。', style: theme.textTheme.bodySmall),
+                  Text('地圖來源：內政部國土測繪中心。山上沒有訊號，出發前先下載。建議使用 Wi-Fi，下載會在背景繼續進行。', style: theme.textTheme.bodySmall),
                 ],
               ),
             ),
@@ -74,7 +74,7 @@ class _AvailableTile extends StatelessWidget {
         onPressed: () {
           manager.start(entry.def.id);
           // The row moves to the section at the top, which may be out of view: say what happened.
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已加入下載：${entry.def.name}（進度在畫面上方）')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已加入下載：${entry.def.name}（可切到背景，進度在畫面上方）')));
         },
         child: const Text('下載'),
       ),

@@ -18,7 +18,7 @@
 | 網路 | Dio + 手寫 API 類別（不用 Retrofit） |
 | 資料類別 | Dart 3 sealed class / record；序列化用 json_serializable（不用 Freezed） |
 | 導覽 | go_router |
-| 地圖 | flutter_map + flutter_map_tile_caching，離線下載管理重寫 |
+| 地圖 | flutter_map；瀏覽快取用 flutter_map_tile_caching，離線區域圖磚以檔案存放（`offline_tiles/<區域>/<z>/<x>/<y>.tile`），由 background_downloader 9.6.6 下載（系統背景傳輸，App 切到背景仍繼續） |
 | 字型/圖示 | 字型打包進 App；圖示只用 Material Icons |
 | 連線 | 不提供「離線模式」開關；以請求成敗與 connectivity_plus 作提示 |
 | 廣告 | google_mobile_ads，包在 `AdService` 後；列表/資訊頁底部橫幅，地圖與編輯頁不放，不用插頁廣告 |

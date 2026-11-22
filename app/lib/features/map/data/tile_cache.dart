@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../domain/offline_regions.dart';
+import 'background_tile_downloader.dart';
+import 'offline_tile_store.dart';
 import 'tile_downloader.dart';
 
 /// NLSC (內政部國土測繪中心) open-data e-map with contour lines. Note the z/y/x order.
@@ -17,20 +18,25 @@ abstract interface class TileCache {
   TileDownloader get downloader;
 }
 
-/// Tile cache backed by flutter_map_tile_caching: one cache store per downloaded region, so deleting a
-/// region removes only the tiles that no other region needs, plus a small 'browse' store for tiles seen
-/// while panning.
+/// Tile cache: tiles of downloaded regions are plain files (see [OfflineTileStore], filled by the background
+/// downloader); everything else is fetched from the network and kept in a small flutter_map_tile_caching
+/// 'browse' store, so tiles seen while panning also work offline for a while.
 class FmtcTileCache implements TileCache {
-  FmtcTileCache._();
+  FmtcTileCache._(this._store) : downloader = BackgroundTileDownloader(_store);
+  final OfflineTileStore _store;
+
+  /// Where downloaded region tiles are stored.
+  OfflineTileStore get store => _store;
 
   static const _browseStore = 'browse';
 
-  /// Opens the on-device tile database. Call once before the app starts.
+  /// Opens the on-device tile database and the background downloader. Call once before the app starts.
   static Future<FmtcTileCache> initialise() async {
     await FMTCObjectBoxBackend().initialise();
     final browse = const FMTCStore(_browseStore);
     if (!await browse.manage.ready) await browse.manage.create(maxLength: 8000);
-    return FmtcTileCache._();
+    await BackgroundTileDownloader.configure();
+    return FmtcTileCache._(await OfflineTileStore.open());
   }
 
   @override
@@ -38,53 +44,32 @@ class FmtcTileCache implements TileCache {
     urlTemplate: nlscTileUrl,
     userAgentPackageName: appPackageName,
     maxNativeZoom: nlscMaxNativeZoom,
-    tileProvider: FMTCTileProvider(
-      stores: const {_browseStore: BrowseStoreStrategy.readUpdateCreate},
-      otherStoresStrategy: BrowseStoreStrategy.read,
+    tileProvider: OfflineFirstTileProvider(
+      _store,
+      FMTCTileProvider(stores: const {_browseStore: BrowseStoreStrategy.readUpdateCreate}),
     ),
   );
 
   @override
-  final TileDownloader downloader = FmtcTileDownloader();
+  final TileDownloader downloader;
 }
 
-class FmtcTileDownloader implements TileDownloader {
-  static FMTCStore _store(String regionId) => FMTCStore('region-$regionId');
+/// Shows a downloaded tile from disk when there is one, otherwise defers to [_fallback] (cache, then network).
+class OfflineFirstTileProvider extends TileProvider {
+  OfflineFirstTileProvider(this._store, this._fallback);
+  final OfflineTileStore _store;
+  final TileProvider _fallback;
 
   @override
-  Stream<DownloadUpdate> download(OfflineRegionDef region) async* {
-    final store = _store(region.id);
-    if (!await store.manage.ready) await store.manage.create();
-    final b = region.bounds;
-    final downloadable = RectangleRegion(LatLngBounds(LatLng(b.south, b.west), LatLng(b.north, b.east))).toDownloadable(
-      minZoom: region.minZoom,
-      maxZoom: region.maxZoom,
-      options: TileLayer(urlTemplate: nlscTileUrl, userAgentPackageName: appPackageName, maxNativeZoom: nlscMaxNativeZoom),
-    );
-    final result = store.download.startForeground(
-      region: downloadable,
-      parallelThreads: 3,
-      rateLimit: 25, // tiles per second: polite to a public government server
-      skipExistingTiles: true, // a retry only fetches what is missing
-      instanceId: region.id,
-    );
-    DownloadProgress? last;
-    await for (final p in result.downloadProgress) {
-      last = p;
-      // FMTC reports sizes in KiB.
-      yield DownloadUpdate(done: p.attemptedTilesCount, total: p.maxTilesCount, bytes: p.successfulTilesSize * 1024);
-    }
-    final failed = last?.failedTilesCount ?? 0;
-    if (failed > 0) throw StateError('$failed 張圖磚下載失敗');
+  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
+    final file = _store.find(coordinates.z, coordinates.x, coordinates.y);
+    return file != null ? FileImage(file) : _fallback.getImage(coordinates, options);
   }
 
   @override
-  Future<void> cancel(String regionId) => _store(regionId).download.cancel(instanceId: regionId);
-
-  @override
-  Future<void> deleteTiles(String regionId) async {
-    final store = _store(regionId);
-    if (await store.manage.ready) await store.manage.delete();
+  void dispose() {
+    _fallback.dispose();
+    super.dispose();
   }
 }
 
@@ -104,6 +89,9 @@ class _NoDownloader implements TileDownloader {
 
   @override
   Stream<DownloadUpdate> download(OfflineRegionDef region) => const Stream.empty();
+
+  @override
+  Future<bool> isRunning(String regionId) async => false;
 
   @override
   Future<void> cancel(String regionId) async {}

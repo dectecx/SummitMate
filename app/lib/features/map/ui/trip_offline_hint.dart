@@ -56,7 +56,7 @@ class TripOfflineHint extends ConsumerWidget {
                   key: const ValueKey('trip-offline-download'),
                   onPressed: () {
                     ref.read(offlineManagerProvider).start(region.id);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已加入下載：${region.name}（請保持 App 開啟）')));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已加入下載：${region.name}（可切到背景繼續）')));
                   },
                   child: Text(action),
                 ),

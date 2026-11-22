@@ -13,6 +13,7 @@ class FakeDownloader implements TileDownloader {
   final started = <String>[];
   final deleted = <String>[];
   final cancelled = <String>[];
+  final running = <String>{}; // regions the system is still downloading
   final _controllers = <String, StreamController<DownloadUpdate>>{};
 
   @override
@@ -24,6 +25,9 @@ class FakeDownloader implements TileDownloader {
   void progress(String id, int done, int total, [double bytes = 0]) => _controllers[id]!.add(DownloadUpdate(done: done, total: total, bytes: bytes));
   Future<void> finish(String id) => _controllers[id]!.close();
   void fail(String id, Object error) => _controllers[id]!.addError(error);
+
+  @override
+  Future<bool> isRunning(String regionId) async => running.contains(regionId);
 
   @override
   Future<void> cancel(String regionId) async {
@@ -164,7 +168,33 @@ void main() {
     expect(fresh.started, ['xueba']);
   });
 
+  test('a download the system kept running in the background is picked up again, not marked interrupted', () async {
+    await manager.start('yushan');
+    await manager.start('xueba');
+    await settleDb();
+
+    final restartedDownloader = FakeDownloader()..running.add('yushan');
+    final restarted = OfflineMapsManager(db, restartedDownloader, now: () => DateTime(2026, 11, 23));
+    await restarted.recover();
+    await settleDb();
+    expect(restartedDownloader.started, ['yushan'], reason: 'reattached to the running one');
+    expect(await states(), {'yushan': 'downloading', 'xueba': 'interrupted'});
+
+    restartedDownloader.progress('yushan', 5, 10);
+    await restartedDownloader.finish('yushan');
+    await settleDb();
+    expect((await states())['yushan'], 'done');
+  });
+
   group('regions', () {
+    test('the tile list matches the tile count', () {
+      for (final r in allOfflineRegions) {
+        final tiles = tilesFor(r.bounds, r.minZoom, r.maxZoom).toList();
+        expect(tiles.length, r.estimatedTiles, reason: r.id);
+        expect(tiles.toSet().length, tiles.length, reason: 'no tile twice');
+      }
+    });
+
     test('tile counts match known values', () {
       expect(taiwanBase.estimatedTiles, 1589 - 0, reason: 'z8..z12 over the island, as measured in the research');
       expect(countTiles(const GeoBounds(south: 10, west: 10, north: 10.0001, east: 10.0001), 3, 3), 1);

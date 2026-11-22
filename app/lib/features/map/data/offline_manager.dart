@@ -35,9 +35,20 @@ class OfflineMapsManager {
   Future<OfflineRegion?> _row(String id) => (_db.select(_db.offlineRegions)..where((r) => r.id.equals(id))).getSingleOrNull();
 
   /// Call once at startup: anything that was queued or running when the app last stopped was cut off.
-  Future<void> recover() => (_db.update(_db.offlineRegions)..where((r) => r.state.isIn([OfflineState.queued, OfflineState.downloading]))).write(
-    OfflineRegionsCompanion(state: const Value(OfflineState.interrupted), updatedAt: Value(_now())),
-  );
+  ///
+  /// Downloads the system kept running in the background are picked up again; the rest are marked interrupted
+  /// (the person can resume them).
+  Future<void> recover() async {
+    final cut = await (_db.select(_db.offlineRegions)..where((r) => r.state.isIn([OfflineState.queued, OfflineState.downloading]))).get();
+    for (final r in cut) {
+      if (await _downloader.isRunning(r.id)) {
+        _queue.add(r.id);
+      } else {
+        await _update(r.id, state: OfflineState.interrupted);
+      }
+    }
+    unawaited(_pump());
+  }
 
   /// Queues a download (or resumes a failed or interrupted one). Already downloaded or queued regions are left alone.
   Future<void> start(String id) async {
