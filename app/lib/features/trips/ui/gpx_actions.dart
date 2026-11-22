@@ -45,7 +45,8 @@ Future<void> importGpx(BuildContext context, WidgetRef ref) async {
     router.push(Routes.trip(id));
   } on GpxFormatException catch (e) {
     messenger.showSnackBar(SnackBar(content: Text('這個檔案不是可用的 GPX：${e.message}')));
-  } on Object {
+  } on Object catch (e, st) {
+    debugPrint('GPX import failed: $e\n$st');
     messenger.showSnackBar(const SnackBar(content: Text('無法讀取這個檔案，請換一個 GPX 檔再試。')));
   }
 }
