@@ -138,6 +138,68 @@ const templatesEntity = SyncEntity(
   },
 );
 
+// Collaboration. `user_id`, `created_at`, `updated_at` and `created_by` come from the server but are
+// never uploaded (the server sets them), so repositories leave them out of patches.
+const tripMessagesEntity = SyncEntity(
+  name: 'trip_messages',
+  parents: [Parent('trip_id', 'trips')], // parent_id is deliberately not a parent: replies can arrive first
+  columns: {
+    'trip_id': Col(ColType.text),
+    'user_id': Col(ColType.text, nullable: true),
+    'parent_id': Col(ColType.text, nullable: true),
+    'body': Col(ColType.text),
+    'created_at': Col(ColType.timestamp),
+  },
+);
+
+const pollsEntity = SyncEntity(
+  name: 'polls',
+  parents: [Parent('trip_id', 'trips')],
+  columns: {
+    'trip_id': Col(ColType.text),
+    'title': Col(ColType.text),
+    'description': Col(ColType.text),
+    'deadline': Col(ColType.timestamp, nullable: true),
+    'allow_multiple': Col(ColType.boolean),
+    'allow_add_option': Col(ColType.boolean),
+    'blind': Col(ColType.boolean),
+    'status': Col(ColType.text),
+    'created_at': Col(ColType.timestamp),
+  },
+);
+
+const pollOptionsEntity = SyncEntity(
+  name: 'poll_options',
+  parents: [Parent('trip_id', 'trips'), Parent('poll_id', 'polls')],
+  columns: {
+    'poll_id': Col(ColType.text),
+    'trip_id': Col(ColType.text),
+    'text': Col(ColType.text),
+    'sort_order': Col(ColType.integer),
+    'created_by': Col(ColType.text, nullable: true),
+  },
+);
+
+const pollVotesEntity = SyncEntity(
+  name: 'poll_votes',
+  parents: [Parent('trip_id', 'trips'), Parent('poll_id', 'polls'), Parent('option_id', 'poll_options')],
+  columns: {
+    'poll_id': Col(ColType.text),
+    'option_id': Col(ColType.text),
+    'trip_id': Col(ColType.text),
+    'user_id': Col(ColType.text, nullable: true),
+    'updated_at': Col(ColType.timestamp),
+  },
+);
+
+const favoritesEntity = SyncEntity(
+  name: 'favorites',
+  columns: {
+    'kind': Col(ColType.text),
+    'target_id': Col(ColType.text),
+  },
+);
+
 /// All entities in pull/parent-first order.
 const syncEntities = <SyncEntity>[
   tripsEntity,
@@ -148,6 +210,11 @@ const syncEntities = <SyncEntity>[
   mealItemsEntity,
   libraryItemsEntity,
   templatesEntity,
+  tripMessagesEntity,
+  pollsEntity,
+  pollOptionsEntity,
+  pollVotesEntity,
+  favoritesEntity,
 ];
 
 final Map<String, SyncEntity> syncEntityByName = {for (final e in syncEntities) e.name: e};

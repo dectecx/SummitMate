@@ -9,6 +9,7 @@ import 'package:summitmate/core/sync/outbox_counts.dart';
 import 'package:summitmate/core/sync/outbox_writer.dart';
 import 'package:summitmate/core/sync/sync_entity.dart';
 import 'package:summitmate/core/sync/sync_status.dart';
+import 'package:summitmate/core/sync/vote_id.dart';
 
 import 'support.dart';
 
@@ -43,6 +44,24 @@ void main() {
       expect(await opSummary(db), ['upsert:trips/t1']);
     });
 
+    test('signing in adopts what a guest wrote: messages get the author, votes are re-keyed with their upload', () async {
+      final store = LocalStore(db);
+      await store.upsertFromServer(tripsEntity, tripRow('t1'));
+      await store.upsertFromServer(tripMessagesEntity, {'id': 'm1', 'trip_id': 't1', 'user_id': null, 'parent_id': null, 'body': 'hi', 'created_at': '2026-05-01T00:00:00Z'});
+      await store.upsertFromServer(pollsEntity, {'id': 'p1', 'trip_id': 't1', 'title': 'P', 'description': '', 'deadline': null, 'allow_multiple': false, 'allow_add_option': false, 'blind': false, 'status': 'open', 'created_at': '2026-05-01T00:00:00Z'});
+      await store.upsertFromServer(pollOptionsEntity, {'id': 'o1', 'poll_id': 'p1', 'trip_id': 't1', 'text': 'A', 'sort_order': 0, 'created_by': null});
+      final guestVote = voteIdFor('o1', guestVoterId);
+      await localCreate(db, writer, pollVotesEntity, {'id': guestVote, 'poll_id': 'p1', 'option_id': 'o1', 'trip_id': 't1', 'user_id': null, 'updated_at': '2026-05-01T00:00:00Z'});
+
+      await account.onSignedIn(alice);
+
+      final newId = voteIdFor('o1', 'alice');
+      expect((await db.select(db.tripMessages).getSingle()).userId, 'alice');
+      final vote = await db.select(db.pollVotes).getSingle();
+      expect([vote.id, vote.userId], [newId, 'alice']);
+      expect(await opSummary(db), ['upsert:poll_votes/$newId']);
+    });
+
     test('signing in again as the same account changes nothing', () async {
       await account.onSignedIn(alice);
       await localCreate(db, writer, tripsEntity, tripRow('t1'));
@@ -63,6 +82,18 @@ void main() {
       expect(await opSummary(db), isEmpty);
       final meta = await account.read();
       expect([meta.accountId, meta.syncCursor, meta.email], ['bob', null, 'b@x.co']);
+    });
+
+    test('resetting also clears messages, polls, votes and favorites', () async {
+      final store = LocalStore(db);
+      await store.upsertFromServer(tripsEntity, tripRow('t1'));
+      await store.upsertFromServer(tripMessagesEntity, {'id': 'm1', 'trip_id': 't1', 'user_id': 'u', 'parent_id': null, 'body': 'hi', 'created_at': '2026-05-01T00:00:00Z'});
+      await store.upsertFromServer(favoritesEntity, {'id': 'f1', 'kind': 'mountain', 'target_id': 'beidawu'});
+
+      await account.resetLocalData();
+
+      expect(await db.select(db.tripMessages).get(), isEmpty);
+      expect(await db.select(db.favorites).get(), isEmpty);
     });
 
     test('resetting keeps app settings and returns the device to guest mode', () async {

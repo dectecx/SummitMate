@@ -142,4 +142,69 @@ void main() {
 
     expect(seen, [1, 0]);
   });
+
+  group('collaboration rows', () {
+    Map<String, Object?> poll() => {'id': 'p1', 'trip_id': 't1', 'title': 'P', 'description': '', 'deadline': '2026-05-09T12:00:00.5+00:00', 'allow_multiple': false, 'allow_add_option': true, 'blind': true, 'status': 'open', 'created_at': '2026-05-01T00:00:00Z', 'created_by': 'u1'};
+    Map<String, Object?> option(String id) => {'id': id, 'poll_id': 'p1', 'trip_id': 't1', 'text': id, 'sort_order': 0, 'created_by': 'u2'};
+    Map<String, Object?> vote(String id, String optionId) => {'id': id, 'poll_id': 'p1', 'option_id': optionId, 'trip_id': 't1', 'user_id': 'u2', 'updated_at': '2026-05-02T00:00:00.123456+00:00'};
+
+    test('a reply that arrives before its parent is stored; the author comes from the server', () async {
+      await applier.applyPage(page({
+        'trips': [tripRow('t1', ownerId: 'u1')],
+        'trip_messages': [
+          {'id': 'r1', 'trip_id': 't1', 'user_id': 'u2', 'parent_id': 'm1', 'body': 'reply', 'created_at': '2026-05-01T00:00:05Z'},
+        ],
+      }));
+      expect(await select(db, 'SELECT id, user_id, parent_id FROM trip_messages'), [
+        {'id': 'r1', 'user_id': 'u2', 'parent_id': 'm1'},
+      ]);
+    });
+
+    test('options and votes need their parents, and deleting a poll takes them along', () async {
+      await applier.applyPage(page({
+        'trips': [tripRow('t1', ownerId: 'u1')],
+        'polls': [poll()],
+        'poll_options': [option('o1')],
+        'poll_votes': [vote('v1', 'o1'), vote('v2', 'missing')],
+      }));
+      expect(await select(db, 'SELECT id FROM poll_votes'), [
+        {'id': 'v1'},
+      ]);
+      expect((await db.select(db.polls).getSingle()).blind, isTrue);
+
+      await applier.applyPage(page({
+        'polls': [
+          {...poll(), 'deleted_at': '2026-05-03T00:00:00Z'},
+        ],
+      }));
+      expect(await select(db, 'SELECT id FROM poll_options'), isEmpty);
+      expect(await select(db, 'SELECT id FROM poll_votes'), isEmpty);
+    });
+
+    test('a vote tombstone removes the row', () async {
+      await applier.applyPage(page({
+        'trips': [tripRow('t1', ownerId: 'u1')],
+        'polls': [poll()],
+        'poll_options': [option('o1')],
+        'poll_votes': [vote('v1', 'o1')],
+      }));
+      await applier.applyPage(page({
+        'poll_votes': [
+          {...vote('v1', 'o1'), 'deleted_at': '2026-05-03T00:00:00Z'},
+        ],
+      }));
+      expect(await select(db, 'SELECT id FROM poll_votes'), isEmpty);
+    });
+
+    test('favorites have no trip and sync on their own', () async {
+      await applier.applyPage(page({
+        'favorites': [
+          {'id': 'f1', 'user_id': 'u1', 'kind': 'mountain', 'target_id': 'beidawu'},
+        ],
+      }));
+      expect(await select(db, 'SELECT kind, target_id FROM favorites'), [
+        {'kind': 'mountain', 'target_id': 'beidawu'},
+      ]);
+    });
+  });
 }

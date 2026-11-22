@@ -124,6 +124,83 @@ class MealItems extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// A message on a trip's board. `user_id` is the author as the server knows them; it is never
+/// uploaded (the server forces it to the actor). Null = written here before the person signed
+/// in; sign-in fills it in (see LocalAccountStore.onSignedIn).
+class TripMessages extends Table {
+  TextColumn get id => text()();
+  TextColumn get tripId => text().references(Trips, #id, onDelete: KeyAction.cascade)();
+  TextColumn get userId => text().nullable()();
+  // A reply points at a top-level message. Deliberately no foreign key: messages are pulled in
+  // `updated_at` order, so a reply can arrive before its parent.
+  TextColumn get parentId => text().nullable()();
+  TextColumn get body => text()();
+  // Server time (not uploaded); set from the device clock until the server's value arrives.
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class Polls extends Table {
+  TextColumn get id => text()();
+  TextColumn get tripId => text().references(Trips, #id, onDelete: KeyAction.cascade)();
+  TextColumn get title => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  DateTimeColumn get deadline => dateTime().nullable()();
+  BoolColumn get allowMultiple => boolean().withDefault(const Constant(false))();
+  BoolColumn get allowAddOption => boolean().withDefault(const Constant(false))();
+  // Results stay hidden until the poll is closed or past its deadline.
+  BoolColumn get blind => boolean().withDefault(const Constant(false))();
+  // 'open' | 'closed'
+  TextColumn get status => text().withDefault(const Constant('open'))();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class PollOptions extends Table {
+  TextColumn get id => text()();
+  TextColumn get pollId => text().references(Polls, #id, onDelete: KeyAction.cascade)();
+  TextColumn get tripId => text().references(Trips, #id, onDelete: KeyAction.cascade)();
+  TextColumn get label => text().named('text')();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  // Who added the option (server column, not uploaded): members may remove only their own.
+  TextColumn get createdBy => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// One person's vote for one option. A retraction deletes the row (and queues a tombstone);
+/// voting again revives the same deterministic id. `user_id` follows the same rule as messages;
+/// a guest's rows use the placeholder id 'local' until sign-in re-keys them.
+class PollVotes extends Table {
+  TextColumn get id => text()();
+  TextColumn get pollId => text().references(Polls, #id, onDelete: KeyAction.cascade)();
+  TextColumn get optionId => text().references(PollOptions, #id, onDelete: KeyAction.cascade)();
+  TextColumn get tripId => text().references(Trips, #id, onDelete: KeyAction.cascade)();
+  TextColumn get userId => text().nullable()();
+  // Server time of the last change (not uploaded): the newest vote wins in a single-choice poll.
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// A starred item of the signed-in person (no trip). Rows are deduplicated by (kind, target_id)
+/// when read, since two devices can create the same favorite.
+class Favorites extends Table {
+  TextColumn get id => text()();
+  // 'mountain'
+  TextColumn get kind => text()();
+  TextColumn get targetId => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Pending client operations, sent to the server in `seq` order.
 @DataClassName('OutboxOp')
 class Outbox extends Table {

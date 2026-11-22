@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../shared/coming_soon.dart';
+import '../../collab/ui/discussion_view.dart';
 import '../../gear/ui/gear_form_sheet.dart';
 import '../../gear/ui/gear_view.dart';
 import '../../meals/ui/meal_form_sheet.dart';
@@ -29,7 +30,7 @@ class TripDetailPage extends ConsumerStatefulWidget {
 
 class _TripDetailPageState extends ConsumerState<TripDetailPage>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 4, vsync: this)
+  late final TabController _tabs = TabController(length: 5, vsync: this)
     ..addListener(() => setState(() {}));
   int? _day;
   int _mealDay = 1;
@@ -103,6 +104,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
             Tab(text: '行程'),
             Tab(text: '裝備'),
             Tab(text: '餐食'),
+            Tab(text: '討論'),
             Tab(text: '成員與天氣'),
           ],
         ),
@@ -122,6 +124,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
             day: _mealDay,
             onDayChanged: (d) => setState(() => _mealDay = d),
           ),
+          DiscussionView(trip: trip, role: role),
           MembersView(trip: trip, role: role),
         ],
       ),

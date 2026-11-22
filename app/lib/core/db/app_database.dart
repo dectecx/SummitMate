@@ -6,7 +6,7 @@ import 'tables.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Trips, TripMembers, ItineraryItems, GearItems, MealPlanDays, MealItems, LibraryItems, Templates, Outbox, AppMeta, AppSettings, WeatherCache, HttpCache, OfflineRegions],
+  tables: [Trips, TripMembers, ItineraryItems, GearItems, MealPlanDays, MealItems, LibraryItems, Templates, TripMessages, Polls, PollOptions, PollVotes, Favorites, Outbox, AppMeta, AppSettings, WeatherCache, HttpCache, OfflineRegions],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -27,6 +27,10 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('CREATE INDEX idx_gear_trip ON gear_items(trip_id)');
       await customStatement('CREATE INDEX idx_meal_days_trip ON meal_plan_days(trip_id)');
       await customStatement('CREATE INDEX idx_meal_items_trip ON meal_items(trip_id)');
+      await customStatement('CREATE INDEX idx_messages_trip ON trip_messages(trip_id)');
+      await customStatement('CREATE INDEX idx_polls_trip ON polls(trip_id)');
+      await customStatement('CREATE INDEX idx_poll_options_poll ON poll_options(poll_id)');
+      await customStatement('CREATE INDEX idx_poll_votes_poll ON poll_votes(poll_id)');
       await customStatement('CREATE INDEX idx_members_trip ON trip_members(trip_id)');
       await into(appMeta).insert(AppMetaCompanion.insert());
     },

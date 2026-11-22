@@ -180,4 +180,63 @@ void main() {
     final after = (await db.select(db.outbox).get()).single;
     expect([after.state, after.attempts, after.lastError], ['pending', 0, null]);
   });
+
+  group('poll content', () {
+    Future<void> seedPoll() async {
+      await store.upsertFromServer(tripsEntity, tripRow('t1'));
+      await store.upsertFromServer(pollsEntity, {'id': 'p1', 'trip_id': 't1', 'title': 'P', 'description': '', 'deadline': null, 'allow_multiple': false, 'allow_add_option': false, 'blind': false, 'status': 'open', 'created_at': '2026-05-01T00:00:00Z'});
+      for (final o in ['o1', 'o2']) {
+        await store.upsertFromServer(pollOptionsEntity, {'id': o, 'poll_id': 'p1', 'trip_id': 't1', 'text': o, 'sort_order': 0, 'created_by': null});
+      }
+      await store.upsertFromServer(pollVotesEntity, {'id': 'v1', 'poll_id': 'p1', 'option_id': 'o1', 'trip_id': 't1', 'user_id': 'u1', 'updated_at': '2026-05-01T00:00:00Z'});
+    }
+
+    test('deleting a poll queues only its own deletion and drops pending work of options and votes', () async {
+      await seedPoll();
+      await localEdit(db, writer, pollOptionsEntity, 'o1', {'text': 'x'});
+      await localEdit(db, writer, pollVotesEntity, 'v1', {'poll_id': 'p1'});
+
+      await localDelete(db, writer, pollsEntity, 'p1');
+
+      expect(await opSummary(db), ['delete:polls/p1']);
+      expect(await select(db, 'SELECT id FROM poll_options'), isEmpty, reason: 'cascade');
+      expect(await select(db, 'SELECT id FROM poll_votes'), isEmpty, reason: 'cascade');
+    });
+
+    test('deleting an option drops the pending votes for it', () async {
+      await seedPoll();
+      await localEdit(db, writer, pollVotesEntity, 'v1', {'poll_id': 'p1'});
+      await localDelete(db, writer, pollOptionsEntity, 'o1');
+      expect(await opSummary(db), ['delete:poll_options/o1']);
+      expect(await select(db, 'SELECT id FROM poll_votes'), isEmpty);
+    });
+
+    test('reviving a deletion the server has not seen cancels it', () async {
+      await seedPoll();
+      await localDelete(db, writer, pollVotesEntity, 'v1');
+      expect(await opSummary(db), ['delete:poll_votes/v1']);
+
+      await writer.upsert('poll_votes', 'v1', {'poll_id': 'p1', 'option_id': 'o1', 'trip_id': 't1'}, isCreate: true, revive: true);
+
+      expect(await opSummary(db), isEmpty, reason: 'the server still has the vote');
+    });
+
+    test('reviving after a deletion that may have been sent queues the upsert behind it, and deleting again cancels it', () async {
+      await seedPoll();
+      await localDelete(db, writer, pollVotesEntity, 'v1');
+      await db.update(db.outbox).write(const OutboxCompanion(sent: Value(true)));
+
+      await writer.upsert('poll_votes', 'v1', {'poll_id': 'p1', 'option_id': 'o1', 'trip_id': 't1'}, isCreate: true, revive: true);
+      expect(await opSummary(db), ['delete:poll_votes/v1', 'upsert:poll_votes/v1']);
+
+      await writer.delete('poll_votes', 'v1');
+      expect(await opSummary(db), ['delete:poll_votes/v1']);
+    });
+
+    test('editing something queued for deletion still fails without revive', () async {
+      await seedPoll();
+      await localDelete(db, writer, pollVotesEntity, 'v1');
+      await expectLater(writer.upsert('poll_votes', 'v1', {'poll_id': 'p1'}), throwsStateError);
+    });
+  });
 }

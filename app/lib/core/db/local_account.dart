@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../auth/auth_state.dart';
+import '../sync/vote_id.dart';
 import 'app_database.dart';
 
 /// Ties the local database to one account (or to nobody, for a guest).
@@ -20,6 +21,7 @@ class LocalAccountStore {
     final meta = await read();
     final differentAccount = meta.accountId != null && meta.accountId != user.id;
     if (differentAccount) await resetLocalData();
+    await _adoptGuestWork(user.id);
     await (_db.update(_db.appMeta)..where((m) => m.id.equals(1))).write(
       AppMetaCompanion(
         accountId: Value(user.id),
@@ -31,12 +33,26 @@ class LocalAccountStore {
     return differentAccount;
   });
 
+  /// Things written as a guest get the account as their author. A vote's id contains the voter, so
+  /// those votes are re-keyed (their queued uploads follow); rows that already exist are left alone.
+  Future<void> _adoptGuestWork(String userId) async {
+    await (_db.update(_db.tripMessages)..where((m) => m.userId.isNull())).write(TripMessagesCompanion(userId: Value(userId)));
+    final votes = await (_db.select(_db.pollVotes)..where((v) => v.userId.isNull())).get();
+    for (final v in votes) {
+      final id = voteIdFor(v.optionId, userId);
+      if (await (_db.select(_db.pollVotes)..where((x) => x.id.equals(id))).getSingleOrNull() != null) continue;
+      await (_db.update(_db.pollVotes)..where((x) => x.id.equals(v.id))).write(PollVotesCompanion(id: Value(id), userId: Value(userId)));
+      await (_db.update(_db.outbox)..where((o) => o.entity.equals('poll_votes') & o.entityId.equals(v.id))).write(OutboxCompanion(entityId: Value(id)));
+    }
+  }
+
   /// Wipes everything that belongs to an account (trips and their content, the outbox, the
   /// sync cursor, the profile). App settings are kept. Used on sign-out and account switch.
   Future<void> resetLocalData() => _db.transaction(() async {
     await _db.delete(_db.trips).go(); // children cascade
     await _db.delete(_db.libraryItems).go();
     await _db.delete(_db.templates).go();
+    await _db.delete(_db.favorites).go();
     await _db.delete(_db.outbox).go();
     await (_db.update(_db.appMeta)..where((m) => m.id.equals(1))).write(
       const AppMetaCompanion(
@@ -50,7 +66,7 @@ class LocalAccountStore {
     );
     // Cascades are invisible to Drift; refresh listeners of the child tables.
     _db.notifyUpdates({
-      for (final t in <TableInfo<Table, dynamic>>[_db.tripMembers, _db.itineraryItems, _db.gearItems, _db.mealPlanDays, _db.mealItems, _db.libraryItems, _db.templates])
+      for (final t in <TableInfo<Table, dynamic>>[_db.tripMembers, _db.itineraryItems, _db.gearItems, _db.mealPlanDays, _db.mealItems, _db.tripMessages, _db.polls, _db.pollOptions, _db.pollVotes, _db.libraryItems, _db.templates, _db.favorites])
         TableUpdate.onTable(t, kind: UpdateKind.delete),
     });
   });

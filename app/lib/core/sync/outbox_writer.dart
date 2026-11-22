@@ -30,7 +30,11 @@ class OutboxWriter {
 
   /// Queues an upsert of [patch] (only the changed fields, or every field plus `trip_id`
   /// for a creation) for entity [entity] with id [id].
-  Future<void> upsert(String entity, String id, Map<String, Object?> patch, {bool isCreate = false}) async {
+  ///
+  /// [revive] is for rows whose id is deterministic (poll votes): the person may bring back what they
+  /// deleted. A queued deletion that the server has not seen is cancelled; one it may have seen stays
+  /// queued and the upsert follows it.
+  Future<void> upsert(String entity, String id, Map<String, Object?> patch, {bool isCreate = false, bool revive = false}) async {
     final e = _entity(entity);
     final unknown = patch.keys.where((k) => !e.columns.containsKey(k));
     if (unknown.isNotEmpty) throw ArgumentError('unknown fields for $entity: ${unknown.join(', ')}');
@@ -40,7 +44,15 @@ class OutboxWriter {
       if (await _belongsToSample(entity, id, patch)) return;
 
       final pendingDelete = await _find(entity, id, 'delete');
-      if (pendingDelete != null) throw StateError('cannot edit $entity/$id: it is queued for deletion');
+      if (pendingDelete != null) {
+        if (!revive) throw StateError('cannot edit $entity/$id: it is queued for deletion');
+        if (!pendingDelete.sent) {
+          await (_db.delete(_db.outbox)..where((o) => o.seq.equals(pendingDelete.seq))).go();
+        } else {
+          await _insert(entity, id, 'upsert', patch: json, isCreate: isCreate);
+        }
+        return;
+      }
 
       final existing = await _find(entity, id, 'upsert');
       if (existing == null) {
@@ -77,6 +89,20 @@ class OutboxWriter {
             }
           }
           await _deleteOne('trips', id);
+        case 'polls':
+          // The server drops what hangs on a deleted poll; pending work for it could only be rejected.
+          for (final optionId in await _store.childIds('poll_options', 'poll_id', id)) {
+            await _removeOps('poll_options', optionId);
+          }
+          for (final voteId in await _store.childIds('poll_votes', 'poll_id', id)) {
+            await _removeOps('poll_votes', voteId);
+          }
+          await _deleteOne('polls', id);
+        case 'poll_options':
+          for (final voteId in await _store.childIds('poll_votes', 'option_id', id)) {
+            await _removeOps('poll_votes', voteId);
+          }
+          await _deleteOne('poll_options', id);
         case 'meal_plan_days':
           for (final itemId in await _store.childIds('meal_items', 'meal_plan_day_id', id)) {
             await _deleteOne('meal_items', itemId);
@@ -131,8 +157,12 @@ class OutboxWriter {
   SyncEntity _entity(String name) => syncEntityByName[name] ?? (throw ArgumentError('unknown entity $name'));
 
   Future<void> _deleteOne(String entity, String id) async {
-    if (await _find(entity, id, 'delete') != null) return;
     final upsert = await _find(entity, id, 'upsert');
+    if (await _find(entity, id, 'delete') != null) {
+      // A revival queued behind the deletion is cancelled by deleting again.
+      if (upsert != null) await (_db.delete(_db.outbox)..where((o) => o.seq.equals(upsert.seq))).go();
+      return;
+    }
     if (upsert != null) {
       await (_db.delete(_db.outbox)..where((o) => o.seq.equals(upsert.seq))).go();
       // Never reached the server: nothing to tell it.

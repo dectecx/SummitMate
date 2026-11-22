@@ -87,6 +87,8 @@ class LocalStore {
     final cascaded = switch (tableName) {
       'trips' => syncEntities.where((e) => e.name != 'trips'),
       'meal_plan_days' => [mealItemsEntity],
+      'polls' => [pollOptionsEntity, pollVotesEntity],
+      'poll_options' => [pollVotesEntity],
       _ => const <SyncEntity>[],
     };
     if (cascaded.isNotEmpty) {
