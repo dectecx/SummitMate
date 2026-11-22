@@ -12,6 +12,7 @@ import (
 
 	"summitmate/internal/auth"
 	"summitmate/internal/explore"
+	"summitmate/internal/groupevents"
 	"summitmate/internal/platform/config"
 	"summitmate/internal/platform/database"
 	"summitmate/internal/platform/mail"
@@ -75,6 +76,10 @@ func run() error {
 			SharedSets: sharedsets.NewHandler(sharedsets.NewService(sharedsets.NewPgRepository(pool), sharedsets.Options{
 				BcryptCost: cfg.BcryptCost,
 				WrongKeys:  ratelimit.NewMemory(10, 15*time.Minute),
+			})),
+			GroupEvents: groupevents.NewHandler(groupevents.NewService(groupevents.NewPgRepository(pool), groupevents.Options{
+				Comments:     ratelimit.NewMemory(20, time.Minute),
+				Applications: ratelimit.NewMemory(20, 10*time.Minute),
 			})),
 			Tokens:         tokens,
 			MaxBodyBytes:   cfg.MaxBodyBytes,

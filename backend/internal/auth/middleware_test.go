@@ -57,6 +57,18 @@ func TestOptionalAuthRoutes(t *testing.T) {
 		{http.MethodGet, "/shared-sets/abc/x", false},
 		{http.MethodGet, "/shared-sets/", false},
 		{http.MethodGet, "/sync/changes", false},
+		{http.MethodGet, "/group-events", true},
+		{http.MethodGet, "/group-events/abc", true},
+		{http.MethodGet, "/group-events/abc/comments", true},
+		{http.MethodGet, "/group-events/abc/applications", false},
+		{http.MethodGet, "/group-events/abc/comments/x", false},
+		{http.MethodGet, "/group-events/abc/like", false},
+		{http.MethodGet, "/group-events/", false},
+		{http.MethodGet, "/group-events//comments", false},
+		{http.MethodPost, "/group-events", false},
+		{http.MethodPatch, "/group-events/abc", false},
+		{http.MethodPost, "/group-events/abc/comments", false},
+		{http.MethodGet, "/reports", false},
 	} {
 		assert.Equal(t, c.want, isOptionalAuth(c.method, c.path), c.method+" "+c.path)
 	}

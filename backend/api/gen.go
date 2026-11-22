@@ -14,18 +14,105 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for ApplicationStatus.
+const (
+	ApplicationStatusApproved  ApplicationStatus = "approved"
+	ApplicationStatusCancelled ApplicationStatus = "cancelled"
+	ApplicationStatusPending   ApplicationStatus = "pending"
+	ApplicationStatusRejected  ApplicationStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the ApplicationStatus enum.
+func (e ApplicationStatus) Valid() bool {
+	switch e {
+	case ApplicationStatusApproved:
+		return true
+	case ApplicationStatusCancelled:
+		return true
+	case ApplicationStatusPending:
+		return true
+	case ApplicationStatusRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateReportRequestTargetType.
+const (
+	CreateReportRequestTargetTypeGroupEvent        CreateReportRequestTargetType = "group_event"
+	CreateReportRequestTargetTypeGroupEventComment CreateReportRequestTargetType = "group_event_comment"
+)
+
+// Valid indicates whether the value is a known member of the CreateReportRequestTargetType enum.
+func (e CreateReportRequestTargetType) Valid() bool {
+	switch e {
+	case CreateReportRequestTargetTypeGroupEvent:
+		return true
+	case CreateReportRequestTargetTypeGroupEventComment:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GroupEventCategory.
+const (
+	GroupEventCategoryBouldering GroupEventCategory = "bouldering"
+	GroupEventCategoryCamping    GroupEventCategory = "camping"
+	GroupEventCategoryHiking     GroupEventCategory = "hiking"
+	GroupEventCategoryOther      GroupEventCategory = "other"
+)
+
+// Valid indicates whether the value is a known member of the GroupEventCategory enum.
+func (e GroupEventCategory) Valid() bool {
+	switch e {
+	case GroupEventCategoryBouldering:
+		return true
+	case GroupEventCategoryCamping:
+		return true
+	case GroupEventCategoryHiking:
+		return true
+	case GroupEventCategoryOther:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GroupEventStatus.
+const (
+	GroupEventStatusCancelled GroupEventStatus = "cancelled"
+	GroupEventStatusClosed    GroupEventStatus = "closed"
+	GroupEventStatusOpen      GroupEventStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the GroupEventStatus enum.
+func (e GroupEventStatus) Valid() bool {
+	switch e {
+	case GroupEventStatusCancelled:
+		return true
+	case GroupEventStatusClosed:
+		return true
+	case GroupEventStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for MountainCategory.
 const (
-	Baiyue MountainCategory = "baiyue"
-	Other  MountainCategory = "other"
+	MountainCategoryBaiyue MountainCategory = "baiyue"
+	MountainCategoryOther  MountainCategory = "other"
 )
 
 // Valid indicates whether the value is a known member of the MountainCategory enum.
 func (e MountainCategory) Valid() bool {
 	switch e {
-	case Baiyue:
+	case MountainCategoryBaiyue:
 		return true
-	case Other:
+	case MountainCategoryOther:
 		return true
 	default:
 		return false
@@ -68,6 +155,24 @@ func (e PushResultStatus) Valid() bool {
 	case Gone:
 		return true
 	case Invalid:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReportTargetType.
+const (
+	ReportTargetTypeGroupEvent        ReportTargetType = "group_event"
+	ReportTargetTypeGroupEventComment ReportTargetType = "group_event_comment"
+)
+
+// Valid indicates whether the value is a known member of the ReportTargetType enum.
+func (e ReportTargetType) Valid() bool {
+	switch e {
+	case ReportTargetTypeGroupEvent:
+		return true
+	case ReportTargetTypeGroupEventComment:
 		return true
 	default:
 		return false
@@ -149,6 +254,51 @@ func (e SyncEntity) Valid() bool {
 	}
 }
 
+// Defines values for UpdateGroupEventRequestStatus.
+const (
+	UpdateGroupEventRequestStatusClosed UpdateGroupEventRequestStatus = "closed"
+	UpdateGroupEventRequestStatusOpen   UpdateGroupEventRequestStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the UpdateGroupEventRequestStatus enum.
+func (e UpdateGroupEventRequestStatus) Valid() bool {
+	switch e {
+	case UpdateGroupEventRequestStatusClosed:
+		return true
+	case UpdateGroupEventRequestStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListGroupEventsParamsScope.
+const (
+	All      ListGroupEventsParamsScope = "all"
+	Hosting  ListGroupEventsParamsScope = "hosting"
+	Joined   ListGroupEventsParamsScope = "joined"
+	Popular  ListGroupEventsParamsScope = "popular"
+	Upcoming ListGroupEventsParamsScope = "upcoming"
+)
+
+// Valid indicates whether the value is a known member of the ListGroupEventsParamsScope enum.
+func (e ListGroupEventsParamsScope) Valid() bool {
+	switch e {
+	case All:
+		return true
+	case Hosting:
+		return true
+	case Joined:
+		return true
+	case Popular:
+		return true
+	case Upcoming:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListSharedSetsParamsScope.
 const (
 	ListSharedSetsParamsScopeMine   ListSharedSetsParamsScope = "mine"
@@ -165,6 +315,33 @@ func (e ListSharedSetsParamsScope) Valid() bool {
 	default:
 		return false
 	}
+}
+
+// Application defines model for Application.
+type Application struct {
+	CreatedAt time.Time          `json:"created_at"`
+	Id        openapi_types.UUID `json:"id"`
+	Message   string             `json:"message"`
+	Status    ApplicationStatus  `json:"status"`
+	User      EventUser          `json:"user"`
+}
+
+// ApplicationList defines model for ApplicationList.
+type ApplicationList struct {
+	Items []Application `json:"items"`
+}
+
+// ApplicationStatus defines model for ApplicationStatus.
+type ApplicationStatus string
+
+// ApplyRequest defines model for ApplyRequest.
+type ApplyRequest struct {
+	Message *string `json:"message,omitempty"`
+}
+
+// ApplyResponse defines model for ApplyResponse.
+type ApplyResponse struct {
+	MyStatus ApplicationStatus `json:"my_status"`
 }
 
 // AuthResponse defines model for AuthResponse.
@@ -188,6 +365,53 @@ type ChangesResponse struct {
 	ServerTime time.Time                           `json:"server_time"`
 }
 
+// Comment defines model for Comment.
+type Comment struct {
+	Body      string             `json:"body"`
+	CreatedAt time.Time          `json:"created_at"`
+	Id        openapi_types.UUID `json:"id"`
+	Mine      bool               `json:"mine"`
+	User      EventUser          `json:"user"`
+}
+
+// CommentPage defines model for CommentPage.
+type CommentPage struct {
+	Items []Comment `json:"items"`
+
+	// NextCursor Absent on the last page
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// CreateCommentRequest defines model for CreateCommentRequest.
+type CreateCommentRequest struct {
+	Body string `json:"body"`
+}
+
+// CreateGroupEventRequest defines model for CreateGroupEventRequest.
+type CreateGroupEventRequest struct {
+	ApprovalRequired *bool               `json:"approval_required,omitempty"`
+	Category         GroupEventCategory  `json:"category"`
+	Description      *string             `json:"description,omitempty"`
+	EndDate          *openapi_types.Date `json:"end_date,omitempty"`
+	LinkedTripId     *openapi_types.UUID `json:"linked_trip_id,omitempty"`
+	Location         *string             `json:"location,omitempty"`
+	MaxMembers       int                 `json:"max_members"`
+	PrivateMessage   *string             `json:"private_message,omitempty"`
+	StartDate        openapi_types.Date  `json:"start_date"`
+	Title            string              `json:"title"`
+	TripSnapshot     *TripSnapshot       `json:"trip_snapshot,omitempty"`
+}
+
+// CreateReportRequest defines model for CreateReportRequest.
+type CreateReportRequest struct {
+	Reason     string                        `json:"reason"`
+	TargetId   openapi_types.UUID            `json:"target_id"`
+	TargetType CreateReportRequestTargetType `json:"target_type"`
+}
+
+// CreateReportRequestTargetType defines model for CreateReportRequest.TargetType.
+type CreateReportRequestTargetType string
+
 // CreateSharedSetRequest defines model for CreateSharedSetRequest.
 type CreateSharedSetRequest struct {
 	// AccessKey Required for protected (4-12 ASCII letters/digits), forbidden otherwise
@@ -203,6 +427,97 @@ type Error struct {
 	Message string  `json:"message"`
 	Param   *string `json:"param,omitempty"`
 	Type    string  `json:"type"`
+}
+
+// EventUser defines model for EventUser.
+type EventUser struct {
+	Avatar      string `json:"avatar"`
+	DisplayName string `json:"display_name"`
+}
+
+// GroupEventCategory defines model for GroupEventCategory.
+type GroupEventCategory string
+
+// GroupEventDetail defines model for GroupEventDetail.
+type GroupEventDetail struct {
+	ApprovalRequired bool                `json:"approval_required"`
+	ApprovedCount    int                 `json:"approved_count"`
+	Category         GroupEventCategory  `json:"category"`
+	CommentCount     int                 `json:"comment_count"`
+	CreatedAt        time.Time           `json:"created_at"`
+	Description      string              `json:"description"`
+	EndDate          *openapi_types.Date `json:"end_date"`
+	Host             EventUser           `json:"host"`
+	Id               openapi_types.UUID  `json:"id"`
+	IsHost           bool                `json:"is_host"`
+	LikeCount        int                 `json:"like_count"`
+
+	// Liked False without a token
+	Liked bool `json:"liked"`
+
+	// LinkedTripId Only returned to the host
+	LinkedTripId *openapi_types.UUID `json:"linked_trip_id"`
+	Location     string              `json:"location"`
+	MaxMembers   int                 `json:"max_members"`
+
+	// MyRejectionReason Only for the applicant whose application was rejected with a reason
+	MyRejectionReason *string `json:"my_rejection_reason"`
+
+	// MyStatus The caller's application status (pending, approved, rejected, cancelled), null if never applied or no token
+	MyStatus *string `json:"my_status"`
+
+	// PrivateMessage Null unless the caller is the host or an approved applicant
+	PrivateMessage *string `json:"private_message"`
+
+	// PrivateMessageLocked True when private_message is hidden from the caller
+	PrivateMessageLocked bool               `json:"private_message_locked"`
+	SnapshotUpdatedAt    *time.Time         `json:"snapshot_updated_at"`
+	StartDate            openapi_types.Date `json:"start_date"`
+	Status               GroupEventStatus   `json:"status"`
+	Title                string             `json:"title"`
+	TripSnapshot         *TripSnapshot      `json:"trip_snapshot"`
+}
+
+// GroupEventPage defines model for GroupEventPage.
+type GroupEventPage struct {
+	Items []GroupEventSummary `json:"items"`
+
+	// NextCursor Absent on the last page
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// GroupEventStatus defines model for GroupEventStatus.
+type GroupEventStatus string
+
+// GroupEventSummary defines model for GroupEventSummary.
+type GroupEventSummary struct {
+	ApprovalRequired bool                `json:"approval_required"`
+	ApprovedCount    int                 `json:"approved_count"`
+	Category         GroupEventCategory  `json:"category"`
+	CommentCount     int                 `json:"comment_count"`
+	CreatedAt        time.Time           `json:"created_at"`
+	EndDate          *openapi_types.Date `json:"end_date"`
+	Host             EventUser           `json:"host"`
+	Id               openapi_types.UUID  `json:"id"`
+	IsHost           bool                `json:"is_host"`
+	LikeCount        int                 `json:"like_count"`
+
+	// Liked False without a token
+	Liked      bool   `json:"liked"`
+	Location   string `json:"location"`
+	MaxMembers int    `json:"max_members"`
+
+	// MyStatus The caller's application status (pending, approved, rejected, cancelled), null if never applied or no token
+	MyStatus  *string            `json:"my_status"`
+	StartDate openapi_types.Date `json:"start_date"`
+	Status    GroupEventStatus   `json:"status"`
+	Title     string             `json:"title"`
+}
+
+// LikeState defines model for LikeState.
+type LikeState struct {
+	LikeCount int  `json:"like_count"`
+	Liked     bool `json:"liked"`
 }
 
 // LoginRequest defines model for LoginRequest.
@@ -315,6 +630,25 @@ type RegisterResponse struct {
 	Email openapi_types.Email `json:"email"`
 }
 
+// Report defines model for Report.
+type Report struct {
+	CreatedAt  time.Time          `json:"created_at"`
+	Id         openapi_types.UUID `json:"id"`
+	TargetId   openapi_types.UUID `json:"target_id"`
+	TargetType ReportTargetType   `json:"target_type"`
+}
+
+// ReportTargetType defines model for Report.TargetType.
+type ReportTargetType string
+
+// ReviewRequest defines model for ReviewRequest.
+type ReviewRequest struct {
+	Approve bool `json:"approve"`
+
+	// Reason Shown to the applicant when rejecting
+	Reason *string `json:"reason,omitempty"`
+}
+
 // SharedItem defines model for SharedItem.
 type SharedItem struct {
 	// Calories kcal
@@ -397,6 +731,46 @@ type TransferOwnerRequest struct {
 	UserId openapi_types.UUID `json:"user_id"`
 }
 
+// TripSnapshot defines model for TripSnapshot.
+type TripSnapshot struct {
+	EndDate   *openapi_types.Date `json:"end_date"`
+	Itinerary []TripSnapshotNode  `json:"itinerary"`
+	Name      string              `json:"name"`
+	StartDate *openapi_types.Date `json:"start_date"`
+}
+
+// TripSnapshotNode defines model for TripSnapshotNode.
+type TripSnapshotNode struct {
+	// Altitude Metres
+	Altitude int      `json:"altitude"`
+	Day      int      `json:"day"`
+	Lat      *float64 `json:"lat"`
+	Lng      *float64 `json:"lng"`
+	Name     string   `json:"name"`
+
+	// Time e.g. "07:00"
+	Time *string `json:"time"`
+}
+
+// UpdateGroupEventRequest defines model for UpdateGroupEventRequest.
+type UpdateGroupEventRequest struct {
+	ApprovalRequired *bool                          `json:"approval_required,omitempty"`
+	Category         *GroupEventCategory            `json:"category,omitempty"`
+	Description      *string                        `json:"description,omitempty"`
+	EndDate          *openapi_types.Date            `json:"end_date,omitempty"`
+	LinkedTripId     *openapi_types.UUID            `json:"linked_trip_id,omitempty"`
+	Location         *string                        `json:"location,omitempty"`
+	MaxMembers       *int                           `json:"max_members,omitempty"`
+	PrivateMessage   *string                        `json:"private_message,omitempty"`
+	StartDate        *openapi_types.Date            `json:"start_date,omitempty"`
+	Status           *UpdateGroupEventRequestStatus `json:"status,omitempty"`
+	Title            *string                        `json:"title,omitempty"`
+	TripSnapshot     *TripSnapshot                  `json:"trip_snapshot,omitempty"`
+}
+
+// UpdateGroupEventRequestStatus defines model for UpdateGroupEventRequest.Status.
+type UpdateGroupEventRequestStatus string
+
 // UpdateProfileRequest defines model for UpdateProfileRequest.
 type UpdateProfileRequest struct {
 	Avatar      *string `json:"avatar,omitempty"`
@@ -470,6 +844,33 @@ type GetExploreMountainsParams struct {
 	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 }
 
+// ListGroupEventsParams defines parameters for ListGroupEvents.
+type ListGroupEventsParams struct {
+	Scope *ListGroupEventsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
+
+	// Q Case-insensitive title or location substring
+	Q     *string `form:"q,omitempty" json:"q,omitempty"`
+	Limit *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque `next_cursor` of the previous page (same scope and q)
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// ListGroupEventsParamsScope defines parameters for ListGroupEvents.
+type ListGroupEventsParamsScope string
+
+// ListGroupEventApplicationsParams defines parameters for ListGroupEventApplications.
+type ListGroupEventApplicationsParams struct {
+	// Status Filter by one status; default is pending and approved
+	Status *ApplicationStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// ListGroupEventCommentsParams defines parameters for ListGroupEventComments.
+type ListGroupEventCommentsParams struct {
+	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
 // ListSharedSetsParams defines parameters for ListSharedSets.
 type ListSharedSetsParams struct {
 	Scope ListSharedSetsParamsScope `form:"scope" json:"scope"`
@@ -533,6 +934,24 @@ type ResendVerificationJSONRequestBody ResendVerificationJSONBody
 // VerifyEmailJSONRequestBody defines body for VerifyEmail for application/json ContentType.
 type VerifyEmailJSONRequestBody = VerifyEmailRequest
 
+// CreateGroupEventJSONRequestBody defines body for CreateGroupEvent for application/json ContentType.
+type CreateGroupEventJSONRequestBody = CreateGroupEventRequest
+
+// UpdateGroupEventJSONRequestBody defines body for UpdateGroupEvent for application/json ContentType.
+type UpdateGroupEventJSONRequestBody = UpdateGroupEventRequest
+
+// ReviewGroupEventApplicationJSONRequestBody defines body for ReviewGroupEventApplication for application/json ContentType.
+type ReviewGroupEventApplicationJSONRequestBody = ReviewRequest
+
+// ApplyGroupEventJSONRequestBody defines body for ApplyGroupEvent for application/json ContentType.
+type ApplyGroupEventJSONRequestBody = ApplyRequest
+
+// CreateGroupEventCommentJSONRequestBody defines body for CreateGroupEventComment for application/json ContentType.
+type CreateGroupEventCommentJSONRequestBody = CreateCommentRequest
+
+// CreateReportJSONRequestBody defines body for CreateReport for application/json ContentType.
+type CreateReportJSONRequestBody = CreateReportRequest
+
 // CreateSharedSetJSONRequestBody defines body for CreateSharedSet for application/json ContentType.
 type CreateSharedSetJSONRequestBody = CreateSharedSetRequest
 
@@ -577,9 +996,57 @@ type ServerInterface interface {
 	// GetExploreMountains Read-only mountain reference data (public, no token)
 	// (GET /explore/mountains)
 	GetExploreMountains(w http.ResponseWriter, r *http.Request, params GetExploreMountainsParams)
+	// ListGroupEvents List group events (scopes all, upcoming and popular need no token)
+	// (GET /group-events)
+	ListGroupEvents(w http.ResponseWriter, r *http.Request, params ListGroupEventsParams)
+	// CreateGroupEvent Create a group event (the caller becomes the host)
+	// (POST /group-events)
+	CreateGroupEvent(w http.ResponseWriter, r *http.Request)
+	// CancelGroupEvent Cancel a group event (host only; status becomes cancelled, idempotent)
+	// (DELETE /group-events/{id})
+	CancelGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// GetGroupEvent Read a group event (token optional)
+	// (GET /group-events/{id})
+	GetGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// UpdateGroupEvent Edit a group event (host only)
+	// (PATCH /group-events/{id})
+	UpdateGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// ListGroupEventApplications Application list (host only), oldest first
+	// (GET /group-events/{id}/applications)
+	ListGroupEventApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params ListGroupEventApplicationsParams)
+	// RemoveGroupEventMember Remove an approved member (host only); the member leaves the linked trip
+	// (DELETE /group-events/{id}/applications/{appId})
+	RemoveGroupEventMember(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, appId openapi_types.UUID)
+	// ReviewGroupEventApplication Approve or reject a pending application (host only)
+	// (POST /group-events/{id}/applications/{appId}/review)
+	ReviewGroupEventApplication(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, appId openapi_types.UUID)
+	// WithdrawGroupEventApplication Cancel my pending application or leave (approved members leave the linked trip too)
+	// (DELETE /group-events/{id}/apply)
+	WithdrawGroupEventApplication(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// ApplyGroupEvent Apply to join (or apply again after a rejection or cancellation)
+	// (POST /group-events/{id}/apply)
+	ApplyGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// ListGroupEventComments Public comments, oldest first (token optional)
+	// (GET /group-events/{id}/comments)
+	ListGroupEventComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params ListGroupEventCommentsParams)
+	// CreateGroupEventComment Post a public comment
+	// (POST /group-events/{id}/comments)
+	CreateGroupEventComment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// DeleteGroupEventComment Delete a comment (author or host, soft delete)
+	// (DELETE /group-events/{id}/comments/{commentId})
+	DeleteGroupEventComment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, commentId openapi_types.UUID)
+	// UnlikeGroupEvent Remove my like (idempotent)
+	// (DELETE /group-events/{id}/like)
+	UnlikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// LikeGroupEvent Like (idempotent)
+	// (PUT /group-events/{id}/like)
+	LikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 	// GetHealth Liveness check
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
+	// CreateReport Report a group event or a comment
+	// (POST /reports)
+	CreateReport(w http.ResponseWriter, r *http.Request)
 	// ListSharedSets List cloud shared gear sets (scope=public needs no token)
 	// (GET /shared-sets)
 	ListSharedSets(w http.ResponseWriter, r *http.Request, params ListSharedSetsParams)
@@ -679,9 +1146,105 @@ func (_ Unimplemented) GetExploreMountains(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListGroupEvents List group events (scopes all, upcoming and popular need no token)
+// (GET /group-events)
+func (_ Unimplemented) ListGroupEvents(w http.ResponseWriter, r *http.Request, params ListGroupEventsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateGroupEvent Create a group event (the caller becomes the host)
+// (POST /group-events)
+func (_ Unimplemented) CreateGroupEvent(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CancelGroupEvent Cancel a group event (host only; status becomes cancelled, idempotent)
+// (DELETE /group-events/{id})
+func (_ Unimplemented) CancelGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetGroupEvent Read a group event (token optional)
+// (GET /group-events/{id})
+func (_ Unimplemented) GetGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateGroupEvent Edit a group event (host only)
+// (PATCH /group-events/{id})
+func (_ Unimplemented) UpdateGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListGroupEventApplications Application list (host only), oldest first
+// (GET /group-events/{id}/applications)
+func (_ Unimplemented) ListGroupEventApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params ListGroupEventApplicationsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RemoveGroupEventMember Remove an approved member (host only); the member leaves the linked trip
+// (DELETE /group-events/{id}/applications/{appId})
+func (_ Unimplemented) RemoveGroupEventMember(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, appId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ReviewGroupEventApplication Approve or reject a pending application (host only)
+// (POST /group-events/{id}/applications/{appId}/review)
+func (_ Unimplemented) ReviewGroupEventApplication(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, appId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// WithdrawGroupEventApplication Cancel my pending application or leave (approved members leave the linked trip too)
+// (DELETE /group-events/{id}/apply)
+func (_ Unimplemented) WithdrawGroupEventApplication(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ApplyGroupEvent Apply to join (or apply again after a rejection or cancellation)
+// (POST /group-events/{id}/apply)
+func (_ Unimplemented) ApplyGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListGroupEventComments Public comments, oldest first (token optional)
+// (GET /group-events/{id}/comments)
+func (_ Unimplemented) ListGroupEventComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params ListGroupEventCommentsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateGroupEventComment Post a public comment
+// (POST /group-events/{id}/comments)
+func (_ Unimplemented) CreateGroupEventComment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteGroupEventComment Delete a comment (author or host, soft delete)
+// (DELETE /group-events/{id}/comments/{commentId})
+func (_ Unimplemented) DeleteGroupEventComment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, commentId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UnlikeGroupEvent Remove my like (idempotent)
+// (DELETE /group-events/{id}/like)
+func (_ Unimplemented) UnlikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// LikeGroupEvent Like (idempotent)
+// (PUT /group-events/{id}/like)
+func (_ Unimplemented) LikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // GetHealth Liveness check
 // (GET /health)
 func (_ Unimplemented) GetHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateReport Report a group event or a comment
+// (POST /reports)
+func (_ Unimplemented) CreateReport(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -929,11 +1492,521 @@ func (siw *ServerInterfaceWrapper) GetExploreMountains(w http.ResponseWriter, r 
 	handler.ServeHTTP(w, r)
 }
 
+// ListGroupEvents operation middleware
+func (siw *ServerInterfaceWrapper) ListGroupEvents(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListGroupEventsParams
+
+	// ------------- Optional query parameter "scope" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "scope", r.URL.Query(), &params.Scope, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "scope"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "scope", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "q" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "q", r.URL.Query(), &params.Q, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "q"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "q", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListGroupEvents(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateGroupEvent operation middleware
+func (siw *ServerInterfaceWrapper) CreateGroupEvent(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateGroupEvent(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CancelGroupEvent operation middleware
+func (siw *ServerInterfaceWrapper) CancelGroupEvent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CancelGroupEvent(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetGroupEvent operation middleware
+func (siw *ServerInterfaceWrapper) GetGroupEvent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetGroupEvent(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateGroupEvent operation middleware
+func (siw *ServerInterfaceWrapper) UpdateGroupEvent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateGroupEvent(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListGroupEventApplications operation middleware
+func (siw *ServerInterfaceWrapper) ListGroupEventApplications(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListGroupEventApplicationsParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListGroupEventApplications(w, r, id, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RemoveGroupEventMember operation middleware
+func (siw *ServerInterfaceWrapper) RemoveGroupEventMember(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "appId" -------------
+	var appId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "appId", chi.URLParam(r, "appId"), &appId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "appId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RemoveGroupEventMember(w, r, id, appId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReviewGroupEventApplication operation middleware
+func (siw *ServerInterfaceWrapper) ReviewGroupEventApplication(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "appId" -------------
+	var appId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "appId", chi.URLParam(r, "appId"), &appId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "appId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReviewGroupEventApplication(w, r, id, appId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// WithdrawGroupEventApplication operation middleware
+func (siw *ServerInterfaceWrapper) WithdrawGroupEventApplication(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.WithdrawGroupEventApplication(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ApplyGroupEvent operation middleware
+func (siw *ServerInterfaceWrapper) ApplyGroupEvent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ApplyGroupEvent(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListGroupEventComments operation middleware
+func (siw *ServerInterfaceWrapper) ListGroupEventComments(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListGroupEventCommentsParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListGroupEventComments(w, r, id, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateGroupEventComment operation middleware
+func (siw *ServerInterfaceWrapper) CreateGroupEventComment(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateGroupEventComment(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteGroupEventComment operation middleware
+func (siw *ServerInterfaceWrapper) DeleteGroupEventComment(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "commentId" -------------
+	var commentId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "commentId", chi.URLParam(r, "commentId"), &commentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "commentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteGroupEventComment(w, r, id, commentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UnlikeGroupEvent operation middleware
+func (siw *ServerInterfaceWrapper) UnlikeGroupEvent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UnlikeGroupEvent(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// LikeGroupEvent operation middleware
+func (siw *ServerInterfaceWrapper) LikeGroupEvent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LikeGroupEvent(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetHealth operation middleware
 func (siw *ServerInterfaceWrapper) GetHealth(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetHealth(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateReport operation middleware
+func (siw *ServerInterfaceWrapper) CreateReport(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateReport(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1471,6 +2544,54 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/shared-sets/{id}", wrapper.GetSharedSet)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events", wrapper.ListGroupEvents)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events", wrapper.CreateGroupEvent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/group-events/{id}", wrapper.CancelGroupEvent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events/{id}", wrapper.GetGroupEvent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/group-events/{id}", wrapper.UpdateGroupEvent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/group-events/{id}/apply", wrapper.WithdrawGroupEventApplication)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events/{id}/apply", wrapper.ApplyGroupEvent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events/{id}/applications", wrapper.ListGroupEventApplications)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/group-events/{id}/applications/{appId}", wrapper.RemoveGroupEventMember)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events/{id}/applications/{appId}/review", wrapper.ReviewGroupEventApplication)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events/{id}/comments", wrapper.ListGroupEventComments)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events/{id}/comments", wrapper.CreateGroupEventComment)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/group-events/{id}/comments/{commentId}", wrapper.DeleteGroupEventComment)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/group-events/{id}/like", wrapper.UnlikeGroupEvent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/group-events/{id}/like", wrapper.LikeGroupEvent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/reports", wrapper.CreateReport)
 	})
 
 	return r

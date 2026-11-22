@@ -253,3 +253,89 @@ CREATE TABLE shared_sets (
 
 CREATE INDEX idx_shared_sets_public ON shared_sets(created_at DESC) WHERE visibility <> 'private' AND deleted_at IS NULL;
 CREATE INDEX idx_shared_sets_owner  ON shared_sets(owner_id, created_at DESC) WHERE deleted_at IS NULL;
+
+-- ============================================================
+-- Group events (online only, not synced)
+-- ============================================================
+
+-- Events are never hard-deleted: the host cancels them (status = 'cancelled').
+-- trip_snapshot is a display-only copy of a trip plan (validated by the service).
+CREATE TABLE group_events (
+    id                  UUID PRIMARY KEY,
+    host_id             UUID         NOT NULL REFERENCES users(id),
+    title               VARCHAR(200) NOT NULL,
+    description         TEXT         NOT NULL DEFAULT '',
+    category            VARCHAR(20)  NOT NULL CHECK (category IN ('hiking', 'camping', 'bouldering', 'other')),
+    location            VARCHAR(200) NOT NULL DEFAULT '',
+    start_date          DATE         NOT NULL,
+    end_date            DATE,
+    max_members         INT          NOT NULL CHECK (max_members BETWEEN 2 AND 100),
+    approval_required   BOOLEAN      NOT NULL DEFAULT TRUE,
+    -- Only the host and approved applicants may read this; never selected by list queries.
+    private_message     TEXT         NOT NULL DEFAULT '',
+    status              VARCHAR(10)  NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed', 'cancelled')),
+    linked_trip_id      UUID         REFERENCES trips(id),
+    trip_snapshot       JSONB,
+    snapshot_updated_at TIMESTAMPTZ,
+    deleted_at          TIMESTAMPTZ,
+    created_at          TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    updated_at          TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    CHECK (end_date IS NULL OR end_date >= start_date)
+);
+
+CREATE INDEX idx_group_events_created_at ON group_events(created_at DESC, id DESC) WHERE deleted_at IS NULL;
+CREATE INDEX idx_group_events_start_date ON group_events(start_date, id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_group_events_host_id    ON group_events(host_id, created_at DESC) WHERE deleted_at IS NULL;
+
+CREATE TRIGGER trg_group_events_updated_at BEFORE INSERT OR UPDATE ON group_events
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- One row per (event, user); applying again after a rejection or cancellation updates the same row.
+CREATE TABLE group_event_applications (
+    id               UUID PRIMARY KEY,
+    event_id         UUID         NOT NULL REFERENCES group_events(id),
+    user_id          UUID         NOT NULL REFERENCES users(id),
+    status           VARCHAR(10)  NOT NULL CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
+    message          VARCHAR(500) NOT NULL DEFAULT '',
+    rejection_reason VARCHAR(500) NOT NULL DEFAULT '',
+    created_at       TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    UNIQUE (event_id, user_id)
+);
+
+CREATE INDEX idx_group_event_applications_event_status ON group_event_applications(event_id, status, created_at);
+CREATE INDEX idx_group_event_applications_user_status  ON group_event_applications(user_id, status);
+
+CREATE TRIGGER trg_group_event_applications_updated_at BEFORE INSERT OR UPDATE ON group_event_applications
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE group_event_comments (
+    id         UUID PRIMARY KEY,
+    event_id   UUID          NOT NULL REFERENCES group_events(id),
+    user_id    UUID          NOT NULL REFERENCES users(id),
+    body       VARCHAR(1000) NOT NULL,
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ   NOT NULL DEFAULT clock_timestamp()
+);
+
+CREATE INDEX idx_group_event_comments_event_created ON group_event_comments(event_id, created_at, id) WHERE deleted_at IS NULL;
+
+CREATE TABLE group_event_likes (
+    event_id   UUID        NOT NULL REFERENCES group_events(id),
+    user_id    UUID        NOT NULL REFERENCES users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    PRIMARY KEY (event_id, user_id)
+);
+
+-- Stored for operators to read directly (no review UI yet); one report per reporter and target.
+CREATE TABLE reports (
+    id          UUID PRIMARY KEY,
+    reporter_id UUID         NOT NULL REFERENCES users(id),
+    target_type VARCHAR(20)  NOT NULL CHECK (target_type IN ('group_event', 'group_event_comment')),
+    target_id   UUID         NOT NULL,
+    reason      VARCHAR(500) NOT NULL,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    UNIQUE (reporter_id, target_type, target_id)
+);
+
+CREATE INDEX idx_reports_target ON reports(target_type, target_id);

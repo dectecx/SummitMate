@@ -36,16 +36,24 @@ var publicPaths = map[string]bool{
 }
 
 // isOptionalAuth reports routes that anyone may read but that also use the caller's identity
-// when a token is sent (shared sets: `mine`, owner access). Writes still require a token in the handler.
+// when a token is sent (shared sets: `mine`, owner access; group events: `liked`, `my_status`, private
+// message). Writes and scopes that need an identity still require a token in the handler.
 func isOptionalAuth(method, path string) bool {
 	if method != http.MethodGet {
 		return false
 	}
-	if path == "/shared-sets" {
+	if path == "/shared-sets" || path == "/group-events" {
 		return true
 	}
-	id, ok := strings.CutPrefix(path, "/shared-sets/")
-	return ok && id != "" && !strings.Contains(id, "/")
+	if id, ok := strings.CutPrefix(path, "/shared-sets/"); ok {
+		return id != "" && !strings.Contains(id, "/")
+	}
+	rest, ok := strings.CutPrefix(path, "/group-events/")
+	if !ok || rest == "" {
+		return false
+	}
+	id, sub, hasSub := strings.Cut(rest, "/")
+	return id != "" && (!hasSub || sub == "comments")
 }
 
 // Middleware authenticates every request except the public paths.

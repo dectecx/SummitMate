@@ -416,6 +416,373 @@ paths:
         "401": { $ref: "#/components/responses/Error" }
         "404": { $ref: "#/components/responses/Error" }
 
+  /group-events:
+    get:
+      operationId: listGroupEvents
+      summary: List group events (scopes all, upcoming and popular need no token)
+      description: |
+        `all`: not cancelled, newest first. `upcoming`: not cancelled and `start_date` today or later, soonest first.
+        `popular`: not cancelled, by like_count + approved_count, then newest. `joined`: events where the caller's
+        application is pending or approved (cancelled events included). `hosting`: the caller's own events (cancelled
+        included). `joined` and `hosting` require a token (401 otherwise). A token is optional for the other scopes and
+        fills `liked`, `my_status` and `is_host`; an invalid token is rejected with 401. `q` matches title or location.
+        `private_message` is never part of a summary.
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema: { type: string, enum: [all, upcoming, popular, joined, hosting], default: all }
+        - name: q
+          in: query
+          required: false
+          description: Case-insensitive title or location substring
+          schema: { type: string, maxLength: 100 }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque `next_cursor` of the previous page (same scope and q)
+          schema: { type: string }
+      responses:
+        "200":
+          description: One page of summaries
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GroupEventPage" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+    post:
+      operationId: createGroupEvent
+      summary: Create a group event (the caller becomes the host)
+      description: |
+        When `linked_trip_id` is set the caller must be the owner of that live trip (403 `not_trip_owner`).
+        A bad `trip_snapshot` is 400 `invalid_snapshot`.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateGroupEventRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GroupEventDetail" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getGroupEvent
+      summary: Read a group event (token optional)
+      description: |
+        A cancelled event is only visible to its host and to users who ever applied (404 `group_event_not_found`
+        for everyone else). `private_message` is null and `private_message_locked` true unless the caller is the
+        host or an approved applicant. `linked_trip_id` is only returned to the host. An invalid token is rejected with 401.
+      responses:
+        "200":
+          description: Event
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GroupEventDetail" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+    patch:
+      operationId: updateGroupEvent
+      summary: Edit a group event (host only)
+      description: |
+        Absent fields are unchanged. `end_date`, `linked_trip_id` and `trip_snapshot` can be cleared with an explicit
+        null. `status` may only be set to open or closed (use DELETE to cancel). `max_members` cannot go below the
+        current approved count. Changing `linked_trip_id` does not touch existing trip members.
+        A cancelled event cannot be edited (409 `event_cancelled`).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateGroupEventRequest" }
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GroupEventDetail" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: cancelGroupEvent
+      summary: Cancel a group event (host only; status becomes cancelled, idempotent)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Cancelled }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}/apply:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: applyGroupEvent
+      summary: Apply to join (or apply again after a rejection or cancellation)
+      description: |
+        409 codes: `host_cannot_apply`, `already_applied` (pending or approved), `registration_closed`
+        (closed, cancelled or already started), `event_full` (only when the event needs no approval).
+        Without approval the application is approved at once and the applicant joins the linked trip.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApplyRequest" }
+      responses:
+        "200":
+          description: Resulting application status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApplyResponse" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: withdrawGroupEventApplication
+      summary: Cancel my pending application or leave (approved members leave the linked trip too)
+      description: 404 `application_not_found` when the caller has no pending or approved application.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Cancelled }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}/applications:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: listGroupEventApplications
+      summary: Application list (host only), oldest first
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter by one status; default is pending and approved
+          schema: { $ref: "#/components/schemas/ApplicationStatus" }
+      responses:
+        "200":
+          description: Applications
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApplicationList" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}/applications/{appId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: appId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      operationId: removeGroupEventMember
+      summary: Remove an approved member (host only); the member leaves the linked trip
+      description: 409 `invalid_review` when the application is not approved.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Removed }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}/applications/{appId}/review:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: appId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: reviewGroupEventApplication
+      summary: Approve or reject a pending application (host only)
+      description: |
+        409 `invalid_review` when the application is not pending (or the event is cancelled),
+        409 `event_full` when approving a full event. Approving adds the applicant to the linked trip as a member.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReviewRequest" }
+      responses:
+        "200":
+          description: Reviewed application
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Application" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}/comments:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: listGroupEventComments
+      summary: Public comments, oldest first (token optional)
+      description: A valid token fills `mine`; an invalid token is rejected with 401.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: One page of comments
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CommentPage" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+    post:
+      operationId: createGroupEventComment
+      summary: Post a public comment
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCommentRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comment" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}/comments/{commentId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: commentId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      operationId: deleteGroupEventComment
+      summary: Delete a comment (author or host, soft delete)
+      description: 404 `comment_not_found` when the comment is missing or already deleted.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Deleted }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /group-events/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      operationId: likeGroupEvent
+      summary: Like (idempotent)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LikeState" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: unlikeGroupEvent
+      summary: Remove my like (idempotent)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LikeState" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /reports:
+    post:
+      operationId: createReport
+      summary: Report a group event or a comment
+      description: |
+        The target must exist and be visible to the caller (404 `group_event_not_found` / `comment_not_found`).
+        201 the first time, 200 when the caller already reported the same target (nothing new is stored).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateReportRequest" }
+      responses:
+        "200":
+          description: Already reported
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Report" }
+        "201":
+          description: Reported
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Report" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -713,3 +1080,215 @@ components:
         sources:
           type: array
           items: { type: string }
+
+    GroupEventCategory:
+      type: string
+      enum: [hiking, camping, bouldering, other]
+
+    GroupEventStatus:
+      type: string
+      enum: [open, closed, cancelled]
+
+    ApplicationStatus:
+      type: string
+      enum: [pending, approved, rejected, cancelled]
+
+    # Public profile of a person on a group event. Never carries an email or an account id.
+    EventUser:
+      type: object
+      required: [display_name, avatar]
+      properties:
+        display_name: { type: string }
+        avatar: { type: string }
+
+    GroupEventSummary:
+      type: object
+      required: [id, title, category, location, start_date, end_date, max_members, approved_count, like_count, comment_count, status, approval_required, host, created_at, liked, my_status, is_host]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        category: { $ref: "#/components/schemas/GroupEventCategory" }
+        location: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date, nullable: true }
+        max_members: { type: integer }
+        approved_count: { type: integer }
+        like_count: { type: integer }
+        comment_count: { type: integer }
+        status: { $ref: "#/components/schemas/GroupEventStatus" }
+        approval_required: { type: boolean }
+        host: { $ref: "#/components/schemas/EventUser" }
+        created_at: { type: string, format: date-time }
+        liked: { type: boolean, description: False without a token }
+        my_status:
+          type: string
+          nullable: true
+          description: "The caller's application status (pending, approved, rejected, cancelled), null if never applied or no token"
+        is_host: { type: boolean }
+
+    GroupEventDetail:
+      allOf:
+        - $ref: "#/components/schemas/GroupEventSummary"
+        - type: object
+          required: [description, private_message, private_message_locked, my_rejection_reason, linked_trip_id, trip_snapshot, snapshot_updated_at]
+          properties:
+            description: { type: string }
+            private_message: { type: string, nullable: true, description: Null unless the caller is the host or an approved applicant }
+            private_message_locked: { type: boolean, description: True when private_message is hidden from the caller }
+            my_rejection_reason: { type: string, nullable: true, description: Only for the applicant whose application was rejected with a reason }
+            linked_trip_id: { type: string, format: uuid, nullable: true, description: Only returned to the host }
+            trip_snapshot:
+              allOf:
+                - $ref: "#/components/schemas/TripSnapshot"
+              nullable: true
+            snapshot_updated_at: { type: string, format: date-time, nullable: true }
+
+    GroupEventPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/GroupEventSummary" }
+        next_cursor: { type: string, description: Absent on the last page }
+
+    # Display-only copy of a trip plan. At most 200 itinerary nodes and 64 KB in total (400 invalid_snapshot).
+    TripSnapshot:
+      type: object
+      required: [name, start_date, end_date, itinerary]
+      properties:
+        name: { type: string, maxLength: 200 }
+        start_date: { type: string, format: date, nullable: true }
+        end_date: { type: string, format: date, nullable: true }
+        itinerary:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/TripSnapshotNode" }
+
+    TripSnapshotNode:
+      type: object
+      required: [day, name, time, altitude, lat, lng]
+      properties:
+        day: { type: integer, minimum: 1 }
+        name: { type: string, maxLength: 200 }
+        time: { type: string, nullable: true, maxLength: 20, description: 'e.g. "07:00"' }
+        altitude: { type: integer, description: Metres }
+        lat: { type: number, format: double, nullable: true }
+        lng: { type: number, format: double, nullable: true }
+
+    CreateGroupEventRequest:
+      type: object
+      required: [title, category, start_date, max_members]
+      properties:
+        title: { type: string, minLength: 5, maxLength: 200 }
+        category: { $ref: "#/components/schemas/GroupEventCategory" }
+        location: { type: string, maxLength: 200 }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date, nullable: true }
+        max_members: { type: integer, minimum: 2, maximum: 100 }
+        approval_required: { type: boolean, default: true }
+        description: { type: string, maxLength: 4000 }
+        private_message: { type: string, maxLength: 2000 }
+        linked_trip_id: { type: string, format: uuid, nullable: true }
+        trip_snapshot: { $ref: "#/components/schemas/TripSnapshot" }
+
+    UpdateGroupEventRequest:
+      type: object
+      properties:
+        title: { type: string, minLength: 5, maxLength: 200 }
+        category: { $ref: "#/components/schemas/GroupEventCategory" }
+        location: { type: string, maxLength: 200 }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date, nullable: true }
+        max_members: { type: integer, minimum: 2, maximum: 100 }
+        approval_required: { type: boolean }
+        description: { type: string, maxLength: 4000 }
+        private_message: { type: string, maxLength: 2000 }
+        status: { type: string, enum: [open, closed] }
+        linked_trip_id: { type: string, format: uuid, nullable: true }
+        trip_snapshot: { $ref: "#/components/schemas/TripSnapshot" }
+
+    ApplyRequest:
+      type: object
+      properties:
+        message: { type: string, maxLength: 500 }
+
+    ApplyResponse:
+      type: object
+      required: [my_status]
+      properties:
+        my_status: { $ref: "#/components/schemas/ApplicationStatus" }
+
+    Application:
+      type: object
+      required: [id, user, status, message, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        user: { $ref: "#/components/schemas/EventUser" }
+        status: { $ref: "#/components/schemas/ApplicationStatus" }
+        message: { type: string }
+        created_at: { type: string, format: date-time }
+
+    ApplicationList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Application" }
+
+    ReviewRequest:
+      type: object
+      required: [approve]
+      properties:
+        approve: { type: boolean }
+        reason: { type: string, maxLength: 500, description: Shown to the applicant when rejecting }
+
+    Comment:
+      type: object
+      required: [id, user, body, created_at, mine]
+      properties:
+        id: { type: string, format: uuid }
+        user: { $ref: "#/components/schemas/EventUser" }
+        body: { type: string }
+        created_at: { type: string, format: date-time }
+        mine: { type: boolean }
+
+    CommentPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Comment" }
+        next_cursor: { type: string, description: Absent on the last page }
+
+    CreateCommentRequest:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1, maxLength: 1000 }
+
+    LikeState:
+      type: object
+      required: [liked, like_count]
+      properties:
+        liked: { type: boolean }
+        like_count: { type: integer }
+
+    CreateReportRequest:
+      type: object
+      required: [target_type, target_id, reason]
+      properties:
+        target_type: { type: string, enum: [group_event, group_event_comment] }
+        target_id: { type: string, format: uuid }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+
+    Report:
+      type: object
+      required: [id, target_type, target_id, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        target_type: { type: string, enum: [group_event, group_event_comment] }
+        target_id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
