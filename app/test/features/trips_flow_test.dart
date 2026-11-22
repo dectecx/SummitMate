@@ -181,7 +181,13 @@ void main() {
     await tapText(tester, '別人的行程');
     expect(find.text('向陽山屋'), findsOneWidget);
     expect(find.text('新增節點'), findsNothing);
-    expect(find.byType(PopupMenuButton<String>), findsNothing);
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await settle(tester);
+    expect(find.text('編輯行程'), findsNothing, reason: 'a team member cannot edit the trip');
+    expect(find.text('刪除行程'), findsNothing);
+    expect(find.text('存成範本'), findsOneWidget, reason: 'gear and meals are personal, so templates are for everyone');
+    await tester.tapAt(const Offset(5, 5));
+    await settle(tester);
     expect(find.byTooltip('標記已抵達'), findsNothing);
 
     await tapText(tester, '向陽山屋');

@@ -7,6 +7,9 @@ import 'harness.dart';
 
 void main() {
   testWidgets('the help page lists the questions and opens an answer', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final app = await AppHarness.start(tester, welcomeSeen: true);
     await tapText(tester, '我');
     await tapText(tester, '使用說明');
