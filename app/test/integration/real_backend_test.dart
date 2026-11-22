@@ -10,6 +10,7 @@ import 'package:summitmate/core/sync/dio_sync_api.dart';
 import 'package:summitmate/core/sync/outbox_writer.dart';
 import 'package:summitmate/core/sync/sync_engine.dart';
 import 'package:summitmate/core/sync/sync_entity.dart';
+import 'package:summitmate/features/events/data/events_api.dart';
 import 'package:summitmate/features/library/data/shared_sets_api.dart';
 import 'package:summitmate/features/library/domain/set_item.dart';
 import 'package:uuid/uuid.dart';
@@ -143,4 +144,59 @@ void main() {
     }
     await expectLater(api.get(created.id), throwsA(isA<SharedSetsException>().having((e) => e.code, 'code', 'shared_set_not_found')));
   }, skip: enabled ? false : 'set E2E_BASE_URL and E2E_TOKEN');
+
+  test('group events: approval adds the applicant to the linked trip, removal takes them out again', () async {
+    final token2 = Platform.environment['E2E_TOKEN_2']!;
+    Dio dioFor(String tk) => Dio(BaseOptions(baseUrl: baseUrl!, headers: {'Authorization': 'Bearer $tk'}, validateStatus: (s) => s != null && s < 400));
+    final apiA = DioEventsApi(dioFor(token!)), apiB = DioEventsApi(dioFor(token2));
+    final dbOther = memoryDb();
+    final engineOther = SyncEngine(db: dbOther, api: DioSyncApi(dioFor(token2)), gate: FakeGate());
+    // The other device knows whose data it holds (the app sets this at sign-in); removal from a trip relies on it.
+    final me = (await dioFor(token2).get<Map<String, dynamic>>('/auth/me')).data!;
+    await dbOther.customStatement('UPDATE app_meta SET account_id = ? WHERE id = 1', [me['id']]);
+    const uuid = Uuid();
+    final trip = uuid.v7();
+    String? eventId;
+    try {
+      await localCreate(dbA, writerA, tripsEntity, tripRow(trip, name: '揪團行程'));
+      await localCreate(dbA, writerA, itineraryItemsEntity, itemRow(uuid.v7(), trip, name: '登山口'));
+      expect(await engineA.sync(), SyncOutcome.success);
+
+      final created = await apiA.create(
+        EventInput(title: 'E2E 揪團', category: EventCategory.hiking, startDate: '2099-01-10', maxMembers: 3, privateMessage: '集合：車站 06:00', linkedTripId: trip),
+      );
+      eventId = created.id;
+      expect(created.isHost, isTrue);
+      expect(created.privateMessageLocked, isFalse);
+
+      // The other person sees the event but not the secret, and does not have the trip yet.
+      final seen = await apiB.get(created.id);
+      expect([seen.privateMessageLocked, seen.privateMessage, seen.linkedTripId], [true, null, null]);
+      expect(await engineOther.sync(), SyncOutcome.success);
+      expect(await select(dbOther, 'SELECT id FROM trips'), isEmpty);
+
+      expect(await apiB.apply(created.id, message: '我想參加'), ApplicationStatus.pending);
+      final pending = await apiA.applications(created.id, status: ApplicationStatus.pending);
+      expect(pending.single.message, '我想參加');
+      await apiA.review(created.id, pending.single.id, approve: true);
+
+      // Now the secret is unlocked and the trip arrives through the normal sync.
+      expect((await apiB.get(created.id)).privateMessage, '集合：車站 06:00');
+      expect(await engineOther.sync(), SyncOutcome.success);
+      expect((await select(dbOther, 'SELECT name FROM trips')).single['name'], '揪團行程');
+      expect((await select(dbOther, "SELECT role FROM trip_members WHERE role = 'member'")).length, 1);
+
+      // Removing the member takes the trip away from them again.
+      await apiA.removeMember(created.id, pending.single.id);
+      expect(await engineOther.sync(), SyncOutcome.success);
+      expect(await select(dbOther, 'SELECT id FROM trips'), isEmpty);
+      expect((await apiB.get(created.id)).privateMessageLocked, isTrue);
+    } finally {
+      if (eventId != null) await apiA.cancel(eventId);
+      await localDelete(dbA, writerA, tripsEntity, trip);
+      await engineA.sync();
+      await engineOther.dispose();
+      await dbOther.close();
+    }
+  }, skip: enabled && Platform.environment['E2E_TOKEN_2'] != null ? false : 'set E2E_BASE_URL, E2E_TOKEN and E2E_TOKEN_2');
 }
