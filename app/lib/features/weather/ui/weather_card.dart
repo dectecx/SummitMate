@@ -34,7 +34,7 @@ class WeatherCard extends ConsumerWidget {
 
     Widget body;
     if (query == null) {
-      body = const Text('在行程節點填上座標後，這裡就會顯示該地的天氣預報。');
+      body = const Text('在行程節點選擇山岳地點後，這裡就會顯示該地的天氣預報。');
     } else {
       body = PlaceWeather(query: query, from: trip.start, to: trip.end);
     }

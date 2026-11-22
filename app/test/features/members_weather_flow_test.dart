@@ -75,7 +75,7 @@ void main() {
     expect(find.textContaining('登入後才能邀請隊友'), findsOneWidget);
     expect(find.text('邀請'), findsNothing);
     expect(find.text('成員（0）'), findsOneWidget);
-    expect(find.textContaining('填上座標'), findsOneWidget);
+    expect(find.textContaining('選擇山岳地點'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -214,7 +214,7 @@ void main() {
     await tapText(tester, '座標');
     await tapText(tester, '新增節點');
     await enter(tester, '名稱', '山頭');
-    await tapText(tester, '座標（選填，用來查天氣）');
+    await tapText(tester, '手動輸入座標（進階）');
     await enter(tester, '緯度', '123');
     await tapText(tester, '新增');
     expect(find.text('緯度 需介於 -90 到 90'), findsOneWidget);

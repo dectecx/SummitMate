@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../explore/domain/mountain_models.dart';
+import '../../explore/providers.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
 
@@ -32,6 +34,9 @@ class ItemFormSheet extends ConsumerStatefulWidget {
 class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
   final _form = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.item?.name);
+  final _nameFocus = FocusNode();
+  // Name of the place chosen from the suggestions (null when the coordinates were typed or came from an older save).
+  String? _placeName;
   late final _altitude = TextEditingController(text: (widget.item?.altitude ?? 0) == 0 ? '' : '${widget.item!.altitude}');
   late final _distance = TextEditingController(text: (widget.item?.distance ?? 0) == 0 ? '' : formatKm(widget.item!.distance));
   late final _lat = TextEditingController(text: widget.item?.lat?.toString());
@@ -44,6 +49,7 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
   @override
   void dispose() {
     _name.dispose();
+    _nameFocus.dispose();
     _altitude.dispose();
     _distance.dispose();
     _lat.dispose();
@@ -97,6 +103,23 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
     if (mounted) Navigator.pop(context);
   }
 
+  bool get _hasPlace => double.tryParse(_lat.text.trim()) != null && double.tryParse(_lng.text.trim()) != null;
+
+  void _pickPlace(Mountain m) {
+    setState(() {
+      _placeName = m.name;
+      _lat.text = m.latitude.toStringAsFixed(5);
+      _lng.text = m.longitude.toStringAsFixed(5);
+      if (_altitude.text.trim().isEmpty) _altitude.text = '${m.elevation}';
+    });
+  }
+
+  void _clearPlace() => setState(() {
+    _placeName = null;
+    _lat.clear();
+    _lng.clear();
+  });
+
   Widget _coordField(TextEditingController c, String label, double min, double max, bool ro) => TextFormField(
     controller: c,
     readOnly: ro,
@@ -116,6 +139,10 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
     final editing = widget.item != null;
     final ro = widget.readOnly;
     final items = ref.watch(itineraryProvider(widget.trip.id)).value ?? const <ItineraryItem>[];
+    final mountains = switch (ref.watch(mountainsProvider).value) {
+      MountainsReady(:final data) => data.mountains,
+      _ => const <Mountain>[],
+    };
     final days = dayIndexesFor(widget.trip, items);
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.viewInsetsOf(context).bottom),
@@ -128,14 +155,65 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
             children: [
               Text(ro ? '節點' : (editing ? '編輯節點' : '新增節點'), style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _name,
-                autofocus: !editing && !ro,
-                readOnly: ro,
-                textInputAction: TextInputAction.next,
-                validator: (v) => (v ?? '').trim().isEmpty ? '請輸入名稱' : null,
-                decoration: const InputDecoration(labelText: '名稱', hintText: '例如：向陽山屋'),
+              RawAutocomplete<Mountain>(
+                textEditingController: _name,
+                focusNode: _nameFocus,
+                displayStringForOption: (m) => m.name,
+                optionsBuilder: (value) {
+                  final q = value.text.trim();
+                  if (ro || q.isEmpty || q == _placeName) return const Iterable<Mountain>.empty();
+                  return searchMountains(mountains, query: q).take(6);
+                },
+                onSelected: _pickPlace,
+                fieldViewBuilder: (context, controller, focusNode, onSubmitted) => TextFormField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  autofocus: !editing && !ro,
+                  readOnly: ro,
+                  textInputAction: TextInputAction.next,
+                  validator: (v) => (v ?? '').trim().isEmpty ? '請輸入名稱' : null,
+                  decoration: const InputDecoration(labelText: '名稱', hintText: '例如：玉山（輸入山名可選擇地點）'),
+                ),
+                optionsViewBuilder: (context, onSelected, options) => Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(8),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 280, maxWidth: 480),
+                      child: ListView(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        children: [
+                          for (final m in options)
+                            ListTile(
+                              key: ValueKey('place-${m.id}'),
+                              dense: true,
+                              leading: const Icon(Icons.landscape_outlined),
+                              title: Text(m.name),
+                              subtitle: Text('${m.region}  ·  ${m.elevation} m'),
+                              onTap: () => onSelected(m),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
+              if (_hasPlace)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: InputChip(
+                      key: const ValueKey('place-chip'),
+                      avatar: const Icon(Icons.place_outlined, size: 18),
+                      label: Text(_placeName == null ? '已設定座標 ${_lat.text}, ${_lng.text}' : '地點：$_placeName'),
+                      onDeleted: ro ? null : _clearPlace,
+                      deleteButtonTooltipMessage: '移除地點',
+                    ),
+                  ),
+                ),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -191,7 +269,7 @@ class _ItemFormSheetState extends ConsumerState<ItemFormSheet> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 initiallyExpanded: _lat.text.isNotEmpty,
-                title: const Text('座標（選填，用來查天氣）'),
+                title: const Text('手動輸入座標（進階）'),
                 children: [
                   Row(
                     children: [
