@@ -35,17 +35,36 @@ var publicPaths = map[string]bool{
 	"/auth/logout":              true,
 }
 
+// isOptionalAuth reports routes that anyone may read but that also use the caller's identity
+// when a token is sent (shared sets: `mine`, owner access). Writes still require a token in the handler.
+func isOptionalAuth(method, path string) bool {
+	if method != http.MethodGet {
+		return false
+	}
+	if path == "/shared-sets" {
+		return true
+	}
+	id, ok := strings.CutPrefix(path, "/shared-sets/")
+	return ok && id != "" && !strings.Contains(id, "/")
+}
+
 // Middleware authenticates every request except the public paths.
 func Middleware(tokens *TokenManager) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if publicPaths[strings.TrimPrefix(r.URL.Path, BasePath)] {
+			path := strings.TrimPrefix(r.URL.Path, BasePath)
+			optional := isOptionalAuth(r.Method, path)
+			if publicPaths[path] {
 				next.ServeHTTP(w, r)
 				return
 			}
 			h := r.Header.Get("Authorization")
 			raw, ok := strings.CutPrefix(h, "Bearer ")
 			if !ok || raw == "" {
+				if optional && h == "" {
+					next.ServeHTTP(w, r)
+					return
+				}
 				httpx.WriteError(w, r, apperror.ErrUnauthorized)
 				return
 			}

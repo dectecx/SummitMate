@@ -181,12 +181,49 @@ CREATE TABLE meal_items (
 
 CREATE INDEX idx_meal_items_user_updated ON meal_items(user_id, updated_at);
 
+-- Personal data that belongs to no trip: a row is only visible to and writable by its user_id.
+CREATE TABLE library_items (
+    id         UUID PRIMARY KEY,
+    user_id    UUID             NOT NULL REFERENCES users(id),
+    kind       VARCHAR(10)      NOT NULL CHECK (kind IN ('gear', 'meal')),
+    name       VARCHAR(200)     NOT NULL DEFAULT '',
+    category   VARCHAR(50)      NOT NULL DEFAULT 'other',
+    weight     DOUBLE PRECISION NOT NULL DEFAULT 0 CHECK (weight >= 0),
+    calories   DOUBLE PRECISION NOT NULL DEFAULT 0 CHECK (calories >= 0),
+    note       TEXT             NOT NULL DEFAULT '',
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ      NOT NULL DEFAULT clock_timestamp(),
+    created_by UUID             NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ      NOT NULL DEFAULT clock_timestamp(),
+    updated_by UUID             NOT NULL REFERENCES users(id)
+);
+
+CREATE INDEX idx_library_items_user_updated ON library_items(user_id, updated_at);
+
+-- items is a JSON array (max 300 elements, validated by the sync service).
+CREATE TABLE templates (
+    id         UUID PRIMARY KEY,
+    user_id    UUID         NOT NULL REFERENCES users(id),
+    title      VARCHAR(200) NOT NULL DEFAULT '',
+    note       TEXT         NOT NULL DEFAULT '',
+    items      TEXT         NOT NULL DEFAULT '[]',
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    created_by UUID         NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),
+    updated_by UUID         NOT NULL REFERENCES users(id)
+);
+
+CREATE INDEX idx_templates_user_updated ON templates(user_id, updated_at);
+
 CREATE TRIGGER trg_trips_updated_at           BEFORE INSERT OR UPDATE ON trips           FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_trip_members_updated_at    BEFORE INSERT OR UPDATE ON trip_members    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_itinerary_items_updated_at BEFORE INSERT OR UPDATE ON itinerary_items FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_gear_items_updated_at      BEFORE INSERT OR UPDATE ON gear_items      FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_meal_plan_days_updated_at  BEFORE INSERT OR UPDATE ON meal_plan_days  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_meal_items_updated_at      BEFORE INSERT OR UPDATE ON meal_items      FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_library_items_updated_at   BEFORE INSERT OR UPDATE ON library_items   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_templates_updated_at       BEFORE INSERT OR UPDATE ON templates       FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Idempotency record for POST /sync/push.
 CREATE TABLE processed_ops (
@@ -197,3 +234,22 @@ CREATE TABLE processed_ops (
 );
 
 CREATE INDEX idx_processed_ops_created_at ON processed_ops(created_at);
+
+-- Cloud sharing (online only, not synced). Items use the same JSON format as templates.items.
+CREATE TABLE shared_sets (
+    id              UUID PRIMARY KEY,
+    owner_id        UUID             NOT NULL REFERENCES users(id),
+    title           VARCHAR(200)     NOT NULL,
+    author_name     VARCHAR(100)     NOT NULL,
+    visibility      VARCHAR(10)      NOT NULL CHECK (visibility IN ('public', 'protected', 'private')),
+    access_key_hash TEXT,
+    items           JSONB            NOT NULL,
+    total_weight    DOUBLE PRECISION NOT NULL DEFAULT 0,
+    gear_count      INT              NOT NULL DEFAULT 0,
+    meal_count      INT              NOT NULL DEFAULT 0,
+    deleted_at      TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ      NOT NULL DEFAULT clock_timestamp()
+);
+
+CREATE INDEX idx_shared_sets_public ON shared_sets(created_at DESC) WHERE visibility <> 'private' AND deleted_at IS NULL;
+CREATE INDEX idx_shared_sets_owner  ON shared_sets(owner_id, created_at DESC) WHERE deleted_at IS NULL;

@@ -44,3 +44,20 @@ func TestMiddlewareIsDenyByDefault(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, call("/sync/changes", "Bearer "+tok))
 	assert.Equal(t, uid, gotUser)
 }
+
+func TestOptionalAuthRoutes(t *testing.T) {
+	for _, c := range []struct {
+		method, path string
+		want         bool
+	}{
+		{http.MethodGet, "/shared-sets", true},
+		{http.MethodGet, "/shared-sets/abc", true},
+		{http.MethodPost, "/shared-sets", false},
+		{http.MethodDelete, "/shared-sets/abc", false},
+		{http.MethodGet, "/shared-sets/abc/x", false},
+		{http.MethodGet, "/shared-sets/", false},
+		{http.MethodGet, "/sync/changes", false},
+	} {
+		assert.Equal(t, c.want, isOptionalAuth(c.method, c.path), c.method+" "+c.path)
+	}
+}

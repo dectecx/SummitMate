@@ -17,6 +17,7 @@ import (
 	"summitmate/internal/platform/mail"
 	"summitmate/internal/platform/ratelimit"
 	"summitmate/internal/server"
+	"summitmate/internal/sharedsets"
 	"summitmate/internal/sync"
 	"summitmate/internal/weather"
 )
@@ -67,10 +68,14 @@ func run() error {
 	srv := &http.Server{
 		Addr: ":" + cfg.Port,
 		Handler: server.NewRouter(server.Options{
-			Auth:           auth.NewHandler(authSvc),
-			Sync:           sync.NewHandler(sync.NewService(pool)),
-			Weather:        weather.NewHandler(weather.NewDefaultService(weather.NewOpenMeteo(weather.OpenMeteoURL))),
-			Explore:        explore.NewHandler(exploreSvc),
+			Auth:    auth.NewHandler(authSvc),
+			Sync:    sync.NewHandler(sync.NewService(pool)),
+			Weather: weather.NewHandler(weather.NewDefaultService(weather.NewOpenMeteo(weather.OpenMeteoURL))),
+			Explore: explore.NewHandler(exploreSvc),
+			SharedSets: sharedsets.NewHandler(sharedsets.NewService(sharedsets.NewPgRepository(pool), sharedsets.Options{
+				BcryptCost: cfg.BcryptCost,
+				WrongKeys:  ratelimit.NewMemory(10, 15*time.Minute),
+			})),
 			Tokens:         tokens,
 			MaxBodyBytes:   cfg.MaxBodyBytes,
 			RequestTimeout: cfg.RequestTimeout,

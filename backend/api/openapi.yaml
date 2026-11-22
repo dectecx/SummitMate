@@ -324,6 +324,98 @@ paths:
         "304":
           description: Not modified (If-None-Match matched), no body
 
+  /shared-sets:
+    get:
+      operationId: listSharedSets
+      summary: List cloud shared gear sets (scope=public needs no token)
+      description: |
+        `scope=public` returns public and protected sets (never private), newest first; a valid token is
+        optional and only used to fill `mine`. `scope=mine` requires a token and returns the caller's
+        sets of every visibility. An invalid token on this path is rejected with 401.
+      parameters:
+        - name: scope
+          in: query
+          required: true
+          schema: { type: string, enum: [public, mine] }
+        - name: q
+          in: query
+          required: false
+          description: Case-insensitive title substring
+          schema: { type: string, maxLength: 100 }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque `next_cursor` of the previous page
+          schema: { type: string }
+      responses:
+        "200":
+          description: One page of summaries
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SharedSetPage" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+    post:
+      operationId: createSharedSet
+      summary: Share a gear set to the cloud
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateSharedSetRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SharedSetSummary" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+
+  /shared-sets/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getSharedSet
+      summary: Read a shared set with its items (token optional)
+      description: |
+        Public sets are readable by everyone, private sets only by the owner (404 for others),
+        protected sets by the owner or with the correct `X-Access-Key`
+        (403 `access_key_required` when missing, 403 `invalid_access_key` when wrong,
+        429 `too_many_requests` after too many wrong keys).
+        An invalid token on this path is rejected with 401.
+      parameters:
+        - name: X-Access-Key
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Set with items
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SharedSetDetail" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: deleteSharedSet
+      summary: Delete one of my shared sets (soft delete)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Deleted }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -435,9 +527,72 @@ components:
         tokens: { $ref: "#/components/schemas/TokenPair" }
         user: { $ref: "#/components/schemas/User" }
 
+    SharedVisibility:
+      type: string
+      enum: [public, protected, private]
+
+    SharedItem:
+      type: object
+      required: [kind, name, category, weight, quantity, note]
+      properties:
+        kind: { type: string, enum: [gear, meal] }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        category: { type: string, maxLength: 50, description: Gear category, or meal type for meals }
+        weight: { type: number, format: double, minimum: 0, description: Grams }
+        quantity: { type: integer, minimum: 0, maximum: 9999 }
+        calories: { type: number, format: double, minimum: 0, description: kcal, meals only }
+        day: { type: integer, minimum: 1, maximum: 60, description: Day number, meals only }
+        note: { type: string, maxLength: 1000 }
+
+    SharedSetSummary:
+      type: object
+      required: [id, title, author_name, visibility, total_weight, gear_count, meal_count, created_at, mine]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        author_name: { type: string }
+        visibility: { $ref: "#/components/schemas/SharedVisibility" }
+        total_weight: { type: number, format: double, description: Grams, gear only, including quantity }
+        gear_count: { type: integer }
+        meal_count: { type: integer }
+        created_at: { type: string, format: date-time }
+        mine: { type: boolean }
+
+    SharedSetDetail:
+      allOf:
+        - $ref: "#/components/schemas/SharedSetSummary"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/SharedItem" }
+
+    SharedSetPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/SharedSetSummary" }
+        next_cursor: { type: string, description: Absent on the last page }
+
+    CreateSharedSetRequest:
+      type: object
+      required: [title, visibility, items]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        visibility: { $ref: "#/components/schemas/SharedVisibility" }
+        access_key: { type: string, description: "Required for protected (4-12 ASCII letters/digits), forbidden otherwise" }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 300
+          items: { $ref: "#/components/schemas/SharedItem" }
+
     SyncEntity:
       type: string
-      enum: [trips, trip_members, itinerary_items, gear_items, meal_plan_days, meal_items]
+      enum: [trips, trip_members, itinerary_items, gear_items, meal_plan_days, meal_items, library_items, templates]
 
     # Rows are returned as JSON objects whose keys are the column names of the table.
     # Tombstones have a non-null deleted_at.

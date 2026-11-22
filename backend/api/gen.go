@@ -74,12 +74,53 @@ func (e PushResultStatus) Valid() bool {
 	}
 }
 
+// Defines values for SharedItemKind.
+const (
+	Gear SharedItemKind = "gear"
+	Meal SharedItemKind = "meal"
+)
+
+// Valid indicates whether the value is a known member of the SharedItemKind enum.
+func (e SharedItemKind) Valid() bool {
+	switch e {
+	case Gear:
+		return true
+	case Meal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SharedVisibility.
+const (
+	SharedVisibilityPrivate   SharedVisibility = "private"
+	SharedVisibilityProtected SharedVisibility = "protected"
+	SharedVisibilityPublic    SharedVisibility = "public"
+)
+
+// Valid indicates whether the value is a known member of the SharedVisibility enum.
+func (e SharedVisibility) Valid() bool {
+	switch e {
+	case SharedVisibilityPrivate:
+		return true
+	case SharedVisibilityProtected:
+		return true
+	case SharedVisibilityPublic:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SyncEntity.
 const (
 	GearItems      SyncEntity = "gear_items"
 	ItineraryItems SyncEntity = "itinerary_items"
+	LibraryItems   SyncEntity = "library_items"
 	MealItems      SyncEntity = "meal_items"
 	MealPlanDays   SyncEntity = "meal_plan_days"
+	Templates      SyncEntity = "templates"
 	TripMembers    SyncEntity = "trip_members"
 	Trips          SyncEntity = "trips"
 )
@@ -91,13 +132,35 @@ func (e SyncEntity) Valid() bool {
 		return true
 	case ItineraryItems:
 		return true
+	case LibraryItems:
+		return true
 	case MealItems:
 		return true
 	case MealPlanDays:
 		return true
+	case Templates:
+		return true
 	case TripMembers:
 		return true
 	case Trips:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListSharedSetsParamsScope.
+const (
+	ListSharedSetsParamsScopeMine   ListSharedSetsParamsScope = "mine"
+	ListSharedSetsParamsScopePublic ListSharedSetsParamsScope = "public"
+)
+
+// Valid indicates whether the value is a known member of the ListSharedSetsParamsScope enum.
+func (e ListSharedSetsParamsScope) Valid() bool {
+	switch e {
+	case ListSharedSetsParamsScopeMine:
+		return true
+	case ListSharedSetsParamsScopePublic:
 		return true
 	default:
 		return false
@@ -123,6 +186,15 @@ type ChangesResponse struct {
 	HasMore    bool                                `json:"has_more"`
 	NextSince  time.Time                           `json:"next_since"`
 	ServerTime time.Time                           `json:"server_time"`
+}
+
+// CreateSharedSetRequest defines model for CreateSharedSetRequest.
+type CreateSharedSetRequest struct {
+	// AccessKey Required for protected (4-12 ASCII letters/digits), forbidden otherwise
+	AccessKey  *string          `json:"access_key,omitempty"`
+	Items      []SharedItem     `json:"items"`
+	Title      string           `json:"title"`
+	Visibility SharedVisibility `json:"visibility"`
 }
 
 // Error defines model for Error.
@@ -243,6 +315,70 @@ type RegisterResponse struct {
 	Email openapi_types.Email `json:"email"`
 }
 
+// SharedItem defines model for SharedItem.
+type SharedItem struct {
+	// Calories kcal
+	Calories *float64 `json:"calories,omitempty"`
+
+	// Category Gear category
+	Category string `json:"category"`
+
+	// Day Day number
+	Day      *int           `json:"day,omitempty"`
+	Kind     SharedItemKind `json:"kind"`
+	Name     string         `json:"name"`
+	Note     string         `json:"note"`
+	Quantity int            `json:"quantity"`
+
+	// Weight Grams
+	Weight float64 `json:"weight"`
+}
+
+// SharedItemKind defines model for SharedItem.Kind.
+type SharedItemKind string
+
+// SharedSetDetail defines model for SharedSetDetail.
+type SharedSetDetail struct {
+	AuthorName string             `json:"author_name"`
+	CreatedAt  time.Time          `json:"created_at"`
+	GearCount  int                `json:"gear_count"`
+	Id         openapi_types.UUID `json:"id"`
+	Items      []SharedItem       `json:"items"`
+	MealCount  int                `json:"meal_count"`
+	Mine       bool               `json:"mine"`
+	Title      string             `json:"title"`
+
+	// TotalWeight Grams
+	TotalWeight float64          `json:"total_weight"`
+	Visibility  SharedVisibility `json:"visibility"`
+}
+
+// SharedSetPage defines model for SharedSetPage.
+type SharedSetPage struct {
+	Items []SharedSetSummary `json:"items"`
+
+	// NextCursor Absent on the last page
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// SharedSetSummary defines model for SharedSetSummary.
+type SharedSetSummary struct {
+	AuthorName string             `json:"author_name"`
+	CreatedAt  time.Time          `json:"created_at"`
+	GearCount  int                `json:"gear_count"`
+	Id         openapi_types.UUID `json:"id"`
+	MealCount  int                `json:"meal_count"`
+	Mine       bool               `json:"mine"`
+	Title      string             `json:"title"`
+
+	// TotalWeight Grams
+	TotalWeight float64          `json:"total_weight"`
+	Visibility  SharedVisibility `json:"visibility"`
+}
+
+// SharedVisibility defines model for SharedVisibility.
+type SharedVisibility string
+
 // SyncEntity defines model for SyncEntity.
 type SyncEntity string
 
@@ -334,6 +470,26 @@ type GetExploreMountainsParams struct {
 	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 }
 
+// ListSharedSetsParams defines parameters for ListSharedSets.
+type ListSharedSetsParams struct {
+	Scope ListSharedSetsParamsScope `form:"scope" json:"scope"`
+
+	// Q Case-insensitive title substring
+	Q     *string `form:"q,omitempty" json:"q,omitempty"`
+	Limit *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque `next_cursor` of the previous page
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// ListSharedSetsParamsScope defines parameters for ListSharedSets.
+type ListSharedSetsParamsScope string
+
+// GetSharedSetParams defines parameters for GetSharedSet.
+type GetSharedSetParams struct {
+	XAccessKey *string `json:"X-Access-Key,omitempty"`
+}
+
 // PullChangesParams defines parameters for PullChanges.
 type PullChangesParams struct {
 	Since *time.Time `form:"since,omitempty" json:"since,omitempty"`
@@ -376,6 +532,9 @@ type ResendVerificationJSONRequestBody ResendVerificationJSONBody
 
 // VerifyEmailJSONRequestBody defines body for VerifyEmail for application/json ContentType.
 type VerifyEmailJSONRequestBody = VerifyEmailRequest
+
+// CreateSharedSetJSONRequestBody defines body for CreateSharedSet for application/json ContentType.
+type CreateSharedSetJSONRequestBody = CreateSharedSetRequest
 
 // PushOpsJSONRequestBody defines body for PushOps for application/json ContentType.
 type PushOpsJSONRequestBody = PushRequest
@@ -421,6 +580,18 @@ type ServerInterface interface {
 	// GetHealth Liveness check
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
+	// ListSharedSets List cloud shared gear sets (scope=public needs no token)
+	// (GET /shared-sets)
+	ListSharedSets(w http.ResponseWriter, r *http.Request, params ListSharedSetsParams)
+	// CreateSharedSet Share a gear set to the cloud
+	// (POST /shared-sets)
+	CreateSharedSet(w http.ResponseWriter, r *http.Request)
+	// DeleteSharedSet Delete one of my shared sets (soft delete)
+	// (DELETE /shared-sets/{id})
+	DeleteSharedSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// GetSharedSet Read a shared set with its items (token optional)
+	// (GET /shared-sets/{id})
+	GetSharedSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params GetSharedSetParams)
 	// PullChanges Pull rows changed since a timestamp (including tombstones)
 	// (GET /sync/changes)
 	PullChanges(w http.ResponseWriter, r *http.Request, params PullChangesParams)
@@ -511,6 +682,30 @@ func (_ Unimplemented) GetExploreMountains(w http.ResponseWriter, r *http.Reques
 // GetHealth Liveness check
 // (GET /health)
 func (_ Unimplemented) GetHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListSharedSets List cloud shared gear sets (scope=public needs no token)
+// (GET /shared-sets)
+func (_ Unimplemented) ListSharedSets(w http.ResponseWriter, r *http.Request, params ListSharedSetsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateSharedSet Share a gear set to the cloud
+// (POST /shared-sets)
+func (_ Unimplemented) CreateSharedSet(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteSharedSet Delete one of my shared sets (soft delete)
+// (DELETE /shared-sets/{id})
+func (_ Unimplemented) DeleteSharedSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetSharedSet Read a shared set with its items (token optional)
+// (GET /shared-sets/{id})
+func (_ Unimplemented) GetSharedSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params GetSharedSetParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -739,6 +934,168 @@ func (siw *ServerInterfaceWrapper) GetHealth(w http.ResponseWriter, r *http.Requ
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetHealth(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListSharedSets operation middleware
+func (siw *ServerInterfaceWrapper) ListSharedSets(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListSharedSetsParams
+
+	// ------------- Required query parameter "scope" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "scope", r.URL.Query(), &params.Scope, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "scope"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "scope", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "q" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "q", r.URL.Query(), &params.Q, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "q"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "q", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListSharedSets(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateSharedSet operation middleware
+func (siw *ServerInterfaceWrapper) CreateSharedSet(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateSharedSet(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteSharedSet operation middleware
+func (siw *ServerInterfaceWrapper) DeleteSharedSet(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteSharedSet(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetSharedSet operation middleware
+func (siw *ServerInterfaceWrapper) GetSharedSet(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSharedSetParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-Access-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Access-Key")]; found {
+		var XAccessKey string
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Access-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Access-Key", valueList[0], &XAccessKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Access-Key", Err: err})
+			return
+		}
+
+		params.XAccessKey = &XAccessKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSharedSet(w, r, id, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1102,6 +1459,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/explore/mountains", wrapper.GetExploreMountains)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/shared-sets", wrapper.ListSharedSets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/shared-sets", wrapper.CreateSharedSet)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/shared-sets/{id}", wrapper.DeleteSharedSet)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/shared-sets/{id}", wrapper.GetSharedSet)
 	})
 
 	return r

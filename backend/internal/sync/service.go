@@ -84,6 +84,10 @@ var pullQueries = map[string]string{
 		WHERE t.user_id = $1 AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
 	"meal_items": `SELECT updated_at, to_jsonb(t) FROM meal_items t
 		WHERE t.user_id = $1 AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
+	"library_items": `SELECT updated_at, to_jsonb(t) FROM library_items t
+		WHERE t.user_id = $1 AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
+	"templates": `SELECT updated_at, to_jsonb(t) FROM templates t
+		WHERE t.user_id = $1 AND t.updated_at > $2 ORDER BY t.updated_at LIMIT $3`,
 }
 
 // Pull returns rows changed after since (all rows when since is nil).
@@ -283,6 +287,9 @@ func loadExisting(ctx context.Context, tx pgx.Tx, e entity, id uuid.UUID) (exist
 	case accessPersonal:
 		err = tx.QueryRow(ctx, `SELECT trip_id, user_id, deleted_at FROM `+e.table+` WHERE id = $1 FOR UPDATE`, id).
 			Scan(&ex.tripID, &ex.userID, &deletedAt)
+	case accessOwner:
+		err = tx.QueryRow(ctx, `SELECT user_id, deleted_at FROM `+e.table+` WHERE id = $1 FOR UPDATE`, id).
+			Scan(&ex.userID, &deletedAt)
 	}
 	if errors.Is(err, pgx.ErrNoRows) {
 		return existing{}, nil
@@ -312,6 +319,9 @@ func applyOp(ctx context.Context, tx pgx.Tx, userID uuid.UUID, op Op) (Result, e
 
 // canWrite checks permission to modify an existing row.
 func canWrite(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, ex existing, forDelete bool) (bool, error) {
+	if e.access == accessOwner {
+		return ex.userID == userID, nil
+	}
 	role, err := tripRole(ctx, tx, ex.tripID, userID)
 	if err != nil {
 		return false, err
@@ -378,6 +388,11 @@ func applyUpsert(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op 
 		}
 		vals[name] = v
 	}
+	if e.validate != nil {
+		if msg := e.validate(vals); msg != "" {
+			return invalid(msg)
+		}
+	}
 
 	if ex.found {
 		return updateRow(ctx, tx, userID, e, op, ex, vals, revive)
@@ -443,7 +458,9 @@ func insertRow(ctx context.Context, tx pgx.Tx, userID uuid.UUID, e entity, op Op
 	forced := map[string]any{"id": op.EntityID, "created_by": userID, "updated_by": userID}
 
 	var tripID uuid.UUID
-	if e.access != accessRoot {
+	if e.access == accessOwner {
+		forced["user_id"] = userID
+	} else if e.access != accessRoot {
 		tripID = vals["trip_id"].(uuid.UUID)
 		role, err := tripRole(ctx, tx, tripID, userID)
 		if err != nil {

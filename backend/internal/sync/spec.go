@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"summitmate/internal/gearset"
 )
 
 type kind int
@@ -39,12 +41,15 @@ const (
 	accessMember                 // trip_members
 	accessShared                 // trip content: owner or guide
 	accessPersonal               // belongs to one member (user_id)
+	accessOwner                  // belongs to one user (user_id), no trip involved
 )
 
 type entity struct {
 	table  string
 	access access
 	cols   map[string]column
+	// validate checks business rules on the coerced values of a patch (nil = none).
+	validate func(vals map[string]any) string
 }
 
 var entities = map[string]entity{
@@ -98,10 +103,41 @@ var entities = map[string]entity{
 		"quantity":         {kind: kInt},
 		"note":             {kind: kText},
 	}},
+	"library_items": {table: "library_items", access: accessOwner, validate: validateLibraryItem, cols: map[string]column{
+		"kind":     {kind: kText, required: true, immutable: true},
+		"name":     {kind: kText},
+		"category": {kind: kText},
+		"weight":   {kind: kFloat},
+		"calories": {kind: kFloat},
+		"note":     {kind: kText},
+	}},
+	"templates": {table: "templates", access: accessOwner, validate: validateTemplate, cols: map[string]column{
+		"title": {kind: kText},
+		"note":  {kind: kText},
+		"items": {kind: kText},
+	}},
+}
+
+// validateLibraryItem checks library_items values.
+func validateLibraryItem(vals map[string]any) string {
+	if k, ok := vals["kind"].(string); ok && k != gearset.KindGear && k != gearset.KindMeal {
+		return "kind must be gear or meal"
+	}
+	return ""
+}
+
+// validateTemplate checks templates values.
+func validateTemplate(vals map[string]any) string {
+	if t, ok := vals["items"].(string); ok {
+		if err := gearset.ValidateJSON(t); err != nil {
+			return err.Error()
+		}
+	}
+	return ""
 }
 
 // pullOrder is the order entities are returned (parents before children).
-var pullOrder = []string{"trips", "trip_members", "itinerary_items", "meal_plan_days", "gear_items", "meal_items"}
+var pullOrder = []string{"trips", "trip_members", "itinerary_items", "meal_plan_days", "gear_items", "meal_items", "library_items", "templates"}
 
 // memberNamespace seeds deterministic trip_members IDs:
 // id = UUIDv5(memberNamespace, "<trip_id>:<user_id>"). Clients must use the same rule,
