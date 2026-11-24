@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/open_link.dart';
 import '../domain/offline_regions.dart';
 import '../maplibre/rudy_providers.dart';
 import '../rudy/rudy_constants.dart';
@@ -121,6 +122,12 @@ class RudyDownloadCard extends ConsumerWidget {
             body,
             const SizedBox(height: 8),
             Text(rudyAttribution, style: theme.textTheme.labelSmall),
+            TextButton.icon(
+              key: const ValueKey('rudy-home-link'),
+              onPressed: () => ref.read(linkOpenerProvider)(Uri.parse(rudyHomeUrl)),
+              icon: const Icon(Icons.open_in_new, size: 16),
+              label: const Text('魯地圖官網 rudymap.tw'),
+            ),
           ],
         ),
       ),

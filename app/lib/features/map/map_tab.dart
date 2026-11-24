@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../app/router.dart';
+import '../../shared/open_link.dart';
 import '../explore/domain/mountain_models.dart';
 import '../explore/providers.dart';
 import 'data/location_service.dart';
@@ -172,11 +173,16 @@ class _MapTabState extends ConsumerState<MapTab> {
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(
-                  _usingRudy
-                      ? rudyAttribution
-                      : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）',
-                  style: Theme.of(context).textTheme.labelSmall,
+                child: InkWell(
+                  key: const ValueKey('map-attribution'),
+                  onTap: () => ref
+                      .read(linkOpenerProvider)(Uri.parse(_usingRudy ? rudyHomeUrl : 'https://maps.nlsc.gov.tw')),
+                  child: Text(
+                    _usingRudy
+                        ? rudyAttribution
+                        : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(decoration: TextDecoration.underline),
+                  ),
                 ),
               ),
             ),
