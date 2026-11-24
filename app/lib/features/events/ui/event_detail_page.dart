@@ -10,6 +10,7 @@ import '../domain/event_logic.dart';
 import '../providers.dart';
 import 'event_widgets.dart';
 import '../../../shared/link_text.dart';
+import '../../friends/ui/add_friend_button.dart';
 
 /// One group event: its content, the route preview, comments, and the action that fits the viewer.
 class EventDetailPage extends ConsumerStatefulWidget {
@@ -338,7 +339,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       const SizedBox(height: 8),
       Text(d.title, style: theme.textTheme.headlineSmall),
       const SizedBox(height: 8),
-      PersonLine(d.host, style: theme.textTheme.bodyMedium),
+      Row(children: [Flexible(child: PersonLine(d.host, style: theme.textTheme.bodyMedium)), AddFriendButton(userId: d.host.id, name: d.host.displayName)]),
       const SizedBox(height: 12),
       _InfoRow(Icons.calendar_month_outlined, formatEventDates(d.startDate, d.endDate)),
       if (d.location.isNotEmpty) _InfoRow(Icons.place_outlined, d.location),
@@ -502,7 +503,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                PersonLine(c.user, style: theme.textTheme.labelLarge),
+                Row(children: [Flexible(child: PersonLine(c.user, style: theme.textTheme.labelLarge)), AddFriendButton(userId: c.user.id, name: c.user.displayName)]),
                 const SizedBox(height: 4),
                 LinkText(c.body),
               ],

@@ -53,13 +53,16 @@ enum EventScope {
 
 /// Public profile of a host, applicant or commenter (never an e-mail or account id).
 class EventPerson {
-  const EventPerson({required this.displayName, required this.avatar});
+  const EventPerson({this.id = '', required this.displayName, required this.avatar});
+
+  /// The person's account id ('' when the server did not send one).
+  final String id;
   final String displayName;
   final String avatar;
 
   factory EventPerson.fromJson(Object? j) {
     final m = j is Map ? j : const {};
-    return EventPerson(displayName: (m['display_name'] as String?) ?? '', avatar: (m['avatar'] as String?) ?? '');
+    return EventPerson(id: (m['id'] as String?) ?? '', displayName: (m['display_name'] as String?) ?? '', avatar: (m['avatar'] as String?) ?? '');
   }
 }
 
@@ -139,7 +142,7 @@ class EventSummary {
     'comment_count': commentCount,
     'status': status.name,
     'approval_required': approvalRequired,
-    'host': {'display_name': host.displayName, 'avatar': host.avatar},
+    'host': {'id': host.id, 'display_name': host.displayName, 'avatar': host.avatar},
     'created_at': createdAt.toUtc().toIso8601String(),
     'liked': liked,
     'my_status': myStatus?.name,
@@ -361,7 +364,7 @@ class Application {
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'user': {'display_name': user.displayName, 'avatar': user.avatar},
+    'user': {'id': user.id, 'display_name': user.displayName, 'avatar': user.avatar},
     'status': status.name,
     'message': message,
     'created_at': createdAt.toUtc().toIso8601String(),
@@ -392,7 +395,7 @@ class EventComment {
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'user': {'display_name': user.displayName, 'avatar': user.avatar},
+    'user': {'id': user.id, 'display_name': user.displayName, 'avatar': user.avatar},
     'body': body,
     'created_at': createdAt.toUtc().toIso8601String(),
     'mine': mine,

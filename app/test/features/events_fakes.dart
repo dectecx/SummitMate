@@ -12,7 +12,7 @@ import 'harness.dart';
 /// Today in these tests.
 final today = DateTime(2026, 11, 22, 9);
 
-const host = EventPerson(displayName: '陳大山', avatar: '🐻');
+const host = EventPerson(id: 'host-id', displayName: '陳大山', avatar: '🐻');
 const anna = EventPerson(displayName: 'Anna', avatar: '🦊');
 
 EventDetail ev(

@@ -5,6 +5,7 @@ import '../data/events_api.dart';
 import '../domain/event_logic.dart';
 import '../providers.dart';
 import 'event_widgets.dart';
+import '../../friends/ui/add_friend_button.dart';
 
 /// The host's list of applications: approve, reject (with a reason) and remove members.
 class ApplicationsPage extends ConsumerStatefulWidget {
@@ -149,7 +150,7 @@ class _ApplicationsPageState extends ConsumerState<ApplicationsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      PersonLine(a.user, style: theme.textTheme.titleSmall),
+                      Row(children: [Flexible(child: PersonLine(a.user, style: theme.textTheme.titleSmall)), AddFriendButton(userId: a.user.id, name: a.user.displayName)]),
                       if (a.message.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text(a.message)),
                       const SizedBox(height: 8),
                       Row(

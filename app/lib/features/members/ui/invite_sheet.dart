@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../shared/auth_messages.dart';
 import '../domain/member_logic.dart';
 import '../providers.dart';
+import '../../friends/data/friends_api.dart';
+import '../../friends/providers.dart';
 
 /// Invite a registered person to the trip by e-mail.
 Future<void> showInviteSheet(BuildContext context, {required String tripId, required Set<String> existingUserIds}) {
@@ -75,6 +77,35 @@ class _InviteSheetState extends ConsumerState<InviteSheet> {
     if (mounted) Navigator.pop(context);
   }
 
+  /// My friends who are not in the trip yet, to pick instead of typing an e-mail (empty when offline or no friends).
+  List<Widget> _friendChoices(ThemeData theme) {
+    final overview = ref.watch(friendsProvider).value;
+    final candidates = [for (final f in overview?.friends ?? const <Friend>[]) if (!widget.existingUserIds.contains(f.userId)) f];
+    if (candidates.isEmpty) return const [];
+    return [
+      Text('從好友挑選', style: theme.textTheme.titleSmall),
+      const SizedBox(height: 4),
+      Wrap(
+        spacing: 8,
+        children: [
+          for (final f in candidates)
+            ChoiceChip(
+              key: ValueKey('invite-friend-${f.userId}'),
+              avatar: Text(f.avatar.isEmpty ? '🙂' : f.avatar),
+              label: Text(f.displayName),
+              selected: _found?.id == f.userId,
+              onSelected: (_) => setState(() {
+                _found = f.toFoundUser();
+                _message = null;
+              }),
+            ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Text('或輸入 Email 邀請還不是好友的人', style: theme.textTheme.bodySmall),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -86,7 +117,9 @@ class _InviteSheetState extends ConsumerState<InviteSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('邀請成員', style: theme.textTheme.titleLarge),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            ..._friendChoices(theme),
+            const SizedBox(height: 4),
             TextField(
               controller: _email,
               autofocus: true,

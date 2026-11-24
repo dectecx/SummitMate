@@ -21,6 +21,7 @@ import '../features/map/ui/offline_maps_page.dart';
 import '../features/onboarding/welcome_page.dart';
 import '../features/trips/trips_tab.dart';
 import '../features/trips/ui/trip_detail_page.dart';
+import '../features/friends/ui/friends_page.dart';
 import 'shell.dart';
 
 abstract final class Routes {
@@ -37,6 +38,7 @@ abstract final class Routes {
   static const me = '/me';
   static const help = '/me/help';
   static const library = '/me/library';
+  static const friends = '/me/friends';
   static const favorites = '/me/favorites';
   static const templates = '/me/templates';
   static String template(String id) => '/me/templates/$id';
@@ -112,6 +114,7 @@ GoRouter buildRouter({required String initialLocation}) {
                 routes: [
                   GoRoute(path: 'help', builder: (_, _) => const HelpPage()),
                   GoRoute(path: 'library', builder: (_, _) => const LibraryPage()),
+                  GoRoute(path: 'friends', builder: (_, _) => const FriendsPage()),
                   GoRoute(path: 'favorites', builder: (_, _) => const FavoritesPage()),
                   GoRoute(
                     path: 'shared',
