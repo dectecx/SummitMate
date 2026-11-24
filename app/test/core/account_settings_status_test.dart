@@ -128,9 +128,6 @@ void main() {
       expect(await s.hasSeenHint('first-trip'), isTrue);
       expect(await s.hasSeenHint('gear'), isTrue);
       expect(await s.hasSeenHint('offline-map'), isFalse);
-
-      await s.resetHints();
-      expect(await s.hasSeenHint('first-trip'), isFalse);
     });
   });
 

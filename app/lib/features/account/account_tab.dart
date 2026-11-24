@@ -37,14 +37,6 @@ class AccountTab extends ConsumerWidget {
           ListTile(leading: const Icon(Icons.inventory_2_outlined), title: const Text('我的範本'), onTap: () => context.push(Routes.templates)),
           ListTile(leading: const Icon(Icons.cloud_outlined), title: const Text('雲端裝備組合'), onTap: () => context.push(Routes.sharedSets)),
           ListTile(leading: const Icon(Icons.help_outline), title: const Text('使用說明'), onTap: () => context.push(Routes.help)),
-          ListTile(
-            leading: const Icon(Icons.lightbulb_outline),
-            title: const Text('重新顯示新手提示'),
-            onTap: () async {
-              await ref.read(settingsStoreProvider).resetHints();
-              if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('提示會再次出現')));
-            },
-          ),
           if (auth is! Guest) ...[
             const Divider(height: 32),
             if (auth is SignedIn) ListTile(leading: const Icon(Icons.password), title: const Text('變更密碼'), onTap: () => _changePassword(context, ref)),

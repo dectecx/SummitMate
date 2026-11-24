@@ -62,13 +62,14 @@ class DevDataFactory {
   T _pick<T>(List<T> list) => list[_random.nextInt(list.length)];
 
   /// A random trip with an itinerary, a packing list and meals. Returns its id.
-  Future<String> randomTrip() async {
+  Future<({String id, String summary})> randomTrip() async {
     final (place, altitude, _) = _pick(_places);
+    final name = '$place${_pick(_suffix)}';
     final days = 1 + _random.nextInt(3);
     final start = DateTime.now().add(Duration(days: 3 + _random.nextInt(60)));
     final trips = _ref.read(tripRepositoryProvider);
     final id = await trips.create(
-      name: '$place${_pick(_suffix)}',
+      name: name,
       start: DateTime(start.year, start.month, start.day),
       end: DateTime(start.year, start.month, start.day + days - 1),
       description: '測試資料（由開發面板產生）',
@@ -78,35 +79,41 @@ class DevDataFactory {
       await itinerary.add(id, dayIndex: day, name: day == 1 ? '$place登山口' : '營地 $day', estMinutes: 6 * 60 + _random.nextInt(120), altitude: altitude - 600 + day * 150);
       await itinerary.add(id, dayIndex: day, name: '$place山屋', estMinutes: 12 * 60, altitude: altitude - 300 + day * 100, distance: 2.5 + _random.nextInt(60) / 10);
     }
-    await randomGear(id);
-    await randomMeals(id, days: days);
-    return id;
+    final gear = await randomGear(id);
+    final meals = await randomMeals(id, days: days);
+    return (id: id, summary: '行程「$name」$days 天；節點 ${days * 2} 個；裝備 ${gear.length} 件；餐食 ${meals.length} 份');
   }
 
   /// Adds 4–8 random gear items to [tripId].
-  Future<void> randomGear(String tripId) async {
+  Future<List<String>> randomGear(String tripId) async {
     final gear = _ref.read(gearRepositoryProvider);
     final items = [..._gear]..shuffle(_random);
+    final added = <String>[];
     for (final (name, category, grams) in items.take(4 + _random.nextInt(5))) {
+      added.add(name);
       assert(GearCategory.values.any((c) => c.key == category));
       await gear.add(tripId, name: name, weight: grams, category: category, quantity: 1 + _random.nextInt(2));
     }
+    return added;
   }
 
   /// Adds 2–3 random meals to each of the first [days] days of [tripId].
-  Future<void> randomMeals(String tripId, {required int days}) async {
+  Future<List<String>> randomMeals(String tripId, {required int days}) async {
     final meals = _ref.read(mealRepositoryProvider);
+    final added = <String>[];
     for (var day = 1; day <= days; day++) {
       final items = [..._meals]..shuffle(_random);
       for (final (name, type, grams, kcal) in items.take(2 + _random.nextInt(2))) {
+        added.add(name);
         assert(MealType.values.any((t) => t.key == type));
         await meals.add(tripId, dayIndex: day, name: name, mealType: type, weight: grams, calories: kcal);
       }
     }
+    return added;
   }
 
   /// A random group event (needs a signed-in account and a connection). Returns its id.
-  Future<String> randomEvent() async {
+  Future<({String id, String title})> randomEvent() async {
     final (place, _, location) = _pick(_places);
     final start = DateTime.now().add(Duration(days: 7 + _random.nextInt(60)));
     final input = EventInput(
@@ -119,7 +126,8 @@ class DevDataFactory {
       approvalRequired: _random.nextBool(),
       description: '測試資料（由開發面板產生）。',
     );
-    return (await _ref.read(eventsApiProvider).create(input)).id;
+    final created = await _ref.read(eventsApiProvider).create(input);
+    return (id: created.id, title: input.title);
   }
 }
 

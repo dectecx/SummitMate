@@ -36,6 +36,4 @@ class SettingsStore {
   Future<bool> hasSeenHint(String id) async => (await _hints()).contains(id);
 
   Future<void> markHintSeen(String id) async => set(seenHints, jsonEncode(((await _hints())..add(id)).toList()..sort()));
-
-  Future<void> resetHints() => remove(seenHints);
 }

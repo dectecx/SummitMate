@@ -31,7 +31,13 @@ class _DevToolsOverlayState extends State<DevToolsOverlay> {
     // The trip the person has open (a /trips/<id> screen), so the panel adds gear and meals to it.
     final path = GoRouter.of(context).routeInformationProvider.value.uri.path;
     final openTrip = RegExp(r'^/trips/([^/]+)').firstMatch(path)?.group(1);
-    await showModalBottomSheet<void>(context: context, isScrollControlled: true, builder: (_) => DevPanel(openTripId: openTrip));
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      barrierColor: Colors.black12, // keep the screen behind visible: the changes show up there
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.6),
+      builder: (_) => DevPanel(openTripId: openTrip),
+    );
     _open = false;
   }
 
@@ -151,7 +157,7 @@ class _DevPanelState extends ConsumerState<DevPanel> {
     );
     return SafeArea(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.85),
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.6),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           shrinkWrap: true,
@@ -179,9 +185,9 @@ class _DevPanelState extends ConsumerState<DevPanel> {
                 FilledButton.tonal(
                   key: const ValueKey('dev-random-trip'),
                   onPressed: _busy ? null : () => _run('新增隨機行程', () async {
-                    final id = await factory.randomTrip();
-                    _tripId = id; // the new trip becomes the target of "加隨機裝備／餐食"
-                    return '已新增行程，下面的裝備與餐食會加到它';
+                    final made = await factory.randomTrip();
+                    _tripId = made.id; // the new trip becomes the target of "加隨機裝備／餐食"
+                    return '已新增${made.summary}。下面的裝備與餐食會加到它';
                   }),
                   child: const Text('新增隨機行程（含節點、裝備、餐食）'),
                 ),
@@ -205,16 +211,16 @@ class _DevPanelState extends ConsumerState<DevPanel> {
                   OutlinedButton(
                     key: const ValueKey('dev-random-gear'),
                     onPressed: _busy || tripId == null ? null : () => _run('加入隨機裝備', () async {
-                      await factory.randomGear(tripId);
-                      return '已加入隨機裝備';
+                      final names = await factory.randomGear(tripId);
+                      return '已加入 ${names.length} 件裝備：${names.join('、')}';
                     }),
                     child: const Text('加隨機裝備'),
                   ),
                   OutlinedButton(
                     key: const ValueKey('dev-random-meals'),
                     onPressed: _busy || tripId == null ? null : () => _run('加入隨機餐食', () async {
-                      await factory.randomMeals(tripId, days: 2);
-                      return '已加入隨機餐食（前兩天）';
+                      final names = await factory.randomMeals(tripId, days: 2);
+                      return '已加入前兩天的 ${names.length} 份餐食：${names.join('、')}';
                     }),
                     child: const Text('加隨機餐食'),
                   ),
@@ -224,7 +230,7 @@ class _DevPanelState extends ConsumerState<DevPanel> {
             section('線上資料（需要登入與連線）'),
             FilledButton.tonal(
               key: const ValueKey('dev-random-event'),
-              onPressed: _busy || !signedIn ? null : () => _run('建立隨機揪團', () async => '已建立揪團：${(await factory.randomEvent()).substring(0, 8)}…'),
+              onPressed: _busy || !signedIn ? null : () => _run('建立隨機揪團', () async => '已建立揪團「${(await factory.randomEvent()).title}」'),
               child: Text(signedIn ? '建立隨機揪團' : '建立隨機揪團（請先登入）'),
             ),
           ],

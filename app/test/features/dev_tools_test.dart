@@ -14,7 +14,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.byKey(const ValueKey('dev-random-trip')));
     await settle(tester);
-    expect(find.textContaining('已新增行程'), findsOneWidget);
+    expect(find.textContaining('已新增行程「'), findsOneWidget);
     expect(find.textContaining('加到這個行程'), findsOneWidget);
 
     final trips = await real(tester, () => app.db.select(app.db.trips).get());
