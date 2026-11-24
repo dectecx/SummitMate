@@ -18,7 +18,7 @@ void main() {
     }
     await tester.tap(find.byKey(ValueKey('help-${HelpPage.topics[1].question}')));
     await settle(tester);
-    expect(find.textContaining('出發前先下載'), findsOneWidget);
+    expect(find.textContaining('資料只存在這支手機'), findsOneWidget);
     await app.dispose(tester);
   });
 
