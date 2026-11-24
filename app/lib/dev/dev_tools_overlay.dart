@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/auth/auth_state.dart';
@@ -27,7 +28,10 @@ class _DevToolsOverlayState extends State<DevToolsOverlay> {
     final context = widget.navigatorKey.currentContext;
     if (context == null || _open) return;
     _open = true;
-    await showModalBottomSheet<void>(context: context, isScrollControlled: true, builder: (_) => const DevPanel());
+    // The trip the person has open (a /trips/<id> screen), so the panel adds gear and meals to it.
+    final path = GoRouter.of(context).routeInformationProvider.value.uri.path;
+    final openTrip = RegExp(r'^/trips/([^/]+)').firstMatch(path)?.group(1);
+    await showModalBottomSheet<void>(context: context, isScrollControlled: true, builder: (_) => DevPanel(openTripId: openTrip));
     _open = false;
   }
 
@@ -67,7 +71,10 @@ class _DevToolsOverlayState extends State<DevToolsOverlay> {
 
 /// The developer panel: test account, random trips / gear / meals, random group events.
 class DevPanel extends ConsumerStatefulWidget {
-  const DevPanel({super.key});
+  const DevPanel({super.key, this.openTripId});
+
+  /// The trip screen that was open when the panel was opened, if any.
+  final String? openTripId;
 
   @override
   ConsumerState<DevPanel> createState() => _DevPanelState();
@@ -76,7 +83,7 @@ class DevPanel extends ConsumerStatefulWidget {
 class _DevPanelState extends ConsumerState<DevPanel> {
   String? _message;
   bool _busy = false;
-  String? _tripId;
+  String? _tripId; // chosen in the list; null means follow the open trip
 
   Future<void> _run(String label, Future<String?> Function() job) async {
     setState(() {
@@ -131,7 +138,8 @@ class _DevPanelState extends ConsumerState<DevPanel> {
     final signedIn = ref.watch(accountIdProvider) != null;
     final authState = ref.watch(authStateProvider).value;
     final trips = ref.watch(tripsProvider).value ?? const [];
-    final tripId = trips.any((t) => t.id == _tripId) ? _tripId : (trips.isEmpty ? null : trips.first.id);
+    // Gear and meals go to the trip chosen in the list, else the trip that is open, else nowhere (buttons stay off).
+    final tripId = [_tripId, widget.openTripId].firstWhere((id) => id != null && trips.any((t) => t.id == id), orElse: () => null);
     final who = switch (authState) {
       SignedIn(:final user) => '已登入：${user.email}',
       NeedsReauth(:final user) => '需要重新登入：${user.email}',
@@ -170,15 +178,23 @@ class _DevPanelState extends ConsumerState<DevPanel> {
               children: [
                 FilledButton.tonal(
                   key: const ValueKey('dev-random-trip'),
-                  onPressed: _busy ? null : () => _run('新增隨機行程', () async => '已新增行程：${(await factory.randomTrip()).substring(0, 8)}…'),
+                  onPressed: _busy ? null : () => _run('新增隨機行程', () async {
+                    final id = await factory.randomTrip();
+                    _tripId = id; // the new trip becomes the target of "加隨機裝備／餐食"
+                    return '已新增行程，下面的裝備與餐食會加到它';
+                  }),
                   child: const Text('新增隨機行程（含節點、裝備、餐食）'),
                 ),
               ],
             ),
-            if (trips.isNotEmpty) ...[
+            if (trips.isEmpty)
+              const Padding(padding: EdgeInsets.only(top: 8), child: Text('還沒有行程。先新增行程，才能加裝備或餐食。'))
+            else ...[
               const SizedBox(height: 8),
+              Text(tripId == null ? '請先選一個行程（目前沒有打開行程頁）' : (tripId == widget.openTripId && _tripId == null ? '加到目前打開的行程：' : '加到這個行程：'), style: theme.textTheme.bodySmall),
               DropdownButton<String>(
                 isExpanded: true,
+                hint: const Text('選擇行程'),
                 value: tripId,
                 items: [for (final t in trips) DropdownMenuItem(value: t.id, child: Text(t.name, overflow: TextOverflow.ellipsis))],
                 onChanged: (v) => setState(() => _tripId = v),
