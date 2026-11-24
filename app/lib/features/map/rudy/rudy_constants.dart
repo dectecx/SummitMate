@@ -1,12 +1,25 @@
 /// Constants for the Rudy Map (魯地圖) download client.
 ///
-/// Rules from the author: always download via [rudyHomeUrl] (never hard-code
-/// a mirror), send `AppName/version (+contact URL)` as User-Agent on every
-/// request, and never charge for downloads.
+/// Rules from the author: download via [rudyHomeUrl] (the balancer, never a
+/// hard-coded mirror), send `AppName/version (+contact URL)` as User-Agent on
+/// every request, and never charge for downloads.
 library;
 
 const rudyHomeUrl = 'https://rudymap.tw';
-const rudyDownloadBase = 'https://rudymap.tw/v1/';
+
+/// The balancer route (302 to a mirror). Its list of files does not include
+/// the PMTiles file yet, so it answers 404 for it.
+const rudyBalancerBase = 'https://rudymap.tw/v1/';
+
+/// Temporary: a mirror's own address, which is where the balancer redirects to.
+/// Mirrors keep the files in their root directory.
+const rudyDirectBase = 'https://moi.kcwu.csie.org/';
+
+/// The one switch between the two routes. Set to true once the balancer lists
+/// the PMTiles file; nothing else needs to change.
+const rudyViaBalancer = false;
+
+const rudyDownloadBase = rudyViaBalancer ? rudyBalancerBase : rudyDirectBase;
 
 const rudyPmtilesFile = 'MOI_OSM_Taiwan_TOPO_Rudy.pmtiles';
 const rudyStyleZipFile = 'MOI_OSM_Taiwan_TOPO_Rudy_pmtiles_style.zip';
