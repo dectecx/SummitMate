@@ -44,7 +44,10 @@ class FriendsException implements Exception {
     'unauthorized' => '請先登入。',
     'cannot_friend_self' => '不能加自己為好友。',
     'user_not_found' => '找不到這個人。',
-    'rate_limited' || 'http_429' => '送出太頻繁，請稍後再試。',
+    'too_many_pending_requests' => '已送出的邀請太多，請等對方回覆或先收回幾個。',
+    'friend_request_not_found' => '這個邀請已不存在，請重新整理。',
+    'forbidden' => '這個操作不被允許。',
+    'too_many_requests' || 'http_429' => '送出太頻繁，請稍後再試。',
     _ => '操作失敗，請稍後再試。',
   };
 }

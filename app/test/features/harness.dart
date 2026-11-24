@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/app/app.dart';
 import 'package:summitmate/app/router.dart';
 import 'package:summitmate/dev/dev_config.dart';
+import 'package:summitmate/shared/brand/splash_overlay.dart';
 import 'package:summitmate/core/auth/token_store.dart';
 import 'package:summitmate/core/db/app_database.dart';
 import 'package:summitmate/core/providers.dart';
@@ -36,6 +37,7 @@ class AppHarness {
         connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
         ...rudyTestOverrides(installer: rudy, handle: mapHandle),
         devToolsVisibleProvider.overrideWithValue(devTools),
+        splashEnabledProvider.overrideWithValue(false),
         ...overrides,
       ],
     );

@@ -352,11 +352,15 @@ func TestFavoritesOwnerIsolation(t *testing.T) {
 		assert.Equal(t, StatusInvalid, r.Status, i)
 	}
 
+	assert.Equal(t, StatusApplied, mustPush(t, s, alice, del("favorites", ev))[0].Status)
+
 	// Tombstone is pulled and final.
 	assert.Equal(t, StatusApplied, mustPush(t, s, alice, del("favorites", id))[0].Status)
 	rows := pullAll(t, s, alice, nil).Rows["favorites"]
-	require.Len(t, rows, 1)
-	assert.NotNil(t, rows[0]["deleted_at"])
+	require.Len(t, rows, 2) // the group_event favorite and the mountain one
+	for _, r := range rows {
+		assert.NotNil(t, r["deleted_at"])
+	}
 	assert.Equal(t, StatusGone, mustPush(t, s, alice, upsert("favorites", id, map[string]any{}))[0].Status)
 }
 

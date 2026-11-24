@@ -783,6 +783,101 @@ paths:
         "401": { $ref: "#/components/responses/Error" }
         "404": { $ref: "#/components/responses/Error" }
 
+  /friends:
+    get:
+      operationId: listFriends
+      summary: My friends and the pending requests I received or sent
+      description: Only active, verified people appear. E-mail is never exposed.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Friends and requests
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FriendList" }
+        "401": { $ref: "#/components/responses/Error" }
+
+  /friends/requests:
+    post:
+      operationId: sendFriendRequest
+      summary: Ask someone to be friends
+      description: |
+        201 when a new request was stored, or when the other person had already asked me (then it is accepted at once,
+        status `accepted`). 200 when nothing changed: already friends (`accepted`) or I already asked (`pending`).
+        400 `cannot_friend_self`, 404 `user_not_found` (unknown or inactive), 429 when more than 20 new requests
+        were sent within an hour, 409 `too_many_pending_requests` when 100 requests of mine are still pending.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SendFriendRequest" }
+      responses:
+        "200":
+          description: Nothing changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FriendRequestResult" }
+        "201":
+          description: Created or accepted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FriendRequestResult" }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+
+  /friends/requests/{request_id}:
+    parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      operationId: removeFriendRequest
+      summary: Decline (addressee) or cancel (requester) a pending request
+      description: 404 `friend_request_not_found` when it does not exist, is already accepted, or is not mine.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Removed }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /friends/requests/{request_id}/accept:
+    parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: acceptFriendRequest
+      summary: Accept a request I received
+      description: |
+        404 `friend_request_not_found` when it does not exist or is already accepted,
+        403 `forbidden` when I am not the addressee.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Accepted }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /friends/{user_id}:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      operationId: unfriend
+      summary: Remove a friend (idempotent)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Removed or not a friend }
+        "401": { $ref: "#/components/responses/Error" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1093,11 +1188,56 @@ components:
       type: string
       enum: [pending, approved, rejected, cancelled]
 
-    # Public profile of a person on a group event. Never carries an email or an account id.
+    FriendList:
+      type: object
+      required: [friends, incoming, outgoing]
+      properties:
+        friends:
+          type: array
+          items: { $ref: "#/components/schemas/Friend" }
+        incoming:
+          type: array
+          items: { $ref: "#/components/schemas/FriendRequest" }
+        outgoing:
+          type: array
+          items: { $ref: "#/components/schemas/FriendRequest" }
+
+    Friend:
+      type: object
+      required: [user_id, display_name, avatar, since]
+      properties:
+        user_id: { type: string, format: uuid }
+        display_name: { type: string }
+        avatar: { type: string }
+        since: { type: string, format: date-time, description: When the request was accepted }
+
+    FriendRequest:
+      type: object
+      required: [request_id, user, created_at]
+      properties:
+        request_id: { type: string, format: uuid }
+        user: { $ref: "#/components/schemas/PublicUser", description: The other person }
+        created_at: { type: string, format: date-time }
+
+    SendFriendRequest:
+      type: object
+      required: [user_id]
+      properties:
+        user_id: { type: string, format: uuid }
+
+    FriendRequestResult:
+      type: object
+      required: [status, request_id]
+      properties:
+        status: { type: string, enum: [pending, accepted] }
+        request_id: { type: string, format: uuid }
+
+    # Public profile of a person on a group event. Never carries an email. The id lets the app offer "add friend".
     EventUser:
       type: object
-      required: [display_name, avatar]
+      required: [id, display_name, avatar]
       properties:
+        id: { type: string, format: uuid }
         display_name: { type: string }
         avatar: { type: string }
 

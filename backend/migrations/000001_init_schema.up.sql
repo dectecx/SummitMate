@@ -428,3 +428,22 @@ CREATE TABLE reports (
 );
 
 CREATE INDEX idx_reports_target ON reports(target_type, target_id);
+
+-- ============================================================
+-- Friends (mutual consent, online only, not synced)
+-- ============================================================
+
+-- One row per pair. A declined or cancelled request deletes the row so it can be sent again.
+CREATE TABLE friendships (
+    id           UUID PRIMARY KEY,
+    requester_id UUID        NOT NULL REFERENCES users(id),
+    addressee_id UUID        NOT NULL REFERENCES users(id),
+    status       VARCHAR(10) NOT NULL CHECK (status IN ('pending', 'accepted')),
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    responded_at TIMESTAMPTZ,
+    CHECK (requester_id <> addressee_id)
+);
+
+CREATE UNIQUE INDEX uq_friendships_pair ON friendships (LEAST(requester_id, addressee_id), GREATEST(requester_id, addressee_id));
+CREATE INDEX idx_friendships_addressee ON friendships(addressee_id, status);
+CREATE INDEX idx_friendships_requester ON friendships(requester_id, status);

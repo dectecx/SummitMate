@@ -210,14 +210,13 @@ func TestCreateAndValidation(t *testing.T) {
 	assert.Equal(t, false, ev["private_message_locked"])
 	assert.NotNil(t, ev["snapshot_updated_at"])
 	assert.EqualValues(t, 0, ev["approved_count"])
-	assert.Equal(t, map[string]any{"display_name": "host", "avatar": "🐻"}, ev["host"])
+	assert.Equal(t, map[string]any{"id": host.id.String(), "display_name": "host", "avatar": "🐻"}, ev["host"])
 	snap := ev["trip_snapshot"].(map[string]any)
 	assert.Len(t, snap["itinerary"], 2)
 	assert.Nil(t, snap["itinerary"].([]any)[1].(map[string]any)["time"])
 	assert.NotContains(t, rec.Body.String(), "@example.com")
 	raw := e.do("GET", "/group-events/"+ev["id"].(string), host.token, nil).Body.String()
 	assert.NotContains(t, raw, "@example.com")
-	assert.NotContains(t, raw, host.id.String(), "the host's account id is never exposed")
 
 	// the title was trimmed, defaults applied
 	b2 := map[string]any{"title": "  只有必填欄位  ", "category": "other", "start_date": "2026-12-05", "max_members": 2}
@@ -437,18 +436,17 @@ func TestApplyLifecycleAndTripMembers(t *testing.T) {
 	assert.Equal(t, "already_applied", errCode(t, rec))
 	assert.Nil(t, e.memberRow(t, alice, trip, alice))
 
-	// only the host sees and reviews applications; applications never carry an account id or email
+	// only the host sees and reviews applications; applications never carry an email
 	assert.Equal(t, 403, e.do("GET", path+"/applications", alice.token, nil).Code)
 	assert.Equal(t, 401, e.do("GET", path+"/applications", "", nil).Code)
 	rec = e.do("GET", path+"/applications", host.token, nil)
 	require.Equal(t, 200, rec.Code)
-	assert.NotContains(t, rec.Body.String(), alice.id.String())
 	assert.NotContains(t, rec.Body.String(), "@example.com")
 	apps := decode(t, rec)["items"].([]any)
 	require.Len(t, apps, 1)
 	app := apps[0].(map[string]any)
 	assert.Equal(t, "我想去", app["message"])
-	assert.Equal(t, map[string]any{"display_name": "alice", "avatar": "🐻"}, app["user"])
+	assert.Equal(t, map[string]any{"id": alice.id.String(), "display_name": "alice", "avatar": "🐻"}, app["user"])
 	appPath := path + "/applications/" + app["id"].(string)
 	assert.Equal(t, 403, e.do("POST", appPath+"/review", alice.token, map[string]any{"approve": true}).Code)
 	assert.Equal(t, 404, e.do("POST", path+"/applications/"+uuid.NewString()+"/review", host.token, map[string]any{"approve": true}).Code)
@@ -712,7 +710,7 @@ func TestCommentsLikesReports(t *testing.T) {
 		require.Equal(t, 201, rec.Code, rec.Body.String())
 		c := decode(t, rec)
 		assert.Equal(t, true, c["mine"])
-		assert.NotContains(t, rec.Body.String(), u.id.String())
+		assert.Equal(t, u.id.String(), c["user"].(map[string]any)["id"])
 		cids = append(cids, c["id"].(string))
 		time.Sleep(2 * time.Millisecond)
 	}

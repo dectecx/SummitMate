@@ -25,6 +25,7 @@ type Repository interface {
 	UpdateUserProfile(ctx context.Context, arg store.UpdateUserProfileParams) (store.User, error)
 	UpdateUserPassword(ctx context.Context, arg store.UpdateUserPasswordParams) error
 	DeactivateUser(ctx context.Context, id uuid.UUID) error
+	DeleteFriendshipsOfUser(ctx context.Context, userID uuid.UUID) error
 
 	UpsertVerification(ctx context.Context, arg store.UpsertVerificationParams) error
 	GetVerification(ctx context.Context, userID uuid.UUID) (store.EmailVerification, error)

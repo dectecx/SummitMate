@@ -414,10 +414,13 @@ func (s *Service) ChangePassword(ctx context.Context, userID uuid.UUID, current,
 	})
 }
 
-// DeleteAccount deactivates the account and revokes every refresh token.
+// DeleteAccount deactivates the account, removes its friendships and revokes every refresh token.
 func (s *Service) DeleteAccount(ctx context.Context, userID uuid.UUID) error {
 	return s.repo.InTx(ctx, func(r Repository) error {
 		if err := r.DeactivateUser(ctx, userID); err != nil {
+			return err
+		}
+		if err := r.DeleteFriendshipsOfUser(ctx, userID); err != nil {
 			return err
 		}
 		return r.RevokeAllRefreshTokens(ctx, userID)

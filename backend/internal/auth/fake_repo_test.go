@@ -12,21 +12,23 @@ import (
 
 // fakeRepo is an in-memory Repository for service tests.
 type fakeRepo struct {
-	now    func() time.Time // stamps revocations
-	mu     sync.Mutex
-	users  map[uuid.UUID]store.User
-	verifs map[uuid.UUID]store.EmailVerification
-	tokens map[uuid.UUID]store.RefreshToken
-	byHash map[string]uuid.UUID
+	now            func() time.Time // stamps revocations
+	mu             sync.Mutex
+	users          map[uuid.UUID]store.User
+	verifs         map[uuid.UUID]store.EmailVerification
+	tokens         map[uuid.UUID]store.RefreshToken
+	byHash         map[string]uuid.UUID
+	friendsDeleted map[uuid.UUID]bool // users whose friendships were removed
 }
 
 func newFakeRepo() *fakeRepo {
 	return &fakeRepo{
-		now:    time.Now,
-		users:  map[uuid.UUID]store.User{},
-		verifs: map[uuid.UUID]store.EmailVerification{},
-		tokens: map[uuid.UUID]store.RefreshToken{},
-		byHash: map[string]uuid.UUID{},
+		now:            time.Now,
+		users:          map[uuid.UUID]store.User{},
+		verifs:         map[uuid.UUID]store.EmailVerification{},
+		tokens:         map[uuid.UUID]store.RefreshToken{},
+		byHash:         map[string]uuid.UUID{},
+		friendsDeleted: map[uuid.UUID]bool{},
 	}
 }
 
@@ -86,6 +88,11 @@ func (f *fakeRepo) DeactivateUser(_ context.Context, id uuid.UUID) error {
 	u := f.users[id]
 	u.IsActive = false
 	f.users[id] = u
+	return nil
+}
+
+func (f *fakeRepo) DeleteFriendshipsOfUser(_ context.Context, id uuid.UUID) error {
+	f.friendsDeleted[id] = true
 	return nil
 }
 

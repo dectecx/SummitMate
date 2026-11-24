@@ -61,3 +61,6 @@ WHERE user_id = $1 AND revoked_at IS NULL;
 
 -- name: DeleteExpiredRefreshTokens :exec
 DELETE FROM refresh_tokens WHERE expires_at < clock_timestamp() - INTERVAL '30 days';
+
+-- name: DeleteFriendshipsOfUser :exec
+DELETE FROM friendships WHERE requester_id = $1 OR addressee_id = $1;

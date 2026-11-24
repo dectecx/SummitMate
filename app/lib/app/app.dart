@@ -6,6 +6,7 @@ import '../core/providers.dart';
 import '../core/settings/app_settings.dart';
 import '../dev/dev_config.dart';
 import '../dev/dev_tools_overlay.dart';
+import '../shared/brand/splash_overlay.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -46,9 +47,11 @@ class _SummitMateAppState extends ConsumerState<SummitMateApp> {
       darkTheme: AppTheme.dark(),
       themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,
       routerConfig: _router,
-      builder: ref.watch(devToolsVisibleProvider)
-          ? (context, child) => DevToolsOverlay(navigatorKey: _router.routerDelegate.navigatorKey, child: child ?? const SizedBox.shrink())
-          : null,
+      builder: (context, child) {
+        var app = child ?? const SizedBox.shrink();
+        if (ref.watch(devToolsVisibleProvider)) app = DevToolsOverlay(navigatorKey: _router.routerDelegate.navigatorKey, child: app);
+        return SplashOverlay(enabled: ref.watch(splashEnabledProvider), child: app);
+      },
     );
   }
 }

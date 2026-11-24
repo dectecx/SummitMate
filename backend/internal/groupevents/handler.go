@@ -100,7 +100,7 @@ func summary(e Event) api.GroupEventSummary {
 		StartDate: openapi_types.Date{Time: e.StartDate}, EndDate: dateOut(e.EndDate), MaxMembers: e.MaxMembers,
 		ApprovedCount: e.ApprovedCount, LikeCount: e.LikeCount, CommentCount: e.CommentCount,
 		Status: api.GroupEventStatus(e.Status), ApprovalRequired: e.ApprovalRequired,
-		Host:      api.EventUser{DisplayName: e.HostName, Avatar: e.HostAvatar},
+		Host:      api.EventUser{Id: e.HostID, DisplayName: e.HostName, Avatar: e.HostAvatar},
 		CreatedAt: e.CreatedAt, Liked: e.Liked, MyStatus: strOrNil(e.MyStatus), IsHost: e.IsHost,
 	}
 }
@@ -339,7 +339,7 @@ func (h *Handler) WithdrawGroupEventApplication(w http.ResponseWriter, r *http.R
 
 func application(a Application) api.Application {
 	return api.Application{
-		Id: a.ID, User: api.EventUser{DisplayName: a.UserName, Avatar: a.UserAvatar},
+		Id: a.ID, User: api.EventUser{Id: a.UserID, DisplayName: a.UserName, Avatar: a.UserAvatar},
 		Status: api.ApplicationStatus(a.Status), Message: a.Message, CreatedAt: a.CreatedAt,
 	}
 }
@@ -405,7 +405,7 @@ func (h *Handler) RemoveGroupEventMember(w http.ResponseWriter, r *http.Request,
 
 func comment(c Comment) api.Comment {
 	return api.Comment{
-		Id: c.ID, User: api.EventUser{DisplayName: c.UserName, Avatar: c.UserAvatar},
+		Id: c.ID, User: api.EventUser{Id: c.UserID, DisplayName: c.UserName, Avatar: c.UserAvatar},
 		Body: c.Body, CreatedAt: c.CreatedAt, Mine: c.Mine,
 	}
 }

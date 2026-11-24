@@ -12,6 +12,7 @@ import (
 
 	"summitmate/internal/auth"
 	"summitmate/internal/explore"
+	"summitmate/internal/friends"
 	"summitmate/internal/groupevents"
 	"summitmate/internal/platform/config"
 	"summitmate/internal/platform/database"
@@ -81,6 +82,9 @@ func run() error {
 			GroupEvents: groupevents.NewHandler(groupevents.NewService(groupevents.NewPgRepository(pool), groupevents.Options{
 				Comments:     ratelimit.NewMemory(20, time.Minute),
 				Applications: ratelimit.NewMemory(20, 10*time.Minute),
+			})),
+			Friends: friends.NewHandler(friends.NewService(friends.NewPgRepository(pool), friends.Options{
+				Requests: ratelimit.NewMemory(friends.MaxRequestsPerHour, time.Hour),
 			})),
 			Tokens:         tokens,
 			MaxBodyBytes:   cfg.MaxBodyBytes,

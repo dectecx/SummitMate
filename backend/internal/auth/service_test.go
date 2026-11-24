@@ -182,6 +182,7 @@ func TestDisabledAccountCannotLogInOrRefresh(t *testing.T) {
 	ctx := context.Background()
 	require.NoError(t, e.svc.DeleteAccount(ctx, res.User.ID))
 	assert.Zero(t, e.repo.activeTokens(res.User.ID))
+	assert.True(t, e.repo.friendsDeleted[res.User.ID], "friendships are removed with the account")
 
 	_, err := e.svc.Login(ctx, "a@b.co", "Passw0rdX")
 	requireCode(t, err, apperror.ErrAccountDisabled)

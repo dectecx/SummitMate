@@ -19,6 +19,27 @@ type EmailVerification struct {
 	CreatedAt time.Time
 }
 
+type Favorite struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Kind      string
+	TargetID  string
+	DeletedAt *time.Time
+	CreatedAt time.Time
+	CreatedBy uuid.UUID
+	UpdatedAt time.Time
+	UpdatedBy uuid.UUID
+}
+
+type Friendship struct {
+	ID          uuid.UUID
+	RequesterID uuid.UUID
+	AddresseeID uuid.UUID
+	Status      string
+	CreatedAt   time.Time
+	RespondedAt *time.Time
+}
+
 type GearItem struct {
 	ID        uuid.UUID
 	TripID    uuid.UUID
@@ -34,6 +55,53 @@ type GearItem struct {
 	CreatedBy uuid.UUID
 	UpdatedAt time.Time
 	UpdatedBy uuid.UUID
+}
+
+type GroupEvent struct {
+	ID                uuid.UUID
+	HostID            uuid.UUID
+	Title             string
+	Description       string
+	Category          string
+	Location          string
+	StartDate         pgtype.Date
+	EndDate           pgtype.Date
+	MaxMembers        int32
+	ApprovalRequired  bool
+	PrivateMessage    string
+	Status            string
+	LinkedTripID      *uuid.UUID
+	TripSnapshot      []byte
+	SnapshotUpdatedAt *time.Time
+	DeletedAt         *time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+type GroupEventApplication struct {
+	ID              uuid.UUID
+	EventID         uuid.UUID
+	UserID          uuid.UUID
+	Status          string
+	Message         string
+	RejectionReason string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+type GroupEventComment struct {
+	ID        uuid.UUID
+	EventID   uuid.UUID
+	UserID    uuid.UUID
+	Body      string
+	DeletedAt *time.Time
+	CreatedAt time.Time
+}
+
+type GroupEventLike struct {
+	EventID   uuid.UUID
+	UserID    uuid.UUID
+	CreatedAt time.Time
 }
 
 type ItineraryItem struct {
@@ -53,6 +121,22 @@ type ItineraryItem struct {
 	CreatedBy   uuid.UUID
 	UpdatedAt   time.Time
 	UpdatedBy   uuid.UUID
+}
+
+type LibraryItem struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Kind      string
+	Name      string
+	Category  string
+	Weight    float64
+	Calories  float64
+	Note      string
+	DeletedAt *time.Time
+	CreatedAt time.Time
+	CreatedBy uuid.UUID
+	UpdatedAt time.Time
+	UpdatedBy uuid.UUID
 }
 
 type MealItem struct {
@@ -86,6 +170,49 @@ type MealPlanDay struct {
 	UpdatedBy uuid.UUID
 }
 
+type Poll struct {
+	ID             uuid.UUID
+	TripID         uuid.UUID
+	Title          string
+	Description    string
+	Deadline       *time.Time
+	AllowMultiple  bool
+	AllowAddOption bool
+	Blind          bool
+	Status         string
+	DeletedAt      *time.Time
+	CreatedAt      time.Time
+	CreatedBy      uuid.UUID
+	UpdatedAt      time.Time
+	UpdatedBy      uuid.UUID
+}
+
+type PollOption struct {
+	ID        uuid.UUID
+	PollID    uuid.UUID
+	TripID    uuid.UUID
+	Text      string
+	SortOrder int32
+	DeletedAt *time.Time
+	CreatedAt time.Time
+	CreatedBy uuid.UUID
+	UpdatedAt time.Time
+	UpdatedBy uuid.UUID
+}
+
+type PollVote struct {
+	ID        uuid.UUID
+	PollID    uuid.UUID
+	OptionID  uuid.UUID
+	TripID    uuid.UUID
+	UserID    uuid.UUID
+	DeletedAt *time.Time
+	CreatedAt time.Time
+	CreatedBy uuid.UUID
+	UpdatedAt time.Time
+	UpdatedBy uuid.UUID
+}
+
 type ProcessedOp struct {
 	OpID      uuid.UUID
 	UserID    uuid.UUID
@@ -103,6 +230,43 @@ type RefreshToken struct {
 	CreatedAt  time.Time
 }
 
+type Report struct {
+	ID         uuid.UUID
+	ReporterID uuid.UUID
+	TargetType string
+	TargetID   uuid.UUID
+	Reason     string
+	CreatedAt  time.Time
+}
+
+type SharedSet struct {
+	ID            uuid.UUID
+	OwnerID       uuid.UUID
+	Title         string
+	AuthorName    string
+	Visibility    string
+	AccessKeyHash pgtype.Text
+	Items         []byte
+	TotalWeight   float64
+	GearCount     int32
+	MealCount     int32
+	DeletedAt     *time.Time
+	CreatedAt     time.Time
+}
+
+type Template struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Title     string
+	Note      string
+	Items     string
+	DeletedAt *time.Time
+	CreatedAt time.Time
+	CreatedBy uuid.UUID
+	UpdatedAt time.Time
+	UpdatedBy uuid.UUID
+}
+
 type Trip struct {
 	ID          uuid.UUID
 	OwnerID     uuid.UUID
@@ -110,6 +274,8 @@ type Trip struct {
 	Description string
 	StartDate   pgtype.Date
 	EndDate     pgtype.Date
+	MountainID  pgtype.Text
+	Track       pgtype.Text
 	CoverImage  pgtype.Text
 	DeletedAt   *time.Time
 	CreatedAt   time.Time
@@ -123,6 +289,19 @@ type TripMember struct {
 	TripID    uuid.UUID
 	UserID    uuid.UUID
 	Role      string
+	DeletedAt *time.Time
+	CreatedAt time.Time
+	CreatedBy uuid.UUID
+	UpdatedAt time.Time
+	UpdatedBy uuid.UUID
+}
+
+type TripMessage struct {
+	ID        uuid.UUID
+	TripID    uuid.UUID
+	UserID    uuid.UUID
+	ParentID  *uuid.UUID
+	Body      string
 	DeletedAt *time.Time
 	CreatedAt time.Time
 	CreatedBy uuid.UUID

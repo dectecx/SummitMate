@@ -56,6 +56,24 @@ func (e CreateReportRequestTargetType) Valid() bool {
 	}
 }
 
+// Defines values for FriendRequestResultStatus.
+const (
+	FriendRequestResultStatusAccepted FriendRequestResultStatus = "accepted"
+	FriendRequestResultStatusPending  FriendRequestResultStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the FriendRequestResultStatus enum.
+func (e FriendRequestResultStatus) Valid() bool {
+	switch e {
+	case FriendRequestResultStatusAccepted:
+		return true
+	case FriendRequestResultStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GroupEventCategory.
 const (
 	GroupEventCategoryBouldering GroupEventCategory = "bouldering"
@@ -446,9 +464,43 @@ type Error struct {
 
 // EventUser defines model for EventUser.
 type EventUser struct {
+	Avatar      string             `json:"avatar"`
+	DisplayName string             `json:"display_name"`
+	Id          openapi_types.UUID `json:"id"`
+}
+
+// Friend defines model for Friend.
+type Friend struct {
 	Avatar      string `json:"avatar"`
 	DisplayName string `json:"display_name"`
+
+	// Since When the request was accepted
+	Since  time.Time          `json:"since"`
+	UserId openapi_types.UUID `json:"user_id"`
 }
+
+// FriendList defines model for FriendList.
+type FriendList struct {
+	Friends  []Friend        `json:"friends"`
+	Incoming []FriendRequest `json:"incoming"`
+	Outgoing []FriendRequest `json:"outgoing"`
+}
+
+// FriendRequest defines model for FriendRequest.
+type FriendRequest struct {
+	CreatedAt time.Time          `json:"created_at"`
+	RequestId openapi_types.UUID `json:"request_id"`
+	User      PublicUser         `json:"user"`
+}
+
+// FriendRequestResult defines model for FriendRequestResult.
+type FriendRequestResult struct {
+	RequestId openapi_types.UUID        `json:"request_id"`
+	Status    FriendRequestResultStatus `json:"status"`
+}
+
+// FriendRequestResultStatus defines model for FriendRequestResult.Status.
+type FriendRequestResultStatus string
 
 // GroupEventCategory defines model for GroupEventCategory.
 type GroupEventCategory string
@@ -662,6 +714,11 @@ type ReviewRequest struct {
 
 	// Reason Shown to the applicant when rejecting
 	Reason *string `json:"reason,omitempty"`
+}
+
+// SendFriendRequest defines model for SendFriendRequest.
+type SendFriendRequest struct {
+	UserId openapi_types.UUID `json:"user_id"`
 }
 
 // SharedItem defines model for SharedItem.
@@ -949,6 +1006,9 @@ type ResendVerificationJSONRequestBody ResendVerificationJSONBody
 // VerifyEmailJSONRequestBody defines body for VerifyEmail for application/json ContentType.
 type VerifyEmailJSONRequestBody = VerifyEmailRequest
 
+// SendFriendRequestJSONRequestBody defines body for SendFriendRequest for application/json ContentType.
+type SendFriendRequestJSONRequestBody = SendFriendRequest
+
 // CreateGroupEventJSONRequestBody defines body for CreateGroupEvent for application/json ContentType.
 type CreateGroupEventJSONRequestBody = CreateGroupEventRequest
 
@@ -1011,6 +1071,21 @@ type ServerInterface interface {
 	// GetExploreMountains Read-only mountain reference data (public, no token)
 	// (GET /explore/mountains)
 	GetExploreMountains(w http.ResponseWriter, r *http.Request, params GetExploreMountainsParams)
+	// ListFriends My friends and the pending requests I received or sent
+	// (GET /friends)
+	ListFriends(w http.ResponseWriter, r *http.Request)
+	// SendFriendRequest Ask someone to be friends
+	// (POST /friends/requests)
+	SendFriendRequest(w http.ResponseWriter, r *http.Request)
+	// RemoveFriendRequest Decline (addressee) or cancel (requester) a pending request
+	// (DELETE /friends/requests/{request_id})
+	RemoveFriendRequest(w http.ResponseWriter, r *http.Request, requestId openapi_types.UUID)
+	// AcceptFriendRequest Accept a request I received
+	// (POST /friends/requests/{request_id}/accept)
+	AcceptFriendRequest(w http.ResponseWriter, r *http.Request, requestId openapi_types.UUID)
+	// Unfriend Remove a friend (idempotent)
+	// (DELETE /friends/{user_id})
+	Unfriend(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID)
 	// ListGroupEvents List group events (scopes all, upcoming and popular need no token)
 	// (GET /group-events)
 	ListGroupEvents(w http.ResponseWriter, r *http.Request, params ListGroupEventsParams)
@@ -1158,6 +1233,36 @@ func (_ Unimplemented) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 // GetExploreMountains Read-only mountain reference data (public, no token)
 // (GET /explore/mountains)
 func (_ Unimplemented) GetExploreMountains(w http.ResponseWriter, r *http.Request, params GetExploreMountainsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListFriends My friends and the pending requests I received or sent
+// (GET /friends)
+func (_ Unimplemented) ListFriends(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SendFriendRequest Ask someone to be friends
+// (POST /friends/requests)
+func (_ Unimplemented) SendFriendRequest(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RemoveFriendRequest Decline (addressee) or cancel (requester) a pending request
+// (DELETE /friends/requests/{request_id})
+func (_ Unimplemented) RemoveFriendRequest(w http.ResponseWriter, r *http.Request, requestId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// AcceptFriendRequest Accept a request I received
+// (POST /friends/requests/{request_id}/accept)
+func (_ Unimplemented) AcceptFriendRequest(w http.ResponseWriter, r *http.Request, requestId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Unfriend Remove a friend (idempotent)
+// (DELETE /friends/{user_id})
+func (_ Unimplemented) Unfriend(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1498,6 +1603,112 @@ func (siw *ServerInterfaceWrapper) GetExploreMountains(w http.ResponseWriter, r 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetExploreMountains(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListFriends operation middleware
+func (siw *ServerInterfaceWrapper) ListFriends(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListFriends(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SendFriendRequest operation middleware
+func (siw *ServerInterfaceWrapper) SendFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SendFriendRequest(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RemoveFriendRequest operation middleware
+func (siw *ServerInterfaceWrapper) RemoveFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "request_id" -------------
+	var requestId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "request_id", chi.URLParam(r, "request_id"), &requestId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "request_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RemoveFriendRequest(w, r, requestId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AcceptFriendRequest operation middleware
+func (siw *ServerInterfaceWrapper) AcceptFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "request_id" -------------
+	var requestId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "request_id", chi.URLParam(r, "request_id"), &requestId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "request_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AcceptFriendRequest(w, r, requestId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// Unfriend operation middleware
+func (siw *ServerInterfaceWrapper) Unfriend(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "user_id" -------------
+	var userId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "user_id", chi.URLParam(r, "user_id"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "user_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.Unfriend(w, r, userId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2607,6 +2818,21 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/reports", wrapper.CreateReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/friends", wrapper.ListFriends)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/friends/requests", wrapper.SendFriendRequest)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/friends/requests/{request_id}", wrapper.RemoveFriendRequest)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/friends/requests/{request_id}/accept", wrapper.AcceptFriendRequest)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/friends/{user_id}", wrapper.Unfriend)
 	})
 
 	return r

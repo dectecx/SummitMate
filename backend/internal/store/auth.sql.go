@@ -94,6 +94,15 @@ func (q *Queries) DeleteExpiredRefreshTokens(ctx context.Context) error {
 	return err
 }
 
+const deleteFriendshipsOfUser = `-- name: DeleteFriendshipsOfUser :exec
+DELETE FROM friendships WHERE requester_id = $1 OR addressee_id = $1
+`
+
+func (q *Queries) DeleteFriendshipsOfUser(ctx context.Context, requesterID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteFriendshipsOfUser, requesterID)
+	return err
+}
+
 const deleteVerification = `-- name: DeleteVerification :exec
 DELETE FROM email_verifications WHERE user_id = $1
 `

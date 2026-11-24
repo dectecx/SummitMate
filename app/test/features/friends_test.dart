@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:summitmate/features/events/data/events_api.dart';
 import 'package:summitmate/features/friends/data/friends_api.dart';
 import 'package:summitmate/features/friends/providers.dart';
 import 'package:summitmate/features/members/data/user_search_api.dart';
