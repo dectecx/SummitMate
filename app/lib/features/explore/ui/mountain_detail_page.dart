@@ -7,6 +7,7 @@ import '../../weather/ui/weather_card.dart';
 import '../domain/mountain_models.dart';
 import '../providers.dart';
 import '../../../shared/link_text.dart';
+import '../../../shared/open_link.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/brand/ridge_banner.dart';
 
@@ -83,6 +84,23 @@ class MountainDetailPage extends ConsumerWidget {
           Text('天氣預報', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           PlaceWeather(query: (lat: mountain.latitude, lng: mountain.longitude, elevation: mountain.elevation)),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text('相關連結', style: theme.textTheme.titleMedium),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: [
+                _LinkTile(key: const ValueKey('link-windy'), icon: Icons.air, title: 'Windy 天氣圖（這座山）', url: 'https://www.windy.com/${mountain.latitude.toStringAsFixed(3)}/${mountain.longitude.toStringAsFixed(3)}?${mountain.latitude.toStringAsFixed(3)},${mountain.longitude.toStringAsFixed(3)},10'),
+                Divider(height: 1, indent: 56, color: theme.colorScheme.outlineVariant),
+                const _LinkTile(key: ValueKey('link-cwa'), icon: Icons.cloud_outlined, title: '中央氣象署 山區天氣', url: 'https://www.cwa.gov.tw/V8/C/L/Mountain/Mountain.html'),
+                Divider(height: 1, indent: 56, color: theme.colorScheme.outlineVariant),
+                const _LinkTile(key: ValueKey('link-hike'), icon: Icons.assignment_outlined, title: '台灣山林悠遊網（入山、入園申請）', url: 'https://hike.taiwan.gov.tw/'),
+              ],
+            ),
+          ),
           if (mountain.sources.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text('資料來源', style: theme.textTheme.titleSmall),
@@ -107,6 +125,27 @@ class _Fact extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(color: scheme.secondaryContainer, borderRadius: BorderRadius.circular(16)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 16), const SizedBox(width: 6), Text(text)]),
+    );
+  }
+}
+
+class _LinkTile extends ConsumerWidget {
+  const _LinkTile({super.key, required this.icon, required this.title, required this.url});
+  final IconData icon;
+  final String title;
+  final String url;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(
+      shape: const RoundedRectangleBorder(),
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      title: Text(title),
+      trailing: Icon(Icons.open_in_new, size: 18, color: Theme.of(context).colorScheme.outline),
+      onTap: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        if (!await ref.read(linkOpenerProvider)(Uri.parse(url))) messenger.showSnackBar(const SnackBar(content: Text('無法開啟這個連結')));
+      },
     );
   }
 }
