@@ -12,8 +12,7 @@ import 'core/providers.dart';
 import 'core/settings/app_settings.dart';
 import 'dev/dev_config.dart';
 import 'shared/brand/splash_overlay.dart';
-import 'features/map/data/tile_cache.dart';
-import 'features/map/providers.dart';
+import 'features/map/data/download_updates.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,12 +21,11 @@ Future<void> main() async {
 
 /// Builds the app widget: restores the session, starts the sync triggers and picks the first screen.
 /// The parameters let integration tests run the real app on an in-memory database and a fake keychain.
-Future<Widget> buildApp({AppDatabase? database, TokenStore? tokens, String? apiBaseUrl, TileCache? tileCache, bool ads = false, bool? devTools, bool splash = true}) async {
-  final cache = tileCache ?? await FmtcTileCache.initialise();
+Future<Widget> buildApp({AppDatabase? database, TokenStore? tokens, String? apiBaseUrl, bool ads = false, bool? devTools, bool splash = true}) async {
+  await DownloadUpdates.resumeFromBackground();
   final container = ProviderContainer(
     overrides: [
       appDatabaseProvider.overrideWithValue(database ?? AppDatabase.open()),
-      tileCacheProvider.overrideWithValue(cache),
       if (ads && (Platform.isIOS || Platform.isAndroid)) adBannerBuilderProvider.overrideWithValue(initialiseAdMob()),
       splashEnabledProvider.overrideWithValue(splash),
       if (devTools != null) devToolsVisibleProvider.overrideWithValue(devTools),
@@ -39,7 +37,6 @@ Future<Widget> buildApp({AppDatabase? database, TokenStore? tokens, String? apiB
   // Who is using the app must be known before anything syncs.
   await container.read(authRepositoryProvider).restore();
   container.read(syncCoordinatorProvider); // starts listening for sync triggers
-  await container.read(offlineManagerProvider).recover(); // downloads cut off by the last shutdown
 
   final welcomeSeen = await container.read(settingsStoreProvider).getBool(SettingsStore.welcomeSeen);
   return UncontrolledProviderScope(

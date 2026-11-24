@@ -10,8 +10,7 @@ import 'package:summitmate/features/map/rudy/rudy_installer.dart';
 
 import 'explore_test.dart' show FakeExploreApi, m, payloadOf;
 import 'harness.dart';
-import 'map_flow_test.dart' show FakeLocation, FakeTileCache;
-import 'offline_manager_test.dart' show FakeDownloader;
+import 'map_flow_test.dart' show FakeLocation;
 import 'rudy_fakes.dart';
 
 void main() {
@@ -40,7 +39,6 @@ void main() {
         rudy: installer,
         mapHandle: handle,
         overrides: [
-          tileCacheProvider.overrideWithValue(FakeTileCache(FakeDownloader())),
           locationServiceProvider.overrideWithValue(location),
           exploreApiProvider.overrideWithValue(FakeExploreApi(payloadOf([m('yushan-main', '玉山', 3952), m('xueshan-main', '雪山', 3885)]))),
         ],

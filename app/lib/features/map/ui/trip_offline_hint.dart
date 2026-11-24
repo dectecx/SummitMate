@@ -1,38 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../app/router.dart';
 import '../../../core/db/app_database.dart';
-import '../../explore/domain/mountain_models.dart';
-import '../../explore/providers.dart';
-import '../data/offline_manager.dart';
-import '../domain/offline_regions.dart';
-import '../providers.dart';
+import '../../trips/domain/trip_logic.dart';
+import '../../trips/providers.dart';
+import '../maplibre/rudy_providers.dart';
 
-/// Reminder on a trip with a main mountain: download that mountain's offline map before leaving.
-/// Shows nothing when the trip has no mountain or no detailed area covers it.
+/// Reminder on a trip with a main mountain: install the Rudy Map before leaving.
+/// Shows nothing when the trip has no mountain, is over, or the Rudy Map is already on the phone.
 class TripOfflineHint extends ConsumerWidget {
   const TripOfflineHint({super.key, required this.trip});
   final Trip trip;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final id = trip.mountainId;
-    if (id == null) return const SizedBox.shrink();
-    final mountain = switch (ref.watch(mountainsProvider).value) {
-      MountainsReady(:final data) => data.byId(id),
-      _ => null,
-    };
-    if (mountain == null) return const SizedBox.shrink();
-    final region = offlineRegionFor(mountain.latitude, mountain.longitude);
-    if (region == null) return const SizedBox.shrink();
-    final row = (ref.watch(offlineRegionsProvider).value ?? const <OfflineRegion>[]).where((r) => r.id == region.id).firstOrNull;
-    final theme = Theme.of(context);
+    if (trip.mountainId == null) return const SizedBox.shrink();
+    final now = ref.watch(clockProvider)();
+    if (trip.end.isBefore(DateTime(now.year, now.month, now.day))) return const SizedBox.shrink();
+    if (ref.watch(rudyReadyProvider).value ?? true) return const SizedBox.shrink(); // installed (or not known yet)
 
-    final (icon, text, action) = switch (row?.state) {
-      OfflineState.done => (Icons.download_done, '「${region.name}」離線地圖已下載，山上沒訊號也能看。', null),
-      OfflineState.queued || OfflineState.downloading => (Icons.downloading, '「${region.name}」離線地圖下載中，到「地圖」分頁可看進度。', null),
-      _ => (Icons.map_outlined, '山上沒有訊號，出發前先下載「${region.name}」離線地圖（約 ${formatBytes(region.estimatedBytes)}）。', '下載'),
-    };
     return Card(
       key: const ValueKey('trip-offline-hint'),
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -44,23 +32,19 @@ class TripOfflineHint extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: theme.colorScheme.primary),
+                Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
-                Expanded(child: Text(text)),
+                const Expanded(child: Text('出發前先下載魯地圖離線地圖，山上沒有訊號也能看')),
               ],
             ),
-            if (action != null)
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton.tonal(
-                  key: const ValueKey('trip-offline-download'),
-                  onPressed: () {
-                    ref.read(offlineManagerProvider).start(region.id);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已加入下載：${region.name}（可切到背景繼續）')));
-                  },
-                  child: Text(action),
-                ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.tonal(
+                key: const ValueKey('trip-offline-download'),
+                onPressed: () => context.push(Routes.offlineMaps),
+                child: const Text('前往下載'),
               ),
+            ),
           ],
         ),
       ),

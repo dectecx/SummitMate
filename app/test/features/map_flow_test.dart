@@ -3,26 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/features/explore/providers.dart';
 import 'package:summitmate/features/map/data/location_service.dart';
-import 'package:summitmate/features/map/data/tile_cache.dart';
-import 'package:summitmate/features/map/data/tile_downloader.dart';
 import 'package:summitmate/features/explore/domain/mountain_models.dart';
 import 'package:summitmate/features/map/domain/map_logic.dart';
-import 'package:summitmate/features/map/domain/offline_regions.dart';
-import 'package:summitmate/features/map/domain/offline_view.dart';
 import 'package:summitmate/features/map/providers.dart';
-import 'package:summitmate/core/db/app_database.dart';
 
 import 'explore_test.dart' show FakeExploreApi, m, payloadOf;
 import 'harness.dart';
-import 'offline_manager_test.dart' show FakeDownloader;
-
-class FakeTileCache implements TileCache {
-  FakeTileCache(this.downloader);
-  @override
-  final TileDownloader downloader;
-  @override
-  Widget buildTileLayer() => const SizedBox.shrink();
-}
 
 class FakeLocation implements LocationService {
   LocationResult result = const LocationFound(23.47, 120.96);
@@ -30,31 +16,12 @@ class FakeLocation implements LocationService {
   Future<LocationResult> current() async => result;
 }
 
-OfflineRegion row(String id, String state, {int done = 0, int total = 100, double bytes = 0, String? error}) =>
-    OfflineRegion(id: id, state: state, tilesDone: done, tilesTotal: total, bytes: bytes, error: error, updatedAt: DateTime(2026, 11, 22));
-
-Future<void> openOffline(WidgetTester tester) async {
-  await tester.tap(find.byTooltip('離線地圖'));
-  await settle(tester);
-}
-
 void main() {
-  group('offline sections', () {
-    test('every region is in exactly one section', () {
-      final s = buildOfflineSections([row('yushan', 'done', bytes: 5e6), row('xueba', 'downloading', done: 10), row('nanhu', 'queued'), row('nenggao', 'failed', error: 'x'), row('jiaming', 'interrupted', done: 40)]);
-      expect(s.done.map((e) => e.def.id), ['yushan']);
-      expect(s.active.map((e) => e.def.id), ['xueba', 'nanhu', 'jiaming', 'nenggao'], reason: 'running, waiting, then the ones needing a decision');
-      expect(s.available.length, allOfflineRegions.length - 5);
-      expect({...s.active, ...s.done, ...s.available}.length, allOfflineRegions.length);
-    });
-
-    test('progress and used space', () {
-      final s = buildOfflineSections([row('yushan', 'done', bytes: 5e6), row('xueba', 'downloading', done: 25, total: 100, bytes: 2e6)]);
-      expect(s.active.single.progress, 0.25);
-      expect(s.usedBytes, 7e6);
-      expect(buildOfflineSections(const []).usedBytes, 0);
-      expect(OfflineEntry(taiwanBase, row('taiwan-base', 'downloading', done: 5, total: 0)).progress, 0, reason: 'unknown total is not a division by zero');
-    });
+  test('sizes are shown the way people read them', () {
+    expect(formatBytes(512 * 1024), '512 KB');
+    expect(formatBytes(3.8 * 1024 * 1024), '3.8 MB');
+    expect(formatBytes(410 * 1024 * 1024), '410 MB');
+    expect(formatBytes(1.3 * 1024 * 1024 * 1024), '1.3 GB');
   });
 
   group('peaksNear', () {
@@ -79,17 +46,14 @@ void main() {
   });
 
   group('screens', () {
-    late FakeDownloader dl;
     late FakeLocation location;
 
     Future<AppHarness> start(WidgetTester tester) {
-      dl = FakeDownloader();
       location = FakeLocation();
       return AppHarness.start(
         tester,
         welcomeSeen: true,
         overrides: [
-          tileCacheProvider.overrideWithValue(FakeTileCache(dl)),
           locationServiceProvider.overrideWithValue(location),
           exploreApiProvider.overrideWithValue(FakeExploreApi(payloadOf([m('yushan-main', '玉山', 3952, nameEn: 'Yushan'), m('xueshan-main', '雪山', 3885)]))),
         ],
@@ -165,59 +129,15 @@ void main() {
       await app.dispose(tester);
     });
 
-    testWidgets('offline maps: downloads, progress, queue, failure, and deleting all live on one screen', (tester) async {
-      tester.view.physicalSize = const Size(800, 2600); // tall: the Rudy Map card above the list takes room
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+    testWidgets('the offline maps page is just the Rudy Map card', (tester) async {
       final app = await start(tester);
       await tapText(tester, '地圖');
-      await openOffline(tester);
-
-      expect(find.text('已下載 0 個區域，使用 0 KB'), findsOneWidget);
-      expect(find.byKey(const ValueKey('available-yushan')), findsOneWidget);
-      expect(find.byKey(const ValueKey('available-taiwan-base')), findsOneWidget);
-
-      Future<void> download(String id) async {
-        await tester.tap(find.descendant(of: find.byKey(ValueKey('available-$id')), matching: find.text('下載')));
-        await settle(tester);
-      }
-
-      await download('yushan');
-      await download('xueba');
-      expect(find.text('下載中與待處理'), findsOneWidget);
-      expect(find.byKey(const ValueKey('active-yushan')), findsOneWidget);
-      expect(find.text('等待中'), findsOneWidget, reason: 'the second one waits for the first');
-      expect(find.byKey(const ValueKey('available-nanhu')), findsOneWidget, reason: 'a running download does not hide what else can be downloaded');
-
-      dl.progress('yushan', 350, 700, 4e6);
+      await tester.tap(find.byTooltip('離線地圖'));
       await settle(tester);
-      expect(find.text('下載中 50%（3.8 MB）'), findsOneWidget);
 
-      // Leave the screen and come back: the progress is still there.
-      await tester.pageBack();
-      await settle(tester);
-      expect(find.byType(Badge), findsOneWidget);
-      await openOffline(tester);
-      expect(find.text('下載中 50%（3.8 MB）'), findsOneWidget);
-
-      await dl.finish('yushan');
-      await settle(tester);
-      expect(find.byKey(const ValueKey('done-yushan')), findsOneWidget);
-      expect(find.text('已下載 1 個區域，使用 3.8 MB'), findsOneWidget);
-      expect(find.text('下載中 0%（0 KB）'), findsOneWidget, reason: 'the queue moved on to xueba');
-
-      dl.fail('xueba', Exception('伺服器沒有回應'));
-      await settle(tester);
-      expect(find.textContaining('下載失敗：Exception: 伺服器沒有回應'), findsOneWidget);
-      await tapText(tester, '重試');
-      expect(dl.started, ['yushan', 'xueba', 'xueba']);
-
-      await tester.tap(find.byTooltip('刪除 玉山'));
-      await settle(tester);
-      await tapText(tester, '刪除');
-      expect(find.byKey(const ValueKey('done-yushan')), findsNothing);
-      expect(find.byKey(const ValueKey('available-yushan')), findsOneWidget);
-      expect(dl.deleted, contains('yushan'));
+      expect(find.byKey(const ValueKey('rudy-card')), findsOneWidget);
+      expect(find.byKey(const ValueKey('rudy-download')), findsOneWidget);
+      expect(find.textContaining('國土測繪中心'), findsNothing, reason: 'no region downloads of the government map any more');
       await app.dispose(tester);
     });
   });

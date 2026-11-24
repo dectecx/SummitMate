@@ -15,3 +15,12 @@ List<Mountain> peaksNear(List<Mountain> all, double lat, double lng, double zoom
       return e != 0 ? e : a.id.compareTo(b.id);
     });
 }
+
+/// "42 MB" / "1.3 GB" style size for people.
+String formatBytes(double bytes) {
+  if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
+  if (bytes < 1024 * 1024 * 1024) {
+    return '${(bytes / 1024 / 1024).toStringAsFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB';
+  }
+  return '${(bytes / 1024 / 1024 / 1024).toStringAsFixed(1)} GB';
+}

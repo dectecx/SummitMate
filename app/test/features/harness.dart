@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -10,10 +13,19 @@ import 'package:summitmate/core/auth/token_store.dart';
 import 'package:summitmate/core/db/app_database.dart';
 import 'package:summitmate/core/providers.dart';
 import 'package:summitmate/core/settings/app_settings.dart';
+import 'package:summitmate/features/map/providers.dart';
 
 import '../core/auth_support.dart';
 import '../core/support.dart';
 import 'rudy_fakes.dart';
+
+/// The government map's tiles are never fetched in tests.
+class _NoTileProvider extends TileProvider {
+  @override
+  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) => MemoryImage(_blank);
+}
+
+final _blank = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
 
 /// A running app on an in-memory database with a fake auth server.
 class AppHarness {
@@ -35,6 +47,7 @@ class AppHarness {
         tokenStoreProvider.overrideWithValue(tokens),
         authApiProvider.overrideWithValue(api),
         connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
+        mapTileProviderProvider.overrideWithValue(_NoTileProvider()),
         ...rudyTestOverrides(installer: rudy, handle: mapHandle),
         devToolsVisibleProvider.overrideWithValue(devTools),
         splashEnabledProvider.overrideWithValue(false),

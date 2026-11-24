@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/open_link.dart';
-import '../domain/offline_regions.dart';
+import '../domain/map_logic.dart';
 import '../maplibre/rudy_providers.dart';
 import '../rudy/rudy_constants.dart';
 import '../rudy/rudy_installer.dart';

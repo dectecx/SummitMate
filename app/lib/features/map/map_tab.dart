@@ -13,10 +13,12 @@ import 'maplibre/rudy_map_view.dart';
 import 'maplibre/rudy_providers.dart';
 import 'rudy/rudy_constants.dart';
 import 'domain/map_logic.dart';
-import 'data/offline_manager.dart';
 import 'providers.dart';
 
-/// "地圖": the topographic map with the mountains, the person's position and the offline maps.
+/// NLSC (內政部國土測繪中心) open-data e-map with contour lines, online only. Note the z/y/x order.
+const _nlscTileUrl = 'https://wmts.nlsc.gov.tw/wmts/EMAP5_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}';
+
+/// "地圖": the topographic map with the mountains, the person's position; the Rudy Map when it is installed.
 class MapTab extends ConsumerStatefulWidget {
   const MapTab({super.key});
 
@@ -78,9 +80,6 @@ class _MapTabState extends ConsumerState<MapTab> {
       MountainsReady(:final data) => data.mountains,
       _ => const <Mountain>[],
     };
-    final busy = (ref.watch(offlineRegionsProvider).value ?? const []).any(
-      (r) => r.state == OfflineState.downloading || r.state == OfflineState.queued,
-    );
     final scheme = Theme.of(context).colorScheme;
     final source = ref.watch(mapSourceProvider);
     ref.watch(rudyReadyProvider); // keep it loaded so the menu knows whether the files are there
@@ -108,7 +107,7 @@ class _MapTabState extends ConsumerState<MapTab> {
           IconButton(
             tooltip: '離線地圖',
             onPressed: () => context.push(Routes.offlineMaps),
-            icon: Badge(isLabelVisible: busy, smallSize: 8, child: const Icon(Icons.download_for_offline_outlined)),
+            icon: const Icon(Icons.download_for_offline_outlined),
           ),
         ],
       ),
@@ -124,7 +123,12 @@ class _MapTabState extends ConsumerState<MapTab> {
               mapController: _controller,
               options: const MapOptions(initialCenter: LatLng(23.7, 121.0), initialZoom: 7.5, minZoom: 6, maxZoom: 18),
               children: [
-                ref.watch(tileCacheProvider).buildTileLayer(),
+                TileLayer(
+                  urlTemplate: _nlscTileUrl,
+                  userAgentPackageName: 'com.declab.summitmate',
+                  maxNativeZoom: 15, // z16 of the NLSC layer is only an enlarged z15
+                  tileProvider: ref.watch(mapTileProviderProvider),
+                ),
                 MarkerLayer(
                   markers: [
                     for (final m in mountains)

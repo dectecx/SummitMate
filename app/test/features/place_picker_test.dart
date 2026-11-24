@@ -3,10 +3,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/features/explore/providers.dart';
 import 'package:summitmate/features/gpx/domain/gpx_models.dart';
 import 'package:summitmate/features/trips/domain/gpx_trip.dart';
+import 'package:summitmate/features/map/rudy/rudy_installer.dart';
 import 'package:summitmate/features/trips/providers.dart';
 
 import 'explore_test.dart' show FakeExploreApi, m, payloadOf;
 import 'harness.dart';
+import 'rudy_fakes.dart';
 
 final _list = [
   m('yushan-main', '玉山', 3952, nameEn: 'Yushan'),
@@ -152,7 +154,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('a trip with a main mountain reminds to download that area and can start it', (tester) async {
+  testWidgets('a trip with a main mountain reminds to download the Rudy Map and opens the offline maps page', (tester) async {
     final app = await AppHarness.start(
       tester,
       welcomeSeen: true,
@@ -162,13 +164,45 @@ void main() {
     await settle(tester);
     await tapText(tester, '離線提醒');
     expect(find.byKey(const ValueKey('trip-offline-hint')), findsOneWidget);
-    expect(find.textContaining('出發前先下載「玉山」離線地圖'), findsOneWidget);
+    expect(find.text('出發前先下載魯地圖離線地圖，山上沒有訊號也能看'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('trip-offline-download')));
     await settle(tester);
-    final rows = await real(tester, () => app.db.select(app.db.offlineRegions).get());
-    expect(rows.map((r) => r.id), ['yushan']);
-    expect(find.byKey(const ValueKey('trip-offline-download')), findsNothing, reason: 'the button goes away once queued');
+    expect(find.byKey(const ValueKey('rudy-card')), findsOneWidget, reason: 'landed on the offline maps page');
+    await app.dispose(tester);
+  });
+
+  testWidgets('the Rudy Map reminder is not shown without a mountain, after the trip, or once the map is installed', (tester) async {
+    tester.view.physicalSize = const Size(800, 2000); // tall: all three trips are on screen
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final installer = FakeRudyInstaller();
+    final app = await AppHarness.start(
+      tester,
+      welcomeSeen: true,
+      rudy: installer,
+      overrides: [exploreApiProvider.overrideWithValue(FakeExploreApi(payloadOf(_list))), clockProvider.overrideWithValue(() => DateTime(2026, 5, 10, 9))],
+    );
+    final trips = app.container.read(tripRepositoryProvider);
+    await act(tester, () async {
+      await trips.create(name: '沒有山頭', start: DateTime(2026, 5, 10));
+      await trips.create(name: '已經結束', start: DateTime(2026, 5, 1), end: DateTime(2026, 5, 2), mountainId: 'yushan-main');
+      await trips.create(name: '還沒出發', start: DateTime(2026, 5, 20), mountainId: 'yushan-main');
+    });
+    await settle(tester);
+
+    for (final name in ['沒有山頭', '已經結束']) {
+      await tapText(tester, name);
+      expect(find.byKey(const ValueKey('trip-offline-hint')), findsNothing, reason: name);
+      await tester.pageBack();
+      await settle(tester);
+    }
+
+    await tapText(tester, '還沒出發');
+    expect(find.byKey(const ValueKey('trip-offline-hint')), findsOneWidget);
+    await act(tester, () async => installer.emit(const RudyInstallState(RudyInstallPhase.done, progress: 1)));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('trip-offline-hint')), findsNothing, reason: 'already on the phone');
     await app.dispose(tester);
   });
 

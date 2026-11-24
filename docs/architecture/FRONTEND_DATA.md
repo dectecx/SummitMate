@@ -57,7 +57,7 @@
 
 ### 2.4 刻意不放進資料庫的東西
 - Token：`flutter_secure_storage`。
-- 離線地圖：由 flutter_map_tile_caching 自己管理，下載任務的設計在地圖功能時另寫。
+- 離線地圖（魯地圖）：檔案放在 `<appSupport>/rudy/`，下載進度在記憶體，不進資料庫。
 - 使用者搜尋結果、天氣、山岳資訊：在線讀取，不快取進同步表。
 
 ## 3. 寫入流程與 outbox 規則
@@ -208,4 +208,4 @@ Riverpod：`appDatabaseProvider`、`syncEngineProvider`、`syncStatusProvider`�
 | 3 | 通用描述表驅動引擎（取代每個實體手寫映射） | 同意，並以測試保證一致 |
 | 4 | 時間戳以文字儲存、游標保存伺服器原始字串 | 同意 |
 | 5 | 範例行程標記 `is_sample`，只存在本機、不進 outbox | 同意 |
-| 6 | 離線地圖下載任務與 FMTC 另行設計 | 同意，做地圖功能時再寫 |
+| 6 | 離線地圖只保留魯地圖，不再有 NLSC 區域下載與 FMTC | 同意 |
