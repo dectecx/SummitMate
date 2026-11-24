@@ -1,5 +1,5 @@
 {
- "version": "2026-11-23.1",
+ "version": "2026-11-25.1",
  "updated_at": "2026-11-23T02:00:00Z",
  "mountains": [
   {
@@ -1980,7 +1980,7 @@
    "id": "guangtou",
    "name": "光頭山",
    "name_en": null,
-   "elevation": 3067,
+   "elevation": 3060,
    "region": "中央山脈",
    "latitude": 23.937997,
    "longitude": 121.271952,
