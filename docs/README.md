@@ -2,12 +2,12 @@
 
 > 專案正在重建。舊版文件與 skill 保存在 `legacy/docs/`、`legacy/skills/`，僅作參考，內容可能與新設計不一致。
 
+> 功能清單、進度與待辦屬於開發過程紀錄，只放在本機 `_local_docs/`（不進版控）：`_local_docs/project/FEATURE_STATUS.md`（功能與待辦總表）、`_local_docs/PROGRESS.md`（接續指引）。
+
 ## 目前有效的文件
 
 | 文件 | 說明 |
 | :-- | :-- |
-| [功能清單與進度](./project/FEATURE_STATUS.md) | **要開發什麼、做到哪**：舊功能對照、延後項目、待決定、上線前待辦 |
-| [重建盤點](./project/REBUILD_INVENTORY.md) | 舊系統功能盤點與取捨決策 |
 | [技術決策](./project/TECH_DECISIONS.md) | 前後端技術選型 |
 | [新手引導與導覽](./ui/ONBOARDING_NAVIGATION.md) | 導覽結構、歡迎頁、情境提示 |
 | [裝備庫、範本與雲端分享](./architecture/GEAR_LIBRARY.md) | 個人裝備庫、範本、雲端分享（已完成） |
