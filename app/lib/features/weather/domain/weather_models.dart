@@ -97,15 +97,60 @@ class WeatherData extends WeatherState {
   final bool refreshFailed;
 }
 
-/// The place whose weather to show for a trip: the first node (by day, then time) that has coordinates.
-WeatherQuery? weatherLocationOf(List<ItineraryItem> items) {
-  final located = items.where((i) => i.lat != null && i.lng != null).toList()
-    ..sort((a, b) {
-      final d = a.dayIndex.compareTo(b.dayIndex);
-      if (d != 0) return d;
-      return (a.estMinutes ?? 1 << 20).compareTo(b.estMinutes ?? 1 << 20);
-    });
-  if (located.isEmpty) return null;
-  final i = located.first;
-  return (lat: i.lat!, lng: i.lng!, elevation: i.altitude > 0 ? i.altitude : null);
+/// Where a trip day is spent, for the forecast: the place and the query for it.
+typedef DayPlace = ({int day, DateTime date, String? placeName, int? altitude, WeatherQuery? query});
+
+/// One forecast place per trip day. A day is forecast at its highest node that has coordinates (that is the
+/// coldest and windiest place of the day, the one people need to prepare for); a day with no located node
+/// falls back to the previous day's place, then to the trip's main mountain.
+List<DayPlace> weatherPlanFor({
+  required DateTime start,
+  required int dayCount,
+  required List<ItineraryItem> items,
+  WeatherQuery? fallback,
+  String? fallbackName,
+}) {
+  final plan = <DayPlace>[];
+  DayPlace? previous;
+  for (var day = 1; day <= dayCount; day++) {
+    final date = DateTime(start.year, start.month, start.day + day - 1);
+    final located = items.where((i) => i.dayIndex == day && i.lat != null && i.lng != null).toList()
+      ..sort((a, b) => b.altitude.compareTo(a.altitude));
+    DayPlace entry;
+    if (located.isNotEmpty) {
+      final i = located.first;
+      entry = (
+        day: day,
+        date: date,
+        placeName: i.name.isEmpty ? null : i.name,
+        altitude: i.altitude > 0 ? i.altitude : null,
+        query: (lat: i.lat!, lng: i.lng!, elevation: i.altitude > 0 ? i.altitude : null),
+      );
+    } else if (previous != null && previous.query != null) {
+      entry = (day: day, date: date, placeName: previous.placeName, altitude: previous.altitude, query: previous.query);
+    } else {
+      entry = (day: day, date: date, placeName: fallbackName, altitude: fallback?.elevation, query: fallback);
+    }
+    plan.add(entry);
+    previous = entry;
+  }
+  // Days before the first located day take the first located day's place rather than staying empty.
+  final firstWithQuery = plan.cast<DayPlace?>().firstWhere((e) => e!.query != null, orElse: () => null);
+  if (firstWithQuery != null) {
+    for (var k = 0; k < plan.length && plan[k].query == null; k++) {
+      plan[k] = (day: plan[k].day, date: plan[k].date, placeName: firstWithQuery.placeName, altitude: firstWithQuery.altitude, query: firstWithQuery.query);
+    }
+  }
+  return plan;
+}
+
+/// Short advice for a day, or null when nothing stands out.
+String? weatherAdvice(DailyForecast d) {
+  final tips = <String>[
+    if ((d.rainChance ?? 0) >= 50 || d.rainMm >= 10) '帶雨具、做好防水',
+    if (d.tempMin <= 3) '低溫，注意保暖',
+    if (d.windMax >= 40 || (d.gustMax ?? 0) >= 60) '強風，稜線要小心',
+    if (d.weatherCode >= 95) '雷雨，避開稜線與空曠處',
+  ];
+  return tips.isEmpty ? null : tips.join('、');
 }

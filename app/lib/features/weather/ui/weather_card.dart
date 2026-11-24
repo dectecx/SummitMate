@@ -23,7 +23,10 @@ import '../providers.dart';
   _ => (label: '—', icon: Icons.help_outline),
 };
 
-/// Forecast for the trip's main mountain, else for the first itinerary node that has coordinates.
+const _weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+
+/// The trip's forecast, one row per trip day. Each day is forecast where the group will be that day
+/// (its highest node with coordinates), because that is the place whose weather they must prepare for.
 class WeatherCard extends ConsumerWidget {
   const WeatherCard({super.key, required this.trip});
   final Trip trip;
@@ -37,16 +40,15 @@ class WeatherCard extends ConsumerWidget {
             MountainsReady(:final data) => data.byId(trip.mountainId!),
             _ => null,
           };
-    final query = mountain != null ? (lat: mountain.latitude, lng: mountain.longitude, elevation: mountain.elevation) : weatherLocationOf(items);
+    final plan = weatherPlanFor(
+      start: trip.start,
+      dayCount: trip.dayCount,
+      items: items,
+      fallback: mountain == null ? null : (lat: mountain.latitude, lng: mountain.longitude, elevation: mountain.elevation),
+      fallbackName: mountain?.name,
+    );
     final theme = Theme.of(context);
-
-    Widget body;
-    if (query == null) {
-      body = const Text('編輯行程並設定「主要山頭」，這裡就會顯示該山的天氣預報。');
-    } else {
-      body = PlaceWeather(query: query, from: trip.start, to: trip.end);
-    }
-
+    final hasPlace = plan.any((p) => p.query != null);
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Padding(
@@ -55,11 +57,90 @@ class WeatherCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('天氣預報', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text('依每天行程中最高的地點預報', style: theme.textTheme.bodySmall),
             const SizedBox(height: 12),
-            body,
+            if (!hasPlace)
+              const Text('在行程節點填上座標，或在編輯行程時設定「主要山頭」，這裡就會顯示每天的天氣預報。')
+            else
+              for (final day in plan) _DayWeatherRow(day: day),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DayWeatherRow extends ConsumerWidget {
+  const _DayWeatherRow({required this.day});
+  final DayPlace day;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final head = '第 ${day.day} 天  ${day.date.month}/${day.date.day}（${_weekdays[day.date.weekday - 1]}）';
+    final place = [if (day.placeName != null) day.placeName!, if (day.altitude != null) '${day.altitude} m'].join('  ');
+    final query = day.query;
+    Widget detail;
+    if (query == null) {
+      detail = Text('這天沒有可預報的地點', style: theme.textTheme.bodySmall);
+    } else {
+      detail = switch (ref.watch(weatherProvider(query)).value) {
+        null || WeatherLoading() => const Padding(padding: EdgeInsets.symmetric(vertical: 4), child: LinearProgressIndicator()),
+        WeatherNeedsLogin() => const Text('登入後可以查看天氣預報。'),
+        WeatherUnavailable() => const Text('目前無法取得天氣，請稍後再試。'),
+        WeatherData(:final forecast, :final refreshFailed) => _dayDetail(context, forecast, refreshFailed),
+      };
+    }
+    return Container(
+      key: ValueKey('weather-day-${day.day}'),
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(head, style: theme.textTheme.labelLarge),
+          if (place.isNotEmpty) Text(place, style: theme.textTheme.bodySmall),
+          const SizedBox(height: 6),
+          detail,
+        ],
+      ),
+    );
+  }
+
+  Widget _dayDetail(BuildContext context, WeatherForecast forecast, bool refreshFailed) {
+    final theme = Theme.of(context);
+    final d = forecast.daily.cast<DailyForecast?>().firstWhere((e) => formatDate(e!.date) == formatDate(day.date), orElse: () => null);
+    if (d == null) {
+      final last = forecast.daily.isEmpty ? null : forecast.daily.last.date;
+      final days = last == null ? null : day.date.difference(last).inDays;
+      return Text(days == null ? '預報尚未開放' : '預報最多到 ${last!.month}/${last.day}，約 $days 天後可查看這天', style: theme.textTheme.bodySmall);
+    }
+    final w = describeWeather(d.weatherCode);
+    final advice = weatherAdvice(d);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(w.icon),
+            const SizedBox(width: 8),
+            Text(w.label),
+            const Spacer(),
+            Text('${d.tempMin.round()}° / ${d.tempMax.round()}°', style: theme.textTheme.titleSmall),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${d.rainChance == null ? '${d.rainMm.toStringAsFixed(0)} mm' : '降雨 ${d.rainChance}%'}  ·  風 ${d.windMax.round()} km/h',
+          style: theme.textTheme.bodySmall,
+        ),
+        if (advice != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('提醒：$advice', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error))),
+        if (refreshFailed) Text('無法更新，顯示上次的預報', style: theme.textTheme.bodySmall),
+      ],
     );
   }
 }

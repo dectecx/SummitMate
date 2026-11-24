@@ -87,16 +87,34 @@ void main() {
       expect(weatherCacheKey((lat: 23.4, lng: 121.0, elevation: 3000)), isNot(weatherCacheKey((lat: 23.4, lng: 121.0, elevation: 2700))));
     });
 
-    test('the place is the first node with coordinates, by day then time', () {
+    test('each day is forecast at its highest located node, then the previous day, then the main mountain', () {
       final items = [
         node('no-coords', minutes: 60),
-        node('late', day: 2, minutes: 60, lat: 1, lng: 2),
-        node('second', day: 1, minutes: 600, lat: 23.4, lng: 121.0, altitude: 2700),
-        node('first', day: 1, minutes: 420, lat: 23.5, lng: 121.1, altitude: 2300),
+        node('low', day: 1, minutes: 420, lat: 23.5, lng: 121.1, altitude: 2300),
+        node('summit', day: 1, minutes: 600, lat: 23.4, lng: 121.0, altitude: 2700),
+        node('flat', day: 3, lat: 1, lng: 2),
       ];
-      expect(weatherLocationOf(items), (lat: 23.5, lng: 121.1, elevation: 2300));
-      expect(weatherLocationOf([node('x')]), isNull);
-      expect(weatherLocationOf([node('flat', lat: 1, lng: 2)]), (lat: 1.0, lng: 2.0, elevation: null), reason: 'no altitude means no elevation correction');
+      final plan = weatherPlanFor(start: DateTime(2026, 5, 10), dayCount: 4, items: items, fallback: (lat: 9.0, lng: 9.0, elevation: 3952), fallbackName: '玉山');
+      expect(plan.map((p) => p.query), [
+        (lat: 23.4, lng: 121.0, elevation: 2700),
+        (lat: 23.4, lng: 121.0, elevation: 2700), // day 2 has no located node: stays at day 1's place
+        (lat: 1.0, lng: 2.0, elevation: null), // no altitude means no elevation correction
+        (lat: 1.0, lng: 2.0, elevation: null),
+      ]);
+      expect(plan.first.placeName, 'summit');
+      expect(plan[1].date, DateTime(2026, 5, 11));
+      final onlyMountain = weatherPlanFor(start: DateTime(2026, 5, 10), dayCount: 2, items: [node('x')], fallback: (lat: 9.0, lng: 9.0, elevation: 3952), fallbackName: '玉山');
+      expect(onlyMountain.map((p) => p.placeName), ['玉山', '玉山']);
+      expect(weatherPlanFor(start: DateTime(2026, 5, 10), dayCount: 1, items: [node('x')]).single.query, isNull);
+    });
+
+    test('advice only appears when the weather calls for it', () {
+      DailyForecast d({int code = 0, double min = 10, int? rain = 10, double mm = 0, double wind = 10, double? gust}) =>
+          DailyForecast(date: DateTime(2026, 5, 10), weatherCode: code, tempMax: 20, tempMin: min, rainChance: rain, rainMm: mm, windMax: wind, gustMax: gust);
+      expect(weatherAdvice(d()), isNull);
+      expect(weatherAdvice(d(rain: 70)), contains('雨具'));
+      expect(weatherAdvice(d(min: 0, wind: 50)), allOf(contains('保暖'), contains('強風')));
+      expect(weatherAdvice(d(code: 95)), contains('雷雨'));
     });
   });
 }

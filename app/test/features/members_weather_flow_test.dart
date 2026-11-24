@@ -197,19 +197,21 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('weather shows the forecast for the first node with coordinates', (tester) async {
+  testWidgets('weather shows one row per trip day, each at where the group is that day', (tester) async {
     final app = await start(tester);
     final trip = await ownTrip(tester, app);
     await act(tester, () => app.container.read(itineraryRepositoryProvider).add(trip, dayIndex: 1, name: '向陽山屋', altitude: 2850, lat: 23.4, lng: 121.0));
     await settle(tester);
 
     expect(find.text('天氣預報'), findsOneWidget);
+    expect(find.text('第 1 天  5/10（日）'), findsOneWidget);
+    expect(find.text('第 2 天  5/11（一）'), findsOneWidget);
+    expect(find.text('向陽山屋  2850 m'), findsNWidgets(2)); // day 2 has no node of its own and stays there
     expect(find.text('2° / 11°'), findsOneWidget);
-    expect(find.text('降雨 20%'), findsOneWidget);
+    expect(find.text('降雨 20%  ·  風 12 km/h'), findsOneWidget);
     expect(find.text('晴'), findsOneWidget);
     expect(find.text('雨'), findsOneWidget);
-    expect(find.textContaining('海拔 2850 m'), findsOneWidget);
-    expect(find.textContaining('更新於'), findsOneWidget);
+    expect(find.textContaining('提醒：帶雨具'), findsOneWidget); // day 2: 80% rain
     await app.dispose(tester);
   });
 
@@ -219,14 +221,14 @@ void main() {
     final trip = await ownTrip(tester, app);
     await act(tester, () => app.container.read(itineraryRepositoryProvider).add(trip, dayIndex: 1, name: 'x', lat: 23.4, lng: 121.0));
     await settle(tester);
-    expect(find.text('目前無法取得天氣，請稍後再試。'), findsOneWidget);
+    expect(find.text('目前無法取得天氣，請稍後再試。'), findsNWidgets(2)); // one per trip day
     await app.dispose(tester);
 
     final guestApp = await start(tester, signedIn: false);
     final t2 = await ownTrip(tester, guestApp);
     await act(tester, () => guestApp.container.read(itineraryRepositoryProvider).add(t2, dayIndex: 1, name: 'x', lat: 23.4, lng: 121.0));
     await settle(tester);
-    expect(find.text('登入後可以查看天氣預報。'), findsOneWidget);
+    expect(find.text('登入後可以查看天氣預報。'), findsNWidgets(2));
     await guestApp.dispose(tester);
   });
 
