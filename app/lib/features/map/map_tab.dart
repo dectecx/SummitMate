@@ -12,7 +12,6 @@ import 'maplibre/rudy_map_view.dart';
 import 'maplibre/rudy_providers.dart';
 import 'rudy/rudy_constants.dart';
 import 'domain/map_logic.dart';
-import 'domain/offline_regions.dart';
 import 'data/offline_manager.dart';
 import 'providers.dart';
 
@@ -30,7 +29,6 @@ class _MapTabState extends ConsumerState<MapTab> {
   bool _locating = false;
   MapHandle? _rudy; // set while the Rudy Map is the one on screen
   bool _usingRudy = false;
-  bool _tilted = false;
 
   @override
   void dispose() {
@@ -40,7 +38,7 @@ class _MapTabState extends ConsumerState<MapTab> {
 
   void _zoom(double delta) {
     if (_usingRudy) {
-      _rudy?.zoomBy(delta);
+      _rudy?.zoomBy(delta * 0.5); // half a level per press: finer than the raster map, which has no sub-levels
       return;
     }
     final cam = _controller.camera;
@@ -79,7 +77,9 @@ class _MapTabState extends ConsumerState<MapTab> {
       MountainsReady(:final data) => data.mountains,
       _ => const <Mountain>[],
     };
-    final busy = (ref.watch(offlineRegionsProvider).value ?? const []).any((r) => r.state == OfflineState.downloading || r.state == OfflineState.queued);
+    final busy = (ref.watch(offlineRegionsProvider).value ?? const []).any(
+      (r) => r.state == OfflineState.downloading || r.state == OfflineState.queued,
+    );
     final scheme = Theme.of(context).colorScheme;
     final source = ref.watch(mapSourceProvider);
     ref.watch(rudyReadyProvider); // keep it loaded so the menu knows whether the files are there
@@ -87,9 +87,7 @@ class _MapTabState extends ConsumerState<MapTab> {
     _usingRudy = rudyStyle != null;
     if (!_usingRudy) {
       _rudy = null;
-      _tilted = false;
     }
-    final has3d = _usingRudy && (ref.watch(rudyDemDirProvider).value != null);
 
     return Scaffold(
       appBar: AppBar(
@@ -118,52 +116,68 @@ class _MapTabState extends ConsumerState<MapTab> {
           if (rudyStyle != null)
             ref.watch(rudyMapBuilderProvider)(context, rudyStyle, mountains, _onPeaksTapped, (h) {
               _rudy = h;
-              _tilted = false;
               h.setMe(_me?.latitude, _me?.longitude);
             })
           else
             FlutterMap(
-            mapController: _controller,
-            options: const MapOptions(initialCenter: LatLng(23.7, 121.0), initialZoom: 7.5, minZoom: 6, maxZoom: 18),
-            children: [
-              ref.watch(tileCacheProvider).buildTileLayer(),
-              MarkerLayer(
-                markers: [
-                  for (final m in mountains)
-                    Marker(
-                      key: ValueKey('peak-${m.id}'),
-                      point: LatLng(m.latitude, m.longitude),
-                      width: 32,
-                      height: 32,
-                      child: GestureDetector(
-                        onTap: () => _onPeakTap(m, mountains),
-                        child: Icon(Icons.landscape, color: scheme.primary, size: 24, shadows: const [Shadow(blurRadius: 4, color: Colors.white)]),
+              mapController: _controller,
+              options: const MapOptions(initialCenter: LatLng(23.7, 121.0), initialZoom: 7.5, minZoom: 6, maxZoom: 18),
+              children: [
+                ref.watch(tileCacheProvider).buildTileLayer(),
+                MarkerLayer(
+                  markers: [
+                    for (final m in mountains)
+                      Marker(
+                        key: ValueKey('peak-${m.id}'),
+                        point: LatLng(m.latitude, m.longitude),
+                        width: 32,
+                        height: 32,
+                        child: GestureDetector(
+                          onTap: () => _onPeakTap(m, mountains),
+                          child: Icon(
+                            Icons.landscape,
+                            color: scheme.primary,
+                            size: 24,
+                            shadows: const [Shadow(blurRadius: 4, color: Colors.white)],
+                          ),
+                        ),
                       ),
-                    ),
-                  if (_me != null)
-                    Marker(
-                      key: const ValueKey('me'),
-                      point: _me!,
-                      width: 24,
-                      height: 24,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(color: Colors.blue, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 3)),
+                    if (_me != null)
+                      Marker(
+                        key: const ValueKey('me'),
+                        point: _me!,
+                        width: 24,
+                        height: 24,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                          ),
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
+              ],
+            ),
           // Credit required by the data licence. It wraps (never overflows) and leaves room for the buttons.
           Positioned(
             left: 8,
             bottom: 8,
             right: 72,
             child: DecoratedBox(
-              decoration: BoxDecoration(color: scheme.surface.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(6)),
+              decoration: BoxDecoration(
+                color: scheme.surface.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(6),
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(_usingRudy ? (has3d ? '$rudyAttribution｜$terrainAttribution' : rudyAttribution) : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）', style: Theme.of(context).textTheme.labelSmall),
+                child: Text(
+                  _usingRudy
+                      ? rudyAttribution
+                      : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
               ),
             ),
           ),
@@ -181,20 +195,10 @@ class _MapTabState extends ConsumerState<MapTab> {
                   IconButton(
                     tooltip: '我的位置',
                     onPressed: _locate,
-                    icon: _locating ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.my_location),
+                    icon: _locating
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.my_location),
                   ),
-                  if (has3d) ...[
-                    const Divider(height: 1),
-                    IconButton(
-                      key: const ValueKey('map-3d'),
-                      tooltip: _tilted ? '平面視角' : '3D 視角',
-                      onPressed: () {
-                        setState(() => _tilted = !_tilted);
-                        _rudy?.setTilt(_tilted ? 72 : 0, minZoom: _tilted ? 12 : null);
-                      },
-                      icon: Icon(_tilted ? Icons.map_outlined : Icons.terrain),
-                    ),
-                  ],
                   const Divider(height: 1),
                   IconButton(tooltip: '放大', onPressed: () => _zoom(1), icon: const Icon(Icons.add)),
                   const Divider(height: 1),
@@ -238,7 +242,10 @@ class _MapTabState extends ConsumerState<MapTab> {
         child: ListView(
           shrinkWrap: true,
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(24, 0, 24, 8), child: Text('附近的山（${near.length}）', style: Theme.of(ctx).textTheme.titleLarge)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              child: Text('附近的山（${near.length}）', style: Theme.of(ctx).textTheme.titleLarge),
+            ),
             for (final p in near)
               ListTile(
                 key: ValueKey('near-${p.id}'),

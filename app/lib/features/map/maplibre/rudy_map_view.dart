@@ -13,15 +13,17 @@ abstract interface class MapHandle {
   Future<void> moveTo(double lat, double lng, {double? minZoom});
   Future<void> setMe(double? lat, double? lng);
 
-  /// Camera tilt in degrees (0 = looking straight down). Only meaningful with elevation data installed.
-  ///
-  /// With [minZoom] the camera also moves in to at least that zoom, so the relief is big enough to see.
-  Future<void> setTilt(double degrees, {double? minZoom});
 }
 
 /// The Rudy Map drawn by MapLibre from local files, with the mountains and the person's position on top.
 class RudyMapView extends StatefulWidget {
-  const RudyMapView({super.key, required this.styleString, required this.mountains, required this.onPeaks, required this.onCreated});
+  const RudyMapView({
+    super.key,
+    required this.styleString,
+    required this.mountains,
+    required this.onPeaks,
+    required this.onCreated,
+  });
   final String styleString;
   final List<Mountain> mountains;
 
@@ -46,23 +48,12 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
 
   @override
   Future<void> zoomBy(double delta) async {
-    await _c?.animateCamera(CameraUpdate.zoomTo((zoom + delta).clamp(5, 17)));
+    await _c?.animateCamera(CameraUpdate.zoomTo((zoom + delta).clamp(5, 20)));
   }
 
   @override
   Future<void> moveTo(double lat, double lng, {double? minZoom}) async {
     await _c?.animateCamera(CameraUpdate.newLatLngZoom(LatLng(lat, lng), math.max(zoom, minZoom ?? 0)));
-  }
-
-  @override
-  Future<void> setTilt(double degrees, {double? minZoom}) async {
-    final c = _c;
-    final cam = c?.cameraPosition;
-    if (c == null || cam == null) return;
-    await c.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: cam.target, zoom: math.max(cam.zoom, minZoom ?? 0), bearing: cam.bearing, tilt: degrees)),
-      duration: const Duration(milliseconds: 1200),
-    );
   }
 
   @override
@@ -109,13 +100,23 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
     await c.addCircleLayer(
       _peaksSource,
       'summitmate-peaks-layer',
-      const CircleLayerProperties(circleRadius: 6, circleColor: '#2E6B45', circleStrokeColor: '#FFFFFF', circleStrokeWidth: 2),
+      const CircleLayerProperties(
+        circleRadius: 6,
+        circleColor: '#2E6B45',
+        circleStrokeColor: '#FFFFFF',
+        circleStrokeWidth: 2,
+      ),
     );
     await c.addGeoJsonSource(_meSource, _meGeoJson());
     await c.addCircleLayer(
       _meSource,
       'summitmate-me-layer',
-      const CircleLayerProperties(circleRadius: 8, circleColor: '#1E88E5', circleStrokeColor: '#FFFFFF', circleStrokeWidth: 3),
+      const CircleLayerProperties(
+        circleRadius: 8,
+        circleColor: '#1E88E5',
+        circleStrokeColor: '#FFFFFF',
+        circleStrokeWidth: 3,
+      ),
     );
     _styleReady = true;
   }
@@ -123,6 +124,13 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
   @override
   void didUpdateWidget(RudyMapView old) {
     super.didUpdateWidget(old);
+    if (old.styleString != widget.styleString) {
+      // The style changed while the map is open (e.g. the elevation tiles finished downloading): load it, and the
+      // overlays are added again once it is ready.
+      _styleReady = false;
+      _c?.setStyle(widget.styleString);
+      return;
+    }
     if (_styleReady && old.mountains.length != widget.mountains.length) {
       _c?.setGeoJsonSource(_peaksSource, _peaksGeoJson());
     }
@@ -138,7 +146,8 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
     return MapLibreMap(
       styleString: widget.styleString,
       initialCameraPosition: const CameraPosition(target: LatLng(23.7, 121.0), zoom: 7.5),
-      minMaxZoomPreference: const MinMaxZoomPreference(5, 17),
+      minMaxZoomPreference: const MinMaxZoomPreference(5, 20),
+      trackCameraPosition: true, // the zoom buttons read the current zoom from the controller
       onMapCreated: (c) {
         _c = c;
         widget.onCreated(this);

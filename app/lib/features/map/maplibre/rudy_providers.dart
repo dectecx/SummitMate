@@ -2,14 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:path_provider/path_provider.dart';
 
 import '../../../core/providers.dart';
 import '../../explore/domain/mountain_models.dart';
-import '../data/offline_manager.dart';
-import '../data/offline_tile_store.dart';
-import '../domain/offline_regions.dart';
-import '../providers.dart';
 import '../rudy/rudy_client.dart';
 import '../rudy/rudy_installer.dart';
 import '../rudy/rudy_paths.dart';
@@ -74,21 +69,11 @@ final rudyReadyProvider = FutureProvider<bool>((ref) async {
   return paths.isInstalled;
 });
 
-/// Folder of the elevation tiles of the 3D view once they are downloaded, else null.
-final rudyDemDirProvider = FutureProvider<String?>((ref) async {
-  final rows = ref.watch(offlineRegionsProvider).value ?? const [];
-  final done = rows.any((r) => r.id == terrainDem.id && r.state == OfflineState.done);
-  if (!done) return null;
-  final support = await getApplicationSupportDirectory();
-  return '${support.path}/${OfflineTileStore.demRelativeRoot}/${terrainDem.id}';
-});
-
 /// The MapLibre style for the installed files, or null when they are not installed.
 final rudyStyleProvider = FutureProvider<String?>((ref) async {
   if (!(await ref.watch(rudyReadyProvider.future))) return null;
   final paths = await ref.watch(rudyPathsProvider.future);
-  final dem = await ref.watch(rudyDemDirProvider.future);
-  return buildRudyStyle(pmtilesPath: paths.pmtiles.path, glyphsDir: paths.glyphs.path, demDir: dem);
+  return buildRudyStyle(pmtilesPath: paths.pmtiles.path, glyphsDir: paths.glyphs.path);
 });
 
 typedef RudyMapBuilder = Widget Function(BuildContext context, String style, List<Mountain> mountains, void Function(List<Mountain>) onPeaks, ValueChanged<MapHandle> onCreated);

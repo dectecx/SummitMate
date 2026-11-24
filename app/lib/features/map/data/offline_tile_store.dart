@@ -16,9 +16,6 @@ class OfflineTileStore {
   /// Where downloaded map tiles live, relative to the app support directory (the downloader's base directory).
   static const defaultRelativeRoot = 'offline_tiles';
 
-  /// Where the elevation tiles of the 3D view live (a separate store so they are never mistaken for map tiles).
-  static const demRelativeRoot = 'dem_tiles';
-
   final Directory root;
 
   /// [root] relative to the app support directory.

@@ -30,7 +30,5 @@ void main() {
   test('the downloader writes where the store reads', () {
     final store = OfflineTileStore(Directory('${root.path}/offline_tiles'));
     expect('${store.tileDirectory('yushan', 12, 3)}/${OfflineTileStore.tileFilename(4)}', 'offline_tiles/yushan/12/3/4.tile');
-    final dem = OfflineTileStore(Directory('${root.path}/dem_tiles'), relativeRoot: OfflineTileStore.demRelativeRoot);
-    expect(dem.tileDirectory('terrain-dem', 8, 1), 'dem_tiles/terrain-dem/8/1', reason: 'elevation tiles never share a folder with map tiles');
   });
 }

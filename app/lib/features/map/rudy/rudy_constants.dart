@@ -23,7 +23,6 @@ const rudyDownloadBase = rudyViaBalancer ? rudyBalancerBase : rudyDirectBase;
 
 const rudyPmtilesFile = 'MOI_OSM_Taiwan_TOPO_Rudy.pmtiles';
 const rudyStyleZipFile = 'MOI_OSM_Taiwan_TOPO_Rudy_pmtiles_style.zip';
-const rudyDemPmtilesFile = 'taiwan_dem.pmtiles';
 
 /// Placeholder: glyphs are not published on the mirrors yet.
 const rudyGlyphsZipFile = 'MOI_OSM_Taiwan_TOPO_Rudy_glyphs.zip';

@@ -14,11 +14,8 @@ import 'tile_downloader.dart';
 /// so a download keeps going when the app is in the background. What is on disk is the truth: a retry, or the app
 /// coming back, only fetches the tiles that are missing and never queues one that is already in flight.
 class BackgroundTileDownloader implements TileDownloader {
-  BackgroundTileDownloader(this._store, this._demStore);
+  BackgroundTileDownloader(this._store);
   final OfflineTileStore _store;
-  final OfflineTileStore _demStore;
-
-  OfflineTileStore _storeFor(TileSource source) => source == TileSource.terrain ? _demStore : _store;
 
   static String _group(String regionId) => 'offline-$regionId';
   static String _taskId(String regionId, TileId t) =>
@@ -40,9 +37,9 @@ class BackgroundTileDownloader implements TileDownloader {
   Stream<DownloadUpdate> download(OfflineRegionDef region) async* {
     final downloader = FileDownloader();
     final group = _group(region.id);
-    final store = _storeFor(region.source);
+    final store = _store;
     store.register(region.id);
-    final urlTemplate = region.source == TileSource.terrain ? terrainTileUrl : nlscTileUrl;
+    const urlTemplate = nlscTileUrl;
     final tiles = tilesFor(
       region.bounds,
       region.minZoom,
@@ -136,7 +133,7 @@ class BackgroundTileDownloader implements TileDownloader {
   @override
   Future<void> deleteTiles(String regionId) async {
     await cancel(regionId);
-    await _storeFor(offlineRegionById(regionId)?.source ?? TileSource.nlsc).delete(regionId);
+    await _store.delete(regionId);
   }
 }
 

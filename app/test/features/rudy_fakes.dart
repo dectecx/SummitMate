@@ -56,7 +56,6 @@ class FakeMapHandle implements MapHandle {
   @override
   Future<void> moveTo(double lat, double lng, {double? minZoom}) async => calls.add('move');
   @override
-  Future<void> setTilt(double degrees, {double? minZoom}) async => calls.add('tilt:$degrees');
   @override
   Future<void> setMe(double? lat, double? lng) async => calls.add('me');
 }
@@ -64,7 +63,7 @@ class FakeMapHandle implements MapHandle {
 const fakeRudyMapKey = Key('fake-rudy-map');
 
 /// Overrides that keep the Rudy providers away from the file system and the platform view.
-List<Override> rudyTestOverrides({FakeRudyInstaller? installer, FakeMapHandle? handle, bool demInstalled = false}) {
+List<Override> rudyTestOverrides({FakeRudyInstaller? installer, FakeMapHandle? handle}) {
   final fake = installer ?? FakeRudyInstaller();
   var created = false;
   return [
@@ -73,7 +72,6 @@ List<Override> rudyTestOverrides({FakeRudyInstaller? installer, FakeMapHandle? h
       ref.watch(rudyInstallStateProvider);
       return fake.installed;
     }),
-    rudyDemDirProvider.overrideWith((ref) async => demInstalled ? '/dem' : null),
     rudyStyleProvider.overrideWith((ref) async => (await ref.watch(rudyReadyProvider.future)) ? '{"version":8,"sources":{},"layers":[]}' : null),
     rudyMapBuilderProvider.overrideWithValue((context, style, mountains, onPeaks, onCreated) {
       final h = handle ?? FakeMapHandle();

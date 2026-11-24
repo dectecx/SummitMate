@@ -13,9 +13,6 @@ class GeoBounds {
       GeoBounds(south: lat - halfSizeDeg, west: lng - halfSizeDeg, north: lat + halfSizeDeg, east: lng + halfSizeDeg);
 }
 
-/// Which tile server a region comes from.
-enum TileSource { nlsc, terrain }
-
 /// What can be downloaded for offline use.
 class OfflineRegionDef {
   const OfflineRegionDef({
@@ -25,7 +22,6 @@ class OfflineRegionDef {
     required this.bounds,
     required this.minZoom,
     required this.maxZoom,
-    this.source = TileSource.nlsc,
     this.tileBytes = averageTileBytes,
   });
   final String id;
@@ -34,7 +30,6 @@ class OfflineRegionDef {
   final GeoBounds bounds;
   final int minZoom;
   final int maxZoom;
-  final TileSource source;
 
   /// Average size of one tile of this region, for the size estimate.
   final double tileBytes;
@@ -60,7 +55,14 @@ const taiwanBase = OfflineRegionDef(
 );
 
 OfflineRegionDef _area(String id, String name, String description, double lat, double lng, double half) =>
-    OfflineRegionDef(id: id, name: name, description: description, bounds: GeoBounds.around(lat, lng, half), minZoom: 10, maxZoom: nlscMaxNativeZoom);
+    OfflineRegionDef(
+      id: id,
+      name: name,
+      description: description,
+      bounds: GeoBounds.around(lat, lng, half),
+      minZoom: 10,
+      maxZoom: nlscMaxNativeZoom,
+    );
 
 /// Popular mountain areas, centred on the peaks of the mountain list (so they match the data in the app),
 /// each about 25 km across and downloaded in detail (z10 to z15).
@@ -76,25 +78,8 @@ final popularRegions = <OfflineRegionDef>[
   _area('beidawu', '北大武山', '北大武山', 22.63, 120.76, 0.08),
 ];
 
-/// Elevation data for the 3D view of the Rudy Map: terrarium tiles of the island (Mapzen/Tilezen terrain tiles on
-/// AWS open data), about 76 m per pixel at the highest zoom. Shown in the same list as the map areas.
-const terrainDem = OfflineRegionDef(
-  id: 'terrain-dem',
-  name: '3D 地形資料',
-  description: '魯地圖的 3D 立體與陰影效果需要，全台灣',
-  bounds: GeoBounds(south: 21.8, west: 119.9, north: 25.4, east: 122.1),
-  minZoom: 6,
-  maxZoom: 11,
-  source: TileSource.terrain,
-  tileBytes: 52 * 1024,
-);
-
-/// Terrarium elevation tiles on the AWS open data bucket. Note the z/x/y order.
-const terrainTileUrl = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
-const terrainAttribution = '高程：Mapzen 地形圖磚（SRTM、NASADEM、JAXA AW3D30 等）';
-
 /// Everything that can be downloaded, the island first.
-final allOfflineRegions = <OfflineRegionDef>[taiwanBase, ...popularRegions, terrainDem];
+final allOfflineRegions = <OfflineRegionDef>[taiwanBase, ...popularRegions];
 
 OfflineRegionDef? offlineRegionById(String id) {
   for (final r in allOfflineRegions) {
@@ -157,6 +142,7 @@ int _tileY(double lat, int z) {
 /// "42 MB" / "1.3 GB" style size for people.
 String formatBytes(double bytes) {
   if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
-  if (bytes < 1024 * 1024 * 1024) return '${(bytes / 1024 / 1024).toStringAsFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB';
+  if (bytes < 1024 * 1024 * 1024)
+    return '${(bytes / 1024 / 1024).toStringAsFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB';
   return '${(bytes / 1024 / 1024 / 1024).toStringAsFixed(1)} GB';
 }
