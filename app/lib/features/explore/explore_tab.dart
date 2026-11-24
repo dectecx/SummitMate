@@ -50,6 +50,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: SegmentedButton<_Segment>(
               key: const ValueKey('explore-segment'),
+              expandedInsets: EdgeInsets.zero,
               showSelectedIcon: false,
               segments: const [ButtonSegment(value: _Segment.mountains, label: Text('山岳')), ButtonSegment(value: _Segment.events, label: Text('揪團')), ButtonSegment(value: _Segment.shops, label: Text('用品店'))],
               selected: {_segment},

@@ -90,7 +90,7 @@ class RudyDownloadCard extends ConsumerWidget {
       final message = switch (phase) {
         RudyInstallPhase.unavailable => state?.error ?? '魯地圖檔案目前還沒有開放下載。',
         RudyInstallPhase.failed => state?.error ?? '下載失敗，請檢查網路後再試。',
-        _ => '登山專用地形圖：等高線、步道、山屋與山名。約 410 MB，建議使用 Wi-Fi，下載會在背景繼續進行。',
+        _ => '約 410 MB，下載會在背景繼續進行，切到其他 App 也沒關係。',
       };
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,

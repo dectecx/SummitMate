@@ -22,7 +22,7 @@ class WelcomePage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 2),
-              const SummitLogo(size: 96),
+              const Center(child: SummitLogo(size: 96)),
               const SizedBox(height: 16),
               Text('山友 SummitMate', textAlign: TextAlign.center, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),

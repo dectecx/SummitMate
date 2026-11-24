@@ -32,6 +32,7 @@ class _MapTabState extends ConsumerState<MapTab> {
   bool _locating = false;
   MapHandle? _rudy; // set while the Rudy Map is the one on screen
   bool _usingRudy = false;
+  bool _farView = true; // zoomed out: peaks are dots
 
   @override
   void dispose() {
@@ -121,7 +122,17 @@ class _MapTabState extends ConsumerState<MapTab> {
           else
             FlutterMap(
               mapController: _controller,
-              options: const MapOptions(initialCenter: LatLng(23.7, 121.0), initialZoom: 7.5, minZoom: 6, maxZoom: 18),
+              options: MapOptions(
+                initialCenter: const LatLng(23.7, 121.0),
+                initialZoom: 7.5,
+                minZoom: 6,
+                maxZoom: 18,
+                // Peaks are small dots while the whole island is in view and become mountains once you zoom in.
+                onPositionChanged: (camera, _) {
+                  final far = camera.zoom < 10;
+                  if (far != _farView) setState(() => _farView = far);
+                },
+              ),
               children: [
                 TileLayer(
                   urlTemplate: _nlscTileUrl,
@@ -139,12 +150,19 @@ class _MapTabState extends ConsumerState<MapTab> {
                         height: 32,
                         child: GestureDetector(
                           onTap: () => _onPeakTap(m, mountains),
-                          child: Icon(
-                            Icons.landscape,
-                            color: scheme.primary,
-                            size: 24,
-                            shadows: const [Shadow(blurRadius: 4, color: Colors.white)],
-                          ),
+                          child: _farView
+                              ? Center(
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(color: scheme.primary, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.5)),
+                                    child: const SizedBox.square(dimension: 9),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.landscape,
+                                  color: scheme.primary,
+                                  size: 24,
+                                  shadows: const [Shadow(blurRadius: 4, color: Colors.white)],
+                                ),
                         ),
                       ),
                     if (_me != null)
@@ -155,7 +173,7 @@ class _MapTabState extends ConsumerState<MapTab> {
                         height: 24,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Colors.blue,
+                            color: scheme.tertiary,
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 3),
                           ),

@@ -19,16 +19,16 @@ class DevDataFactory {
   final Random _random;
 
   static const _places = [
-    ('嘉明湖', 3310, '台東海端'),
-    ('雪山主東線', 3886, '台中和平'),
-    ('玉山主峰', 3952, '南投信義'),
-    ('合歡北峰', 3422, '南投仁愛'),
-    ('南湖大山', 3742, '宜蘭大同'),
-    ('能高越嶺', 2900, '花蓮萬榮'),
-    ('大霸尖山', 3492, '新竹尖石'),
-    ('向陽山', 3603, '台東海端'),
-    ('北大武山', 3092, '屏東泰武'),
-    ('鳶嘴稍來', 2100, '南投仁愛'),
+    ('嘉明湖', 3310, '台東海端', 23.2878, 121.0369),
+    ('雪山主東線', 3886, '台中和平', 24.3834, 121.2312),
+    ('玉山主峰', 3952, '南投信義', 23.47, 120.9573),
+    ('合歡北峰', 3422, '南投仁愛', 24.1635, 121.28),
+    ('南湖大山', 3742, '宜蘭大同', 24.3667, 121.4333),
+    ('能高越嶺', 2900, '花蓮萬榮', 23.9833, 121.2833),
+    ('大霸尖山', 3492, '新竹尖石', 24.4667, 121.2667),
+    ('向陽山', 3603, '台東海端', 23.2867, 121.0033),
+    ('北大武山', 3092, '屏東泰武', 22.6256, 120.7756),
+    ('鳶嘴稍來', 2100, '南投仁愛', 24.05, 121.24),
   ];
   static const _suffix = ['兩天一夜', '三天兩夜', '單日行程', '四天三夜'];
   static const _gear = [
@@ -63,7 +63,7 @@ class DevDataFactory {
 
   /// A random trip with an itinerary, a packing list and meals. Returns its id.
   Future<({String id, String summary})> randomTrip() async {
-    final (place, altitude, _) = _pick(_places);
+    final (place, altitude, _, lat, lng) = _pick(_places);
     final name = '$place${_pick(_suffix)}';
     final days = 1 + _random.nextInt(3);
     final start = DateTime.now().add(Duration(days: 3 + _random.nextInt(60)));
@@ -76,8 +76,8 @@ class DevDataFactory {
     );
     final itinerary = _ref.read(itineraryRepositoryProvider);
     for (var day = 1; day <= days; day++) {
-      await itinerary.add(id, dayIndex: day, name: day == 1 ? '$place登山口' : '營地 $day', estMinutes: 6 * 60 + _random.nextInt(120), altitude: altitude - 600 + day * 150);
-      await itinerary.add(id, dayIndex: day, name: '$place山屋', estMinutes: 12 * 60, altitude: altitude - 300 + day * 100, distance: 2.5 + _random.nextInt(60) / 10);
+      await itinerary.add(id, dayIndex: day, name: day == 1 ? '$place登山口' : '營地 $day', estMinutes: 6 * 60 + _random.nextInt(120), altitude: altitude - 600 + day * 150, lat: lat + day * 0.004, lng: lng - day * 0.003);
+      await itinerary.add(id, dayIndex: day, name: '$place山屋', estMinutes: 12 * 60, altitude: altitude - 300 + day * 100, distance: 2.5 + _random.nextInt(60) / 10, lat: lat + day * 0.006, lng: lng - day * 0.004);
     }
     final gear = await randomGear(id);
     final meals = await randomMeals(id, days: days);
@@ -114,7 +114,7 @@ class DevDataFactory {
 
   /// A random group event (needs a signed-in account and a connection). Returns its id.
   Future<({String id, String title})> randomEvent() async {
-    final (place, _, location) = _pick(_places);
+    final (place, _, location, _, _) = _pick(_places);
     final start = DateTime.now().add(Duration(days: 7 + _random.nextInt(60)));
     final input = EventInput(
       title: '$place揪團 ${1 + _random.nextInt(99)}',

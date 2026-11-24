@@ -93,7 +93,8 @@ void main() {
       expect(formatKm(2.1), '2.1');
       expect(formatMinutes(7 * 60 + 5), '07:05');
       expect(formatMinutes(null), isNull);
-      expect(dayLabel(0), 'D0');
+      expect(dayLabel(0), '出發前');
+      expect(dayLabel(2), '第 2 天');
     });
 
     test('day chips cover D0..Dn and any day that already has items', () {

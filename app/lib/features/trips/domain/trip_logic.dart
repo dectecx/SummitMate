@@ -85,7 +85,8 @@ TripPhase phaseOf(Trip t, DateTime today) {
 
 // ------------------------------------------------------------------ itinerary
 
-String dayLabel(int dayIndex) => 'D$dayIndex';
+/// "出發前" for D0 (the day before the start), "第 1 天" and so on for the trip days.
+String dayLabel(int dayIndex) => dayIndex == 0 ? '出發前' : '第 $dayIndex 天';
 
 /// "07:30" for minutes after midnight, or null.
 String? formatMinutes(int? minutes) =>
