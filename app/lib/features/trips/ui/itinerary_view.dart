@@ -10,6 +10,7 @@ import '../../gpx/domain/elevation_profile.dart';
 import '../../gpx/ui/elevation_profile_chart.dart';
 import '../domain/gpx_trip.dart';
 import 'item_form_sheet.dart';
+import '../../../shared/link_text.dart';
 
 /// Day chips and the timeline of the selected day.
 class ItineraryView extends ConsumerWidget {
@@ -136,7 +137,7 @@ class _ItemTile extends ConsumerWidget {
                   children: [
                     Text(item.name.isEmpty ? '（未命名）' : item.name, style: theme.textTheme.titleMedium),
                     if (facts.isNotEmpty) Text(facts.join('  ·  '), style: theme.textTheme.bodySmall),
-                    if (item.note.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: Text(item.note, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium)),
+                    if (item.note.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: LinkText(item.note, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium)),
                     if (arrived) Padding(padding: const EdgeInsets.only(top: 4), child: Text('已抵達 ${_clock(item.checkedInAt!)}', style: theme.textTheme.bodySmall?.copyWith(color: scheme.primary))),
                   ],
                 ),

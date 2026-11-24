@@ -6,6 +6,7 @@ import '../../favorites/ui/favorite_heart.dart';
 import '../../weather/ui/weather_card.dart';
 import '../domain/mountain_models.dart';
 import '../providers.dart';
+import '../../../shared/link_text.dart';
 
 class MountainDetailPage extends ConsumerWidget {
   const MountainDetailPage({super.key, required this.mountainId});
@@ -81,7 +82,7 @@ class MountainDetailPage extends ConsumerWidget {
             const SizedBox(height: 16),
             Text('資料來源', style: theme.textTheme.titleSmall),
             const SizedBox(height: 4),
-            for (final s in mountain.sources) SelectableText(s, style: theme.textTheme.bodySmall),
+            for (final s in mountain.sources) Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: LinkText(s, style: theme.textTheme.bodySmall, linkLabel: siteName)),
           ],
         ],
       ),

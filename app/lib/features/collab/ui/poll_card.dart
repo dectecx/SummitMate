@@ -7,6 +7,7 @@ import '../../trips/providers.dart';
 import '../domain/collab_logic.dart';
 import '../providers.dart';
 import 'discussion_view.dart';
+import '../../../shared/link_text.dart';
 
 /// One poll: its options with vote buttons and result bars, plus the actions the role allows.
 class PollCard extends ConsumerStatefulWidget {
@@ -130,7 +131,7 @@ class _PollCardState extends ConsumerState<PollCard> {
             if (poll.description.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(right: 8, top: 4),
-                child: Text(poll.description),
+                child: LinkText(poll.description),
               ),
             Padding(
               padding: const EdgeInsets.only(top: 8, right: 8),

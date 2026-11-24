@@ -9,6 +9,7 @@ import '../data/events_api.dart';
 import '../domain/event_logic.dart';
 import '../providers.dart';
 import 'event_widgets.dart';
+import '../../../shared/link_text.dart';
 
 /// One group event: its content, the route preview, comments, and the action that fits the viewer.
 class EventDetailPage extends ConsumerStatefulWidget {
@@ -347,7 +348,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       ),
       if (d.description.isNotEmpty) ...[
         const SizedBox(height: 12),
-        Text(d.description, style: theme.textTheme.bodyLarge),
+        LinkText(d.description, style: theme.textTheme.bodyLarge),
       ],
     ];
   }
@@ -408,7 +409,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(d.privateMessage!),
+                LinkText(d.privateMessage!),
               ],
             ),
           ),
@@ -503,7 +504,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               children: [
                 PersonLine(c.user, style: theme.textTheme.labelLarge),
                 const SizedBox(height: 4),
-                Text(c.body),
+                LinkText(c.body),
               ],
             ),
           ),

@@ -8,6 +8,7 @@ import '../domain/collab_logic.dart';
 import '../providers.dart';
 import 'poll_card.dart';
 import 'poll_form_sheet.dart';
+import '../../../shared/link_text.dart';
 
 /// "討論": the message board on top, the polls below.
 class DiscussionView extends ConsumerStatefulWidget {
@@ -271,7 +272,7 @@ class _MessageTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(message.body),
+                LinkText(message.body),
                 if (onReply != null || canDelete)
                   Row(
                     children: [

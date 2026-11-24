@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
-        android:label="summitmate"
+        android:label="SummitMate"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- Google's public sample AdMob app ID. Replace with the real one before release. -->
