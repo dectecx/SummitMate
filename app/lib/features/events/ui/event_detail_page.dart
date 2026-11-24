@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/router.dart';
+import '../../favorites/ui/favorite_event_button.dart';
 import '../../trips/providers.dart';
 import '../data/events_api.dart';
 import '../domain/event_logic.dart';
@@ -284,7 +285,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(d.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        actions: [_menu(d)],
+        actions: [FavoriteEventButton(eventId: d.id), _menu(d)],
       ),
       bottomNavigationBar: _bottomBar(d, action),
       body: RefreshIndicator(

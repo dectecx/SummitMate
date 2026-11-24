@@ -285,11 +285,11 @@ CREATE TABLE poll_votes (
 
 CREATE INDEX idx_poll_votes_trip_updated ON poll_votes(trip_id, updated_at);
 
--- Favorites: personal, belongs to no trip. target_id is the mountain id for kind 'mountain'.
+-- Favorites: personal, belongs to no trip. target_id is the mountain id for kind 'mountain', the event id for 'group_event'.
 CREATE TABLE favorites (
     id         UUID PRIMARY KEY,
     user_id    UUID         NOT NULL REFERENCES users(id),
-    kind       VARCHAR(20)  NOT NULL CHECK (kind IN ('mountain')),
+    kind       VARCHAR(20)  NOT NULL CHECK (kind IN ('mountain', 'group_event')),
     target_id  VARCHAR(100) NOT NULL CHECK (char_length(target_id) >= 1),
     deleted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ  NOT NULL DEFAULT clock_timestamp(),

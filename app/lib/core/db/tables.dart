@@ -193,7 +193,7 @@ class PollVotes extends Table {
 /// when read, since two devices can create the same favorite.
 class Favorites extends Table {
   TextColumn get id => text()();
-  // 'mountain'
+  // 'mountain' | 'group_event'
   TextColumn get kind => text()();
   TextColumn get targetId => text()();
 

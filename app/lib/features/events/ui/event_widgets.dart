@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/router.dart';
+import '../../favorites/ui/favorite_event_button.dart';
 import '../../trips/providers.dart';
 import '../data/events_api.dart';
 import '../domain/event_logic.dart';
@@ -224,7 +225,13 @@ class EventCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              EventTags(event, today: today),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: EventTags(event, today: today)),
+                  FavoriteEventButton(eventId: event.id, compact: true),
+                ],
+              ),
               const SizedBox(height: 8),
               Text(event.title, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 4),

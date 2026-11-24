@@ -6,9 +6,10 @@ import 'package:uuid/uuid.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/sync/outbox_writer.dart';
 
-/// What can be starred. Only mountains for now; the server accepts the same set.
+/// What can be starred. The server accepts the same set.
 class FavoriteKind {
   static const mountain = 'mountain';
+  static const groupEvent = 'group_event';
 }
 
 /// The person's starred items. Offline-first: the row and its upload are written in one transaction.

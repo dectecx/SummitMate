@@ -187,8 +187,8 @@ func validatePollOption(vals map[string]any) string {
 }
 
 func validateFavorite(vals map[string]any) string {
-	if k, ok := vals["kind"].(string); ok && k != "mountain" {
-		return "kind must be mountain"
+	if k, ok := vals["kind"].(string); ok && k != "mountain" && k != "group_event" {
+		return "kind must be mountain or group_event"
 	}
 	if !textLen(vals, "target_id", 100) {
 		return "target_id must be 1 to 100 characters"

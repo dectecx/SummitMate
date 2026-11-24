@@ -337,6 +337,9 @@ func TestFavoritesOwnerIsolation(t *testing.T) {
 	assert.Empty(t, pullAll(t, s, bob, nil).Rows["favorites"])
 	assert.Len(t, pullAll(t, s, alice, nil).Rows["favorites"], 1)
 
+	ev := uuid.New()
+	assert.Equal(t, StatusApplied, mustPush(t, s, alice, upsert("favorites", ev, map[string]any{"kind": "group_event", "target_id": uuid.NewString()}))[0].Status)
+
 	res := mustPush(t, s, alice,
 		upsert("favorites", uuid.New(), map[string]any{"kind": "trail", "target_id": "x"}),
 		upsert("favorites", uuid.New(), map[string]any{"kind": "mountain"}),

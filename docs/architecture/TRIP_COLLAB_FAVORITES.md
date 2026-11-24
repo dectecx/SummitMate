@@ -73,7 +73,7 @@ CREATE TABLE poll_votes (
 CREATE TABLE favorites (
     id         UUID PRIMARY KEY,
     user_id    UUID         NOT NULL REFERENCES users(id),
-    kind       VARCHAR(20)  NOT NULL CHECK (kind IN ('mountain')),
+    kind       VARCHAR(20)  NOT NULL CHECK (kind IN ('mountain', 'group_event')),
     target_id  VARCHAR(100) NOT NULL,                         -- 山岳 ID（如 beidawu）
     deleted_at, created_at, created_by, updated_at, updated_by
 );
@@ -103,4 +103,4 @@ CREATE TABLE favorites (
 
 - 留言編輯歷史、@提及、附圖（照片上傳做了之後再加）。
 - 通知（有新留言或新投票）：第三期。
-- 收藏揪團活動：等揪團完成後再加 `kind='group_event'`。
+- 收藏揪團活動：已加 `kind='group_event'`，`target_id` 是揪團 ID；收藏頁分「山岳／揪團」，揪團內容需要網路才能載入（只存 ID，不存內容）。

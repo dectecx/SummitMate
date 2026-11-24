@@ -22,3 +22,11 @@ final favoriteMountainIdsProvider = Provider<Set<String>>(
               const [])
           .toSet(),
 );
+
+/// The starred group events' ids.
+final favoriteEventIdsProvider = Provider<Set<String>>(
+  (ref) =>
+      (ref.watch(favoriteTargetsProvider(FavoriteKind.groupEvent)).value ??
+              const [])
+          .toSet(),
+);
