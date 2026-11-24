@@ -838,6 +838,12 @@ type Shop struct {
 	// Rating Google Maps rating when checked
 	Rating      float32 `json:"rating"`
 	RatingCount *int    `json:"rating_count"`
+
+	// ShopUrl An online store of the shop (own store
+	ShopUrl *string `json:"shop_url"`
+
+	// Website The shop's own website or page
+	Website *string `json:"website"`
 }
 
 // ShopCategories defines model for Shop.Categories.

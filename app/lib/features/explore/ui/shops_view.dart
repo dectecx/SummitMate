@@ -141,7 +141,9 @@ class ShopCard extends ConsumerWidget {
               children: [for (final c in shop.categories) Chip(label: Text(c), visualDensity: VisualDensity.compact, padding: EdgeInsets.zero)],
             ),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
                   key: ValueKey('shop-map-${shop.id}'),
@@ -150,7 +152,22 @@ class ShopCard extends ConsumerWidget {
                   icon: const Icon(Icons.map_outlined, size: 18),
                   label: const Text('地圖'),
                 ),
-                const SizedBox(width: 8),
+                if (shop.website != null)
+                  OutlinedButton.icon(
+                    key: ValueKey('shop-site-${shop.id}'),
+                    style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
+                    onPressed: () => open(Uri.parse(shop.website!)),
+                    icon: const Icon(Icons.language, size: 18),
+                    label: const Text('官網'),
+                  ),
+                if (shop.shopUrl != null)
+                  FilledButton.tonalIcon(
+                    key: ValueKey('shop-store-${shop.id}'),
+                    style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+                    onPressed: () => open(Uri.parse(shop.shopUrl!)),
+                    icon: const Icon(Icons.shopping_bag_outlined, size: 18),
+                    label: Text(shop.shopLabel!),
+                  ),
                 if (shop.dialNumber != null && shop.dialNumber!.isNotEmpty)
                   OutlinedButton.icon(
                     key: ValueKey('shop-call-${shop.id}'),

@@ -188,11 +188,14 @@ void main() {
     });
 
     testWidgets('a mountain page shows the facts, the unverified notice, and the weather for its summit', (tester) async {
+      tester.view.physicalSize = const Size(800, 2400); // tall: the banner pushes the sources down
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       final app = await start(tester, FakeExploreApi(payloadOf(_sample)));
       await tapText(tester, '探索');
       await tapText(tester, '玉山主峰');
 
-      expect(find.text('Yushan Main Peak'), findsOneWidget);
+      expect(find.textContaining('Yushan Main Peak'), findsOneWidget);
       expect(find.text('3952 m'), findsOneWidget);
       expect(find.text('台灣百岳'), findsOneWidget);
       expect(find.text('玉山主峰 的簡介'), findsOneWidget);

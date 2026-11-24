@@ -8,6 +8,7 @@ import '../domain/mountain_models.dart';
 import '../providers.dart';
 import '../../../shared/link_text.dart';
 import '../../../shared/brand/illustrations.dart';
+import '../../../shared/brand/ridge_banner.dart';
 
 class MountainDetailPage extends ConsumerWidget {
   const MountainDetailPage({super.key, required this.mountainId});
@@ -31,14 +32,17 @@ class MountainDetailPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (mountain.nameEn != null) Text(mountain.nameEn!, style: theme.textTheme.bodyMedium),
-          const SizedBox(height: 12),
+          RidgeBanner(
+            title: mountain.name,
+            subtitle: [mountain.region, if (mountain.nameEn != null) mountain.nameEn!].join('  ·  '),
+            trailing: '${mountain.elevation} m',
+            seed: mountain.id.hashCode,
+          ),
+          const SizedBox(height: 16),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              _Fact(icon: Icons.landscape_outlined, text: '${mountain.elevation} m'),
-              _Fact(icon: Icons.place_outlined, text: mountain.region),
               if (mountain.category == MountainCategory.baiyue) const _Fact(icon: Icons.flag_outlined, text: '台灣百岳'),
               if (mountain.trailGrade != null) _Fact(icon: Icons.speed, text: '步道分級 ${mountain.trailGrade} 級'),
               if (mountain.beginnerFriendly) const _Fact(icon: Icons.thumb_up_outlined, text: '新手推薦'),
@@ -101,7 +105,7 @@ class _Fact extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(color: scheme.secondaryContainer, borderRadius: BorderRadius.circular(16)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 16), const SizedBox(width: 6), Text(text)]),
     );
   }

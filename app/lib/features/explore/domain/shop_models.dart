@@ -13,6 +13,8 @@ class Shop {
     required this.phone,
     required this.googleMapsUrl,
     required this.hours,
+    this.website,
+    this.shopUrl,
     required this.categories,
     required this.rating,
     required this.ratingCount,
@@ -27,6 +29,10 @@ class Shop {
   final String? phone;
   final String googleMapsUrl;
   final String? hours;
+
+  /// The shop's own site, and an online store (its own or a marketplace page such as Shopee).
+  final String? website;
+  final String? shopUrl;
   final List<String> categories;
   final double rating;
   final int? ratingCount;
@@ -41,11 +47,16 @@ class Shop {
     phone: j['phone'] as String?,
     googleMapsUrl: j['google_maps_url'] as String,
     hours: j['hours'] as String?,
+    website: j['website'] as String?,
+    shopUrl: j['shop_url'] as String?,
     categories: [for (final c in (j['categories'] as List? ?? const [])) c as String],
     rating: (j['rating'] as num).toDouble(),
     ratingCount: (j['rating_count'] as num?)?.toInt(),
     checkedOn: (j['checked_on'] as String?) ?? '',
   );
+
+  /// "蝦皮商城" for a Shopee link, "線上商城" for any other online store.
+  String? get shopLabel => shopUrl == null ? null : (Uri.tryParse(shopUrl!)?.host.contains('shopee') ?? false) ? '蝦皮商城' : '線上商城';
 
   /// The number to dial: digits and a leading plus only.
   String? get dialNumber => phone?.replaceAll(RegExp(r'[^0-9+]'), '');

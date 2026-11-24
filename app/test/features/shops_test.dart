@@ -37,7 +37,7 @@ void main() {
   final payload = jsonEncode({
     'version': 'v1',
     'shops': [
-      shop('a', '北山登山店', '臺北市', ['登山裝備', '服飾'], phone: '02 2345 6789'),
+      {...shop('a', '北山登山店', '臺北市', ['登山裝備', '服飾'], phone: '02 2345 6789'), 'website': 'https://a.example/', 'shop_url': 'https://shopee.tw/a'},
       shop('b', '中部露營坊', '臺中市', ['露營']),
       shop('c', '深藍潛水', '高雄市', ['潛水']),
     ],
@@ -87,8 +87,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('shop-map-a')));
     await tester.tap(find.byKey(const ValueKey('shop-call-a')));
     await settle(tester);
-    expect(opened.map((u) => u.scheme), ['https', 'tel']);
-    expect(opened.last.path, '0223456789');
+    await tester.tap(find.byKey(const ValueKey('shop-site-a')));
+    await tester.tap(find.byKey(const ValueKey('shop-store-a')));
+    await settle(tester);
+    expect(find.text('蝦皮商城'), findsOneWidget);
+    expect(opened.map((u) => u.scheme), ['https', 'tel', 'https', 'https']);
+    expect(opened.skip(2).map((u) => u.host), ['a.example', 'shopee.tw']);
+    expect(opened[1].path, '0223456789');
+    expect(find.byKey(const ValueKey('shop-site-b')), findsNothing, reason: 'no site, no site button');
     expect(find.byKey(const ValueKey('shop-call-b')), findsNothing, reason: 'no phone, no call button');
     await app.dispose(tester);
   });

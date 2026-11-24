@@ -32,6 +32,8 @@ type Shop struct {
 	Phone         *string  `json:"phone"`
 	GoogleMapsURL string   `json:"google_maps_url"`
 	Hours         *string  `json:"hours"`
+	Website       *string  `json:"website"`  // the shop's own site or page
+	ShopURL       *string  `json:"shop_url"` // an online store (own shop, Shopee, ...)
 	Categories    []string `json:"categories"`
 	Rating        float64  `json:"rating"`
 	RatingCount   *int     `json:"rating_count"`
@@ -95,6 +97,14 @@ func (d ShopDataset) Validate() error {
 		}
 		if u, err := url.Parse(s.GoogleMapsURL); err != nil || u.Scheme != "https" || u.Host == "" {
 			add("%s: google_maps_url must be an https address", at)
+		}
+		for field, v := range map[string]*string{"website": s.Website, "shop_url": s.ShopURL} {
+			if v == nil {
+				continue
+			}
+			if u, err := url.Parse(*v); err != nil || u.Scheme != "https" || u.Host == "" {
+				add("%s: %s must be an https address", at, field)
+			}
 		}
 		if s.Phone != nil && !phoneRe.MatchString(*s.Phone) {
 			add("%s: phone %q looks wrong", at, *s.Phone)

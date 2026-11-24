@@ -939,7 +939,7 @@ components:
 
     Shop:
       type: object
-      required: [id, name, city, district, address, phone, google_maps_url, hours, categories, rating, rating_count, checked_on]
+      required: [id, name, city, district, address, phone, google_maps_url, hours, website, shop_url, categories, rating, rating_count, checked_on]
       properties:
         id: { type: string }
         name: { type: string }
@@ -949,6 +949,8 @@ components:
         phone: { type: string, nullable: true }
         google_maps_url: { type: string, format: uri }
         hours: { type: string, nullable: true, description: Opening hours as free text }
+        website: { type: string, format: uri, nullable: true, description: The shop's own website or page }
+        shop_url: { type: string, format: uri, nullable: true, description: An online store of the shop (own store, Shopee, ...) }
         categories:
           type: array
           items: { type: string, enum: ["登山裝備", "服飾", "食物", "露營", "潛水", "攀岩", "其他"] }
