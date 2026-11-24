@@ -25,11 +25,12 @@ import '../providers.dart';
 
 const _weekdays = ['一', '二', '三', '四', '五', '六', '日'];
 
-/// The trip's forecast, one row per trip day. Each day is forecast where the group will be that day
-/// (its highest node with coordinates), because that is the place whose weather they must prepare for.
-class WeatherCard extends ConsumerWidget {
-  const WeatherCard({super.key, required this.trip});
+/// The forecast of one trip day, shown with that day's itinerary. The day is forecast where the group will be
+/// that day (its highest node with coordinates), because that is the place whose weather they must prepare for.
+class DayWeatherStrip extends ConsumerWidget {
+  const DayWeatherStrip({super.key, required this.trip, required this.day});
   final Trip trip;
+  final int day;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,31 +43,16 @@ class WeatherCard extends ConsumerWidget {
           };
     final plan = weatherPlanFor(
       start: trip.start,
-      dayCount: trip.dayCount,
+      dayCount: day > trip.dayCount ? day : trip.dayCount,
       items: items,
       fallback: mountain == null ? null : (lat: mountain.latitude, lng: mountain.longitude, elevation: mountain.elevation),
       fallbackName: mountain?.name,
     );
-    final theme = Theme.of(context);
-    final hasPlace = plan.any((p) => p.query != null);
-    return Card(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('天氣預報', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text('依每天行程中最高的地點預報', style: theme.textTheme.bodySmall),
-            const SizedBox(height: 12),
-            if (!hasPlace)
-              const Text('在行程節點填上座標，或在編輯行程時設定「主要山頭」，這裡就會顯示每天的天氣預報。')
-            else
-              for (final day in plan) _DayWeatherRow(day: day),
-          ],
-        ),
-      ),
+    final today = plan.where((p) => p.day == day);
+    if (today.isEmpty || today.first.query == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: _DayWeatherRow(day: today.first),
     );
   }
 }
@@ -96,7 +82,6 @@ class _DayWeatherRow extends ConsumerWidget {
     return Container(
       key: ValueKey('weather-day-${day.day}'),
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
       child: Column(

@@ -161,7 +161,6 @@ void main() {
     await act(tester, () => app.container.read(tripRepositoryProvider).create(name: '離線提醒', start: DateTime(2026, 5, 10), mountainId: 'yushan-main'));
     await settle(tester);
     await tapText(tester, '離線提醒');
-    await tapText(tester, '成員與天氣');
     expect(find.byKey(const ValueKey('trip-offline-hint')), findsOneWidget);
     expect(find.textContaining('出發前先下載「玉山」離線地圖'), findsOneWidget);
 

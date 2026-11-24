@@ -105,7 +105,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
             Tab(text: '裝備'),
             Tab(text: '餐食'),
             Tab(text: '討論'),
-            Tab(text: '成員與天氣'),
+            Tab(text: '成員'),
           ],
         ),
       ),

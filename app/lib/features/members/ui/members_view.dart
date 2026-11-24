@@ -7,14 +7,12 @@ import '../../../core/auth/auth_api.dart';
 import '../../../core/auth/auth_state.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
-import '../../map/ui/trip_offline_hint.dart';
 import '../../trips/domain/trip_logic.dart';
-import '../../weather/ui/weather_card.dart';
 import '../domain/member_logic.dart';
 import '../providers.dart';
 import 'invite_sheet.dart';
 
-/// "成員與天氣": who is on the trip, who may do what, and the forecast.
+/// "成員": who is on the trip, who may do what, and the forecast.
 class MembersView extends ConsumerWidget {
   const MembersView({super.key, required this.trip, required this.role});
   final Trip trip;
@@ -75,9 +73,6 @@ class MembersView extends ConsumerWidget {
               label: const Text('離開這個行程'),
             ),
           ),
-        const Divider(height: 40),
-        TripOfflineHint(trip: trip),
-        WeatherCard(trip: trip),
       ],
     );
   }

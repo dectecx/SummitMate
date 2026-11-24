@@ -81,7 +81,7 @@ Future<String> ownTrip(WidgetTester tester, AppHarness app) async {
   final id = await act(tester, () => app.container.read(tripRepositoryProvider).create(name: '我的行程', start: DateTime(2026, 5, 10), end: DateTime(2026, 5, 11)));
   await settle(tester);
   await tapText(tester, '我的行程');
-  await tapText(tester, '成員與天氣');
+  await tapText(tester, '成員');
   return id;
 }
 
@@ -98,7 +98,6 @@ void main() {
     expect(find.textContaining('登入後才能邀請隊友'), findsOneWidget);
     expect(find.text('邀請'), findsNothing);
     expect(find.text('成員（0）'), findsOneWidget);
-    expect(find.textContaining('主要山頭'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -162,7 +161,7 @@ void main() {
     });
     await settle(tester);
     await tapText(tester, '別人的行程');
-    await tapText(tester, '成員與天氣');
+    await tapText(tester, '成員');
 
     expect(find.text('Olly'), findsOneWidget);
     expect(find.text('Anna（你）'), findsOneWidget);
@@ -188,7 +187,7 @@ void main() {
     });
     await settle(tester);
     await tapText(tester, '嚮導視角');
-    await tapText(tester, '成員與天氣');
+    await tapText(tester, '成員');
 
     expect(find.text('邀請'), findsOneWidget);
     expect(find.byTooltip('管理 Mia'), findsOneWidget);
@@ -197,21 +196,31 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('weather shows one row per trip day, each at where the group is that day', (tester) async {
+  Future<void> openItineraryTab(WidgetTester tester) async {
+    await tester.tap(find.descendant(of: find.byType(TabBar), matching: find.text('行程')));
+    await settle(tester);
+  }
+
+  testWidgets('the itinerary shows the weather of the selected day, at where the group is that day', (tester) async {
     final app = await start(tester);
     final trip = await ownTrip(tester, app);
     await act(tester, () => app.container.read(itineraryRepositoryProvider).add(trip, dayIndex: 1, name: '向陽山屋', altitude: 2850, lat: 23.4, lng: 121.0));
-    await settle(tester);
+    await openItineraryTab(tester);
 
-    expect(find.text('天氣預報'), findsOneWidget);
+    expect(find.byKey(const ValueKey('weather-day-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('weather-day-2')), findsNothing);
     expect(find.text('第 1 天  5/10（日）'), findsOneWidget);
-    expect(find.text('第 2 天  5/11（一）'), findsOneWidget);
-    expect(find.text('向陽山屋  2850 m'), findsNWidgets(2)); // day 2 has no node of its own and stays there
+    expect(find.text('向陽山屋  2850 m'), findsOneWidget);
     expect(find.text('2° / 11°'), findsOneWidget);
     expect(find.text('降雨 20%  ·  風 12 km/h'), findsOneWidget);
-    expect(find.text('晴'), findsOneWidget);
+    expect(find.textContaining('提醒：低溫'), findsOneWidget); // 2° at night
+
+    await tester.tap(find.byKey(const ValueKey('day-2')));
+    await settle(tester);
+    expect(find.text('第 2 天  5/11（一）'), findsOneWidget);
+    expect(find.text('向陽山屋  2850 m'), findsOneWidget); // day 2 has no node of its own and stays there
     expect(find.text('雨'), findsOneWidget);
-    expect(find.textContaining('提醒：帶雨具'), findsOneWidget); // day 2: 80% rain
+    expect(find.textContaining('提醒：帶雨具'), findsOneWidget); // 80% rain
     await app.dispose(tester);
   });
 
@@ -220,15 +229,15 @@ void main() {
     final app = await start(tester, weather: weather);
     final trip = await ownTrip(tester, app);
     await act(tester, () => app.container.read(itineraryRepositoryProvider).add(trip, dayIndex: 1, name: 'x', lat: 23.4, lng: 121.0));
-    await settle(tester);
-    expect(find.text('目前無法取得天氣，請稍後再試。'), findsNWidgets(2)); // one per trip day
+    await openItineraryTab(tester);
+    expect(find.text('目前無法取得天氣，請稍後再試。'), findsOneWidget);
     await app.dispose(tester);
 
     final guestApp = await start(tester, signedIn: false);
     final t2 = await ownTrip(tester, guestApp);
     await act(tester, () => guestApp.container.read(itineraryRepositoryProvider).add(t2, dayIndex: 1, name: 'x', lat: 23.4, lng: 121.0));
-    await settle(tester);
-    expect(find.text('登入後可以查看天氣預報。'), findsNWidgets(2));
+    await openItineraryTab(tester);
+    expect(find.text('登入後可以查看天氣預報。'), findsOneWidget);
     await guestApp.dispose(tester);
   });
 
@@ -264,7 +273,7 @@ void main() {
     });
     await settle(tester);
     await tapText(tester, '移交');
-    await tapText(tester, '成員與天氣');
+    await tapText(tester, '成員');
 
     await tester.tap(find.byTooltip('管理 Mia'));
     await settle(tester);

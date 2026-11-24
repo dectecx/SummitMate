@@ -11,6 +11,8 @@ import '../../gpx/ui/elevation_profile_chart.dart';
 import '../domain/gpx_trip.dart';
 import 'item_form_sheet.dart';
 import '../../../shared/link_text.dart';
+import '../../map/ui/trip_offline_hint.dart';
+import '../../weather/ui/weather_card.dart';
 
 /// Day chips and the timeline of the selected day.
 class ItineraryView extends ConsumerWidget {
@@ -52,6 +54,8 @@ class ItineraryView extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.only(bottom: 96),
             children: [
+              TripOfflineHint(trip: trip),
+              DayWeatherStrip(trip: trip, day: day),
               _TrackProfile(trip: trip),
               if (role.canEditShared)
                 const HintBanner(hintId: 'edit-node', icon: Icons.touch_app_outlined, text: '點一下節點就能編輯；點右邊的圓圈代表已抵達。'),
