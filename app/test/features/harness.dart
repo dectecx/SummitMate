@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/app/app.dart';
 import 'package:summitmate/app/router.dart';
+import 'package:summitmate/dev/dev_config.dart';
 import 'package:summitmate/core/auth/token_store.dart';
 import 'package:summitmate/core/db/app_database.dart';
 import 'package:summitmate/core/providers.dart';
@@ -22,7 +23,7 @@ class AppHarness {
   final MemoryTokenStore tokens;
   final ProviderContainer container;
 
-  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed, List<Override> overrides = const [], FakeRudyInstaller? rudy, FakeMapHandle? mapHandle}) async {
+  static Future<AppHarness> start(WidgetTester tester, {bool welcomeSeen = false, void Function(FakeAuthApi api)? seed, List<Override> overrides = const [], FakeRudyInstaller? rudy, FakeMapHandle? mapHandle, bool devTools = false}) async {
     final db = memoryDb();
     final api = FakeAuthApi();
     seed?.call(api);
@@ -34,6 +35,7 @@ class AppHarness {
         authApiProvider.overrideWithValue(api),
         connectivityOnlineProvider.overrideWith((ref) => const Stream<bool>.empty()),
         ...rudyTestOverrides(installer: rudy, handle: mapHandle),
+        devToolsVisibleProvider.overrideWithValue(devTools),
         ...overrides,
       ],
     );
