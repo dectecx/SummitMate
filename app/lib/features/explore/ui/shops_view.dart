@@ -5,6 +5,7 @@ import '../../../shared/coming_soon.dart';
 import '../../../shared/open_link.dart';
 import '../domain/shop_models.dart';
 import '../providers.dart';
+import '../../../shared/brand/illustrations.dart';
 
 /// The "用品店" part of the explore tab: outdoor and hiking gear shops, filtered by city and what they sell.
 class ShopsView extends ConsumerStatefulWidget {
@@ -30,7 +31,7 @@ class _ShopsViewState extends ConsumerState<ShopsView> {
     final state = ref.watch(shopsProvider).value ?? const ShopsLoading();
     return switch (state) {
       ShopsLoading() => const Center(child: CircularProgressIndicator()),
-      ShopsUnavailable() => const ComingSoon(icon: Icons.cloud_off_outlined, message: '第一次使用需要連上網路載入店家資料。\n連線後再回來看看。'),
+      ShopsUnavailable() => const ComingSoon(illustration: Illustration.shop, message: '第一次使用需要連上網路載入店家資料。\n連線後再回來看看。'),
       ShopsReady(:final data, :final refreshFailed) => _content(data, refreshFailed),
     };
   }

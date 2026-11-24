@@ -11,6 +11,7 @@ import '../../trips/providers.dart';
 import '../domain/set_item.dart';
 import '../providers.dart';
 import 'template_actions.dart';
+import '../../../shared/brand/illustrations.dart';
 
 /// "我的範本": saved packing lists and meal plans.
 class TemplatesPage extends ConsumerWidget {
@@ -22,7 +23,7 @@ class TemplatesPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('我的範本')),
       body: templates.isEmpty
-          ? const ComingSoon(icon: Icons.inventory_2_outlined, message: '還沒有範本。\n在行程右上角選「存成範本」，就能把這個行程的裝備與餐點存起來，之後套用到別的行程。')
+          ? const ComingSoon(illustration: Illustration.gear, message: '還沒有範本。\n在行程右上角選「存成範本」，就能把這個行程的裝備與餐點存起來，之後套用到別的行程。')
           : ListView(
               children: [
                 for (final t in templates)
@@ -47,7 +48,7 @@ class TemplateDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(templateProvider(templateId)).value;
-    if (t == null) return Scaffold(appBar: AppBar(), body: const ComingSoon(icon: Icons.search_off, message: '找不到這份範本，可能已被刪除'));
+    if (t == null) return Scaffold(appBar: AppBar(), body: const ComingSoon(illustration: Illustration.search, message: '找不到這份範本，可能已被刪除'));
     final items = decodeSetItems(t.items);
     final gear = items.where((i) => i.isGear).toList();
     final meals = items.where((i) => i.isMeal).toList()..sort((a, b) => a.day.compareTo(b.day));

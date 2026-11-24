@@ -12,6 +12,7 @@ import '../../explore/providers.dart';
 import '../providers.dart';
 import 'favorite_event_button.dart';
 import 'favorite_heart.dart';
+import '../../../shared/brand/illustrations.dart';
 
 /// "我的收藏": the starred mountains and group events.
 class FavoritesPage extends StatelessWidget {
@@ -43,7 +44,7 @@ class _MountainFavorites extends ConsumerWidget {
     final starred = [for (final m in all) if (ids.contains(m.id)) m];
     if (ids.isEmpty) {
       return const ComingSoon(
-        icon: Icons.favorite_border,
+        illustration: Illustration.star,
         message: '還沒有收藏的山岳。在「探索」或山岳頁點愛心，就會收在這裡，沒有網路也看得到。',
       );
     }
@@ -97,7 +98,7 @@ class _EventFavorites extends ConsumerWidget {
     final ids = ref.watch(favoriteEventIdsProvider);
     if (ids.isEmpty) {
       return const ComingSoon(
-        icon: Icons.bookmark_border,
+        illustration: Illustration.star,
         message: '還沒有收藏的揪團。在揪團頁點書籤，就會收在這裡。',
       );
     }

@@ -13,6 +13,7 @@ import 'item_form_sheet.dart';
 import '../../../shared/link_text.dart';
 import '../../map/ui/trip_offline_hint.dart';
 import '../../weather/ui/weather_card.dart';
+import '../../../shared/brand/illustrations.dart';
 
 /// Day chips and the timeline of the selected day.
 class ItineraryView extends ConsumerWidget {
@@ -64,7 +65,7 @@ class ItineraryView extends ConsumerWidget {
                   padding: const EdgeInsets.all(32),
                   child: Column(
                     children: [
-                      Icon(Icons.route_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
+                      const IllustrationView(Illustration.trip, width: 140),
                       const SizedBox(height: 12),
                       Text(role.canEditShared ? '這一天還沒有節點，按右下角新增登山口、山屋或山頭。' : '這一天還沒有節點。', textAlign: TextAlign.center),
                     ],

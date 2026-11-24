@@ -7,6 +7,8 @@ import '../../trips/domain/trip_logic.dart';
 import '../domain/meal_logic.dart';
 import '../providers.dart';
 import 'meal_form_sheet.dart';
+import '../../../shared/brand/illustrations.dart';
+import '../../../shared/coming_soon.dart';
 
 /// "餐食": the person's own meal plan, one day at a time, with weight and calorie totals.
 class MealsView extends ConsumerWidget {
@@ -59,10 +61,7 @@ class MealsView extends ConsumerWidget {
         ),
         Expanded(
           child: groups.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Text('這一天還沒有餐點。這份計畫只有你看得到，按右下角新增。', textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
-                )
+              ? const ComingSoon(illustration: Illustration.meal, message: '這一天還沒有餐點。這份計畫只有你看得到，按右下角新增。')
               : ListView(
                   padding: const EdgeInsets.only(bottom: 96),
                   children: [

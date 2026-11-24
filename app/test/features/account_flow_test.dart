@@ -153,6 +153,9 @@ void main() {
 
   group('account tab', () {
     testWidgets('a guest sees what guest mode means and can open the sign-in page', (tester) async {
+      tester.view.physicalSize = const Size(800, 2400); // tall: the grouped list is long
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       final app = await AppHarness.start(tester, welcomeSeen: true);
       await tapText(tester, '我');
       expect(find.text('訪客模式'), findsOneWidget);
@@ -205,6 +208,9 @@ void main() {
     });
 
     testWidgets('the theme choice is stored', (tester) async {
+      tester.view.physicalSize = const Size(800, 2400); // tall: the grouped list is long
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       final app = await AppHarness.start(tester, welcomeSeen: true);
       await tapText(tester, '我');
       await tapText(tester, '深色');

@@ -9,6 +9,7 @@ import '../providers.dart';
 import 'poll_card.dart';
 import 'poll_form_sheet.dart';
 import '../../../shared/link_text.dart';
+import '../../../shared/brand/illustrations.dart';
 
 /// "討論": the message board on top, the polls below.
 class DiscussionView extends ConsumerStatefulWidget {
@@ -97,11 +98,17 @@ class _DiscussionViewState extends ConsumerState<DiscussionView> {
         if (threads.isEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-            child: Text(
-              '還沒有留言，說點什麼吧',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+            child: Column(
+              children: [
+                const IllustrationView(Illustration.chat, width: 132),
+                const SizedBox(height: 8),
+                Text(
+                  '還沒有留言，說點什麼吧',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
         for (final t in threads) ...[

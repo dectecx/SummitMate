@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
 import '../../collab/ui/discussion_view.dart';
 import '../../gear/ui/gear_form_sheet.dart';
@@ -60,7 +61,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
         body: tripAsync.isLoading
             ? const Center(child: CircularProgressIndicator())
             : const ComingSoon(
-                icon: Icons.search_off,
+                illustration: Illustration.search,
                 message: '找不到這個行程，可能已被刪除',
               ),
       );

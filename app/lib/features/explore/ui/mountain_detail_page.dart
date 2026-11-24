@@ -7,6 +7,7 @@ import '../../weather/ui/weather_card.dart';
 import '../domain/mountain_models.dart';
 import '../providers.dart';
 import '../../../shared/link_text.dart';
+import '../../../shared/brand/illustrations.dart';
 
 class MountainDetailPage extends ConsumerWidget {
   const MountainDetailPage({super.key, required this.mountainId});
@@ -20,7 +21,7 @@ class MountainDetailPage extends ConsumerWidget {
       return Scaffold(
         appBar: AppBar(),
         body: state is MountainsReady || state is MountainsUnavailable
-            ? const ComingSoon(icon: Icons.search_off, message: '找不到這座山')
+            ? const ComingSoon(illustration: Illustration.search, message: '找不到這座山')
             : const Center(child: CircularProgressIndicator()),
       );
     }

@@ -2,10 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../shared/coming_soon.dart';
 import '../../../shared/hint_banner.dart';
 import '../domain/gear_logic.dart';
 import '../providers.dart';
 import 'gear_form_sheet.dart';
+import '../../../shared/brand/illustrations.dart';
 
 /// "裝備": the person's own packing list for a trip, grouped by category.
 class GearView extends ConsumerWidget {
@@ -16,19 +18,7 @@ class GearView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final items = ref.watch(gearProvider(tripId)).value ?? const <GearItem>[];
     if (items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.backpack_outlined, size: 56, color: Theme.of(context).colorScheme.outline),
-              const SizedBox(height: 12),
-              const Text('還沒有裝備。這份清單只有你看得到，按右下角開始列出要帶的東西。', textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      );
+      return const ComingSoon(illustration: Illustration.gear, message: '還沒有裝備。這份清單只有你看得到，按右下角開始列出要帶的東西。');
     }
     final groups = groupGear(items);
     return ListView(

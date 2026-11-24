@@ -12,6 +12,7 @@ import '../events/ui/events_view.dart';
 import 'domain/mountain_models.dart';
 import 'providers.dart';
 import 'ui/shops_view.dart';
+import '../../../shared/brand/illustrations.dart';
 
 enum _Segment { mountains, events, shops }
 
@@ -71,7 +72,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
     final state = ref.watch(mountainsProvider).value ?? const MountainsLoading();
     return switch (state) {
       MountainsLoading() => const Center(child: CircularProgressIndicator()),
-      MountainsUnavailable() => ComingSoon(icon: Icons.cloud_off_outlined, message: '第一次使用需要連上網路載入山岳資料。\n連線後再回來看看。'),
+      MountainsUnavailable() => ComingSoon(illustration: Illustration.map, message: '第一次使用需要連上網路載入山岳資料。\n連線後再回來看看。'),
       MountainsReady(:final data, :final refreshFailed) => _content(data, refreshFailed),
     };
   }

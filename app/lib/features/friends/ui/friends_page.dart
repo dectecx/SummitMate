@@ -8,6 +8,7 @@ import '../../members/providers.dart';
 import '../../trips/providers.dart';
 import '../data/friends_api.dart';
 import '../providers.dart';
+import '../../../shared/brand/illustrations.dart';
 
 /// "好友": my friends, requests waiting for my answer, and requests I sent. Needs sign-in and a connection.
 class FriendsPage extends ConsumerWidget {
@@ -27,7 +28,7 @@ class FriendsPage extends ConsumerWidget {
             )
           : null,
       body: !signedIn
-          ? const ComingSoon(icon: Icons.group_outlined, message: '登入後，就能加好友，邀請隊友時直接從好友名單挑選，不用再記 Email。')
+          ? const ComingSoon(illustration: Illustration.friends, message: '登入後，就能加好友，邀請隊友時直接從好友名單挑選，不用再記 Email。')
           : ref.watch(friendsProvider).when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => _Retry(error: e, onRetry: () => ref.invalidate(friendsProvider)),
@@ -79,7 +80,7 @@ class _Lists extends ConsumerWidget {
     if (overview.friends.isEmpty && overview.incoming.isEmpty && overview.outgoing.isEmpty) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        children: const [SizedBox(height: 120), ComingSoon(icon: Icons.group_outlined, message: '還沒有好友。點「加好友」，輸入對方的 Email 送出邀請，對方接受後才會成為好友。')],
+        children: const [SizedBox(height: 120), ComingSoon(illustration: Illustration.friends, message: '還沒有好友。點「加好友」，輸入對方的 Email 送出邀請，對方接受後才會成為好友。')],
       );
     }
     Widget header(String text) => Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 4), child: Text(text, style: theme.textTheme.titleSmall));

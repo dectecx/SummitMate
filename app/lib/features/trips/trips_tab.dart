@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../app/router.dart';
 import '../../core/ads/ads.dart';
 import '../../core/db/app_database.dart';
+import '../../shared/brand/illustrations.dart';
 import '../../shared/hint_banner.dart';
 import 'domain/trip_logic.dart';
 import 'providers.dart';
@@ -59,7 +60,7 @@ class _EmptyState extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(Icons.hiking, size: 64, color: theme.colorScheme.primary),
+            const Center(child: IllustrationView(Illustration.trip)),
             const SizedBox(height: 16),
             Text('還沒有行程', textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
@@ -98,7 +99,10 @@ class _TripList extends ConsumerWidget {
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 4), child: Text(title, style: Theme.of(context).textTheme.titleSmall)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 6),
+                child: Text(title, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, letterSpacing: 1)),
+              ),
               for (final t in list) _TripCard(trip: t, today: today),
             ],
           );
@@ -148,6 +152,8 @@ class _TripCard extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
+              _DateTile(date: trip.start, highlight: phase == TripPhase.ongoing, faded: phase == TripPhase.past),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,6 +197,33 @@ class _Tag extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(text, style: TextStyle(fontSize: 12, color: highlight ? scheme.onPrimary : scheme.onSurfaceVariant)),
+    );
+  }
+}
+
+/// The start date as a small tile: month over day.
+class _DateTile extends StatelessWidget {
+  const _DateTile({required this.date, required this.highlight, required this.faded});
+  final DateTime date;
+  final bool highlight;
+  final bool faded;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bg = highlight ? scheme.primary : (faded ? scheme.surfaceContainer : scheme.primaryContainer);
+    final fg = highlight ? scheme.onPrimary : (faded ? scheme.onSurfaceVariant : scheme.onPrimaryContainer);
+    return Container(
+      width: 52,
+      height: 56,
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('${date.month}月', style: TextStyle(fontSize: 11, color: fg, fontWeight: FontWeight.w600)),
+          Text('${date.day}', style: TextStyle(fontSize: 22, height: 1.1, color: fg, fontWeight: FontWeight.w700)),
+        ],
+      ),
     );
   }
 }
