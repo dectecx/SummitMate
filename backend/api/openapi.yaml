@@ -324,6 +324,31 @@ paths:
         "304":
           description: Not modified (If-None-Match matched), no body
 
+  /explore/shops:
+    get:
+      operationId: getExploreShops
+      summary: Outdoor and hiking gear shops (public, no token)
+      description: |
+        Static list embedded in the server binary; changes only with a deploy. Only shops rated 4.0 or higher on
+        Google Maps when last checked are listed. Responds with a strong `ETag`; send it back in `If-None-Match`
+        to get 304 with no body. Sorted by city then id.
+      parameters:
+        - name: If-None-Match
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Shop dataset
+          headers:
+            ETag: { schema: { type: string }, description: Strong validator of the dataset }
+            Cache-Control: { schema: { type: string }, description: "public, max-age=3600" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShopDataset" }
+        "304":
+          description: Not modified (If-None-Match matched), no body
+
   /shared-sets:
     get:
       operationId: listSharedSets
@@ -911,6 +936,35 @@ components:
         display_name: { type: string }
         avatar: { type: string }
         is_verified: { type: boolean }
+
+    Shop:
+      type: object
+      required: [id, name, city, district, address, phone, google_maps_url, hours, categories, rating, rating_count, checked_on]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        city: { type: string, description: County or city }
+        district: { type: string }
+        address: { type: string }
+        phone: { type: string, nullable: true }
+        google_maps_url: { type: string, format: uri }
+        hours: { type: string, nullable: true, description: Opening hours as free text }
+        categories:
+          type: array
+          items: { type: string, enum: ["登山裝備", "服飾", "食物", "露營", "潛水", "攀岩", "其他"] }
+        rating: { type: number, minimum: 4, maximum: 5, description: Google Maps rating when checked }
+        rating_count: { type: integer, nullable: true }
+        checked_on: { type: string, format: date }
+
+    ShopDataset:
+      type: object
+      required: [version, updated_at, shops]
+      properties:
+        version: { type: string }
+        updated_at: { type: string, format: date-time }
+        shops:
+          type: array
+          items: { $ref: "#/components/schemas/Shop" }
 
     PublicUser:
       type: object

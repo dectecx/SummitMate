@@ -11,8 +11,9 @@ import '../events/ui/event_widgets.dart';
 import '../events/ui/events_view.dart';
 import 'domain/mountain_models.dart';
 import 'providers.dart';
+import 'ui/shops_view.dart';
 
-enum _Segment { mountains, events }
+enum _Segment { mountains, events, shops }
 
 /// "探索": browse and search mountains, or group events.
 class ExploreTab extends ConsumerStatefulWidget {
@@ -49,7 +50,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
             child: SegmentedButton<_Segment>(
               key: const ValueKey('explore-segment'),
               showSelectedIcon: false,
-              segments: const [ButtonSegment(value: _Segment.mountains, label: Text('山岳')), ButtonSegment(value: _Segment.events, label: Text('揪團'))],
+              segments: const [ButtonSegment(value: _Segment.mountains, label: Text('山岳')), ButtonSegment(value: _Segment.events, label: Text('揪團')), ButtonSegment(value: _Segment.shops, label: Text('用品店'))],
               selected: {_segment},
               onSelectionChanged: (s) => setState(() => _segment = s.first),
             ),
@@ -58,6 +59,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
             child: switch (_segment) {
               _Segment.mountains => _mountains(),
               _Segment.events => const EventsView(),
+              _Segment.shops => const ShopsView(),
             },
           ),
         ],

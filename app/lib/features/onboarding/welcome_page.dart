@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../app/router.dart';
 import '../../core/providers.dart';
 import '../../core/settings/app_settings.dart';
+import '../../shared/brand/summit_logo.dart';
 
 /// Shown once, on first launch. One screen, two buttons, no carousel and nothing to skip.
 class WelcomePage extends ConsumerWidget {
@@ -21,7 +22,7 @@ class WelcomePage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 2),
-              Icon(Icons.terrain, size: 72, color: theme.colorScheme.primary),
+              const SummitLogo(size: 96),
               const SizedBox(height: 16),
               Text('山友 SummitMate', textAlign: TextAlign.center, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),

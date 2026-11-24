@@ -62,7 +62,12 @@ func run() error {
 		return err
 	}
 
-	// Fails fast when the embedded mountain dataset is invalid.
+	// Fails fast when an embedded dataset is invalid.
+	shopSvc, err := explore.NewDefaultShopService()
+	if err != nil {
+		return err
+	}
+
 	exploreSvc, err := explore.NewDefaultService()
 	if err != nil {
 		return err
@@ -74,7 +79,7 @@ func run() error {
 			Auth:    auth.NewHandler(authSvc),
 			Sync:    sync.NewHandler(sync.NewService(pool)),
 			Weather: weather.NewHandler(weather.NewDefaultService(weather.NewOpenMeteo(weather.OpenMeteoURL))),
-			Explore: explore.NewHandler(exploreSvc),
+			Explore: explore.NewHandler(exploreSvc).WithShops(shopSvc),
 			SharedSets: sharedsets.NewHandler(sharedsets.NewService(sharedsets.NewPgRepository(pool), sharedsets.Options{
 				BcryptCost: cfg.BcryptCost,
 				WrongKeys:  ratelimit.NewMemory(10, 15*time.Minute),

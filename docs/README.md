@@ -13,6 +13,8 @@
 | [裝備庫、範本與雲端分享](./architecture/GEAR_LIBRARY.md) | 個人裝備庫、範本、雲端分享（已完成） |
 | [揪團活動](./architecture/GROUP_EVENTS.md) | 第二期：揪團的規則、資料表、API |
 | [行程討論與收藏](./architecture/TRIP_COLLAB_FAVORITES.md) | 第二期：留言、投票、山岳收藏 |
+| [好友](./architecture/FRIENDS.md) | 雙方同意才成為好友、邀請成員與揪團加好友 |
+| [探索：戶外用品店](./architecture/EXPLORE_SHOPS.md) | 店家資料規則與做法 |
 | [資料庫、同步與 Auth](./architecture/DATA_SYNC_AUTH.md) | 資料表、Outbox 同步、認證與訪客模式 |
 | [前端資料層](./architecture/FRONTEND_DATA.md) | Drift 資料表、outbox 規則、SyncEngine、帳號切換 |
 | [隱私權政策](./security/PRIVACY_POLICY.md) | |

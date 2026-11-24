@@ -1,0 +1,2051 @@
+{
+ "version": "2026-11-25.1",
+ "updated_at": "2026-11-25T00:00:00Z",
+ "shops": [
+  {
+   "id": "tp-11rqvstq",
+   "name": "台北山水戶外休閒用品專門店",
+   "city": "臺北市",
+   "district": "",
+   "address": "中山北路一段12號",
+   "phone": "02 2361 9507",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B1%B1%E6%B0%B4%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%E7%94%A8%E5%93%81%E5%B0%88%E9%96%80%E5%BA%97%20%E8%87%BA%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8C%97%E8%B7%AF%E4%B8%80%E6%AE%B512%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.3,
+   "rating_count": 845,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11l59jnc9k",
+   "name": "台北山水 戶外用品專門店 - 台北店（服飾館）",
+   "city": "臺北市",
+   "district": "",
+   "address": "中山北路一段6-1號",
+   "phone": "02 2311 1935",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B1%B1%E6%B0%B4%20%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E5%B0%88%E9%96%80%E5%BA%97%20-%20%E5%8F%B0%E5%8C%97%E5%BA%97%EF%BC%88%E6%9C%8D%E9%A3%BE%E9%A4%A8%EF%BC%89%20%E8%87%BA%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8C%97%E8%B7%AF%E4%B8%80%E6%AE%B56-1%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 22,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-1tdbc366",
+   "name": "HME 百岳戶外裝備 - 台北旗艦館",
+   "city": "臺北市",
+   "district": "",
+   "address": "新湖二路8號",
+   "phone": "02 2793 3383",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=HME%20%E7%99%BE%E5%B2%B3%E6%88%B6%E5%A4%96%E8%A3%9D%E5%82%99%20-%20%E5%8F%B0%E5%8C%97%E6%97%97%E8%89%A6%E9%A4%A8%20%E8%87%BA%E5%8C%97%E5%B8%82%E6%96%B0%E6%B9%96%E4%BA%8C%E8%B7%AF8%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 1723,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-1pzx6fxmt",
+   "name": "士林百岳_登山▴野營▴旅遊▴滑雪",
+   "city": "臺北市",
+   "district": "",
+   "address": "文林路297號",
+   "phone": "02 2882 0152",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%A3%AB%E6%9E%97%E7%99%BE%E5%B2%B3_%E7%99%BB%E5%B1%B1%E2%96%B4%E9%87%8E%E7%87%9F%E2%96%B4%E6%97%85%E9%81%8A%E2%96%B4%E6%BB%91%E9%9B%AA%20%E8%87%BA%E5%8C%97%E5%B8%82%E6%96%87%E6%9E%97%E8%B7%AF297%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.3,
+   "rating_count": 388,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-12m9gwgws",
+   "name": "登山樂休閒用品",
+   "city": "臺北市",
+   "district": "",
+   "address": "和平西路三段314號",
+   "phone": "02 2336 6890",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%99%BB%E5%B1%B1%E6%A8%82%E4%BC%91%E9%96%92%E7%94%A8%E5%93%81%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%92%8C%E5%B9%B3%E8%A5%BF%E8%B7%AF%E4%B8%89%E6%AE%B5314%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 130,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-119wjwhz",
+   "name": "登山友器材＆露營",
+   "city": "臺北市",
+   "district": "",
+   "address": "中山北路一段20號",
+   "phone": "02 2311 6027",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%99%BB%E5%B1%B1%E5%8F%8B%E5%99%A8%E6%9D%90%EF%BC%86%E9%9C%B2%E7%87%9F%20%E8%87%BA%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8C%97%E8%B7%AF%E4%B8%80%E6%AE%B520%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.3,
+   "rating_count": 982,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-119wdglnp",
+   "name": "Prince Outdoor 王子登山戶外滑雪",
+   "city": "臺北市",
+   "district": "",
+   "address": "南昌路二段112號1樓",
+   "phone": "02 2368 4358",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Prince%20Outdoor%20%E7%8E%8B%E5%AD%90%E7%99%BB%E5%B1%B1%E6%88%B6%E5%A4%96%E6%BB%91%E9%9B%AA%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%8D%97%E6%98%8C%E8%B7%AF%E4%BA%8C%E6%AE%B5112%E8%99%9F1%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.4,
+   "rating_count": 1166,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-1wzt01vj",
+   "name": "Rockland 公館直營店",
+   "city": "臺北市",
+   "district": "",
+   "address": "新生南路三段94巷5號",
+   "phone": "02 2369 1961",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Rockland%20%E5%85%AC%E9%A4%A8%E7%9B%B4%E7%87%9F%E5%BA%97%20%E8%87%BA%E5%8C%97%E5%B8%82%E6%96%B0%E7%94%9F%E5%8D%97%E8%B7%AF%E4%B8%89%E6%AE%B594%E5%B7%B75%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "攀岩"
+   ],
+   "rating": 4.6,
+   "rating_count": 360,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-1tfl4ps",
+   "name": "登山補給站-Keepon Outdoor Equipment",
+   "city": "臺北市",
+   "district": "",
+   "address": "和平西路三段70號",
+   "phone": "02 2306 6266",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%99%BB%E5%B1%B1%E8%A3%9C%E7%B5%A6%E7%AB%99-Keepon%20Outdoor%20Equipment%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%92%8C%E5%B9%B3%E8%A5%BF%E8%B7%AF%E4%B8%89%E6%AE%B570%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "食物"
+   ],
+   "rating": 4.7,
+   "rating_count": 678,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-12q4wmwr3",
+   "name": "衝刺戶外休閒",
+   "city": "臺北市",
+   "district": "",
+   "address": "汀州路三段203號",
+   "phone": "02 2365 5203",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E8%A1%9D%E5%88%BA%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%20%E8%87%BA%E5%8C%97%E5%B8%82%E6%B1%80%E5%B7%9E%E8%B7%AF%E4%B8%89%E6%AE%B5203%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 5.0,
+   "rating_count": 1351,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11bw44l3dt",
+   "name": "AMOUTER 戶外人",
+   "city": "臺北市",
+   "district": "",
+   "address": "羅斯福路三段283巷7弄10號",
+   "phone": "02 2366 1110",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=AMOUTER%20%E6%88%B6%E5%A4%96%E4%BA%BA%20%E8%87%BA%E5%8C%97%E5%B8%82%E7%BE%85%E6%96%AF%E7%A6%8F%E8%B7%AF%E4%B8%89%E6%AE%B5283%E5%B7%B77%E5%BC%8410%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.3,
+   "rating_count": 550,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11b7zjrrnn",
+   "name": "GOHIKING戶外登山用品專賣店-吉林門市",
+   "city": "臺北市",
+   "district": "",
+   "address": "吉林路95號",
+   "phone": "02 2562 6371",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=GOHIKING%E6%88%B6%E5%A4%96%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97-%E5%90%89%E6%9E%97%E9%96%80%E5%B8%82%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%90%89%E6%9E%97%E8%B7%AF95%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 186,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-1pzslttnf",
+   "name": "秀山莊戶外休閒旅遊用品社",
+   "city": "臺北市",
+   "district": "",
+   "address": "信義路三段106號164-3號",
+   "phone": "02 2702 3169",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%A7%80%E5%B1%B1%E8%8E%8A%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E7%A4%BE%20%E8%87%BA%E5%8C%97%E5%B8%82%E4%BF%A1%E7%BE%A9%E8%B7%AF%E4%B8%89%E6%AE%B5106%E8%99%9F164-3%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 54,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11t3hqmqtt",
+   "name": "ABC CAMPING COUNTRY ｜露營裝備・咖啡輕食 ｜ABC COFFEE STAND",
+   "city": "臺北市",
+   "district": "",
+   "address": "後港街167號",
+   "phone": "02 2553 0181",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=ABC%20CAMPING%20COUNTRY%20%EF%BD%9C%E9%9C%B2%E7%87%9F%E8%A3%9D%E5%82%99%E3%83%BB%E5%92%96%E5%95%A1%E8%BC%95%E9%A3%9F%20%EF%BD%9CABC%20COFFEE%20STAND%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%BE%8C%E6%B8%AF%E8%A1%97167%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 5.0,
+   "rating_count": 945,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11fmscyz11",
+   "name": "OUTDOORZ 我不在家 戶外選物店",
+   "city": "臺北市",
+   "district": "",
+   "address": "承德路三段30號1樓",
+   "phone": "02 2595 9598",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=OUTDOORZ%20%E6%88%91%E4%B8%8D%E5%9C%A8%E5%AE%B6%20%E6%88%B6%E5%A4%96%E9%81%B8%E7%89%A9%E5%BA%97%20%E8%87%BA%E5%8C%97%E5%B8%82%E6%89%BF%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B530%E8%99%9F1%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 147,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11c5r5z8qx",
+   "name": "露營中毒本鋪",
+   "city": "臺北市",
+   "district": "",
+   "address": "延平北路八段157巷49之2號",
+   "phone": "02 8811 1817",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%9C%B2%E7%87%9F%E4%B8%AD%E6%AF%92%E6%9C%AC%E9%8B%AA%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%BB%B6%E5%B9%B3%E5%8C%97%E8%B7%AF%E5%85%AB%E6%AE%B5157%E5%B7%B749%E4%B9%8B2%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.8,
+   "rating_count": 650,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11c1rtlqx5",
+   "name": "海洋芒果潛水裝備專賣店 大安店",
+   "city": "臺北市",
+   "district": "",
+   "address": "復興南路二段148巷12號",
+   "phone": "02 2325 5208",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E6%B4%8B%E8%8A%92%E6%9E%9C%E6%BD%9B%E6%B0%B4%E8%A3%9D%E5%82%99%E5%B0%88%E8%B3%A3%E5%BA%97%20%E5%A4%A7%E5%AE%89%E5%BA%97%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%BE%A9%E8%88%88%E5%8D%97%E8%B7%AF%E4%BA%8C%E6%AE%B5148%E5%B7%B712%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.9,
+   "rating_count": 1406,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11b7bmvcz",
+   "name": "Water Pro 台北總店",
+   "city": "臺北市",
+   "district": "",
+   "address": "忠孝東路四段181巷35弄7號",
+   "phone": "02 8771 8527",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Water%20Pro%20%E5%8F%B0%E5%8C%97%E7%B8%BD%E5%BA%97%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%BF%A0%E5%AD%9D%E6%9D%B1%E8%B7%AF%E5%9B%9B%E6%AE%B5181%E5%B7%B735%E5%BC%847%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.6,
+   "rating_count": 589,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11sn1tg37c",
+   "name": "High Bar Scuba 海8潛水中心",
+   "city": "臺北市",
+   "district": "",
+   "address": "中山北路二段183之6號",
+   "phone": "02 2591 5556",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=High%20Bar%20Scuba%20%E6%B5%B78%E6%BD%9B%E6%B0%B4%E4%B8%AD%E5%BF%83%20%E8%87%BA%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8C%97%E8%B7%AF%E4%BA%8C%E6%AE%B5183%E4%B9%8B6%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 388,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11j8wbmycb",
+   "name": "Scuba Warehouse Taiwan 專業潛水裝備店",
+   "city": "臺北市",
+   "district": "",
+   "address": "行善路168巷15號",
+   "phone": "02 8792 3362",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Scuba%20Warehouse%20Taiwan%20%E5%B0%88%E6%A5%AD%E6%BD%9B%E6%B0%B4%E8%A3%9D%E5%82%99%E5%BA%97%20%E8%87%BA%E5%8C%97%E5%B8%82%E8%A1%8C%E5%96%84%E8%B7%AF168%E5%B7%B715%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 651,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11c1q6ff7r",
+   "name": "WATER CROSS 水越企業",
+   "city": "臺北市",
+   "district": "",
+   "address": "南京東路二段21巷15號",
+   "phone": "02 2571 9936",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=WATER%20CROSS%20%E6%B0%B4%E8%B6%8A%E4%BC%81%E6%A5%AD%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%8D%97%E4%BA%AC%E6%9D%B1%E8%B7%AF%E4%BA%8C%E6%AE%B521%E5%B7%B715%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 300,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11bztwjj9",
+   "name": "潛水貨倉",
+   "city": "臺北市",
+   "district": "",
+   "address": "八德路四段768巷1弄20號B1",
+   "phone": "02 2653 3885",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%BD%9B%E6%B0%B4%E8%B2%A8%E5%80%89%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%85%AB%E5%BE%B7%E8%B7%AF%E5%9B%9B%E6%AE%B5768%E5%B7%B71%E5%BC%8420%E8%99%9FB1",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.5,
+   "rating_count": 305,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11sc25dl23",
+   "name": "悠遊戶外 新莊門市",
+   "city": "新北市",
+   "district": "",
+   "address": "瓊林南路103巷8弄5號",
+   "phone": "02 2202 2185",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%82%A0%E9%81%8A%E6%88%B6%E5%A4%96%20%E6%96%B0%E8%8E%8A%E9%96%80%E5%B8%82%20%E6%96%B0%E5%8C%97%E5%B8%82%E7%93%8A%E6%9E%97%E5%8D%97%E8%B7%AF103%E5%B7%B78%E5%BC%845%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.8,
+   "rating_count": 265,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11c3v6zl7n",
+   "name": "桃源戶外-板橋店 登山露營旅遊",
+   "city": "新北市",
+   "district": "",
+   "address": "四川路二段98號1F",
+   "phone": "02 7730 5559",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%A1%83%E6%BA%90%E6%88%B6%E5%A4%96-%E6%9D%BF%E6%A9%8B%E5%BA%97%20%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E6%97%85%E9%81%8A%20%E6%96%B0%E5%8C%97%E5%B8%82%E5%9B%9B%E5%B7%9D%E8%B7%AF%E4%BA%8C%E6%AE%B598%E8%99%9F1F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.4,
+   "rating_count": 518,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11f3s2nfrh",
+   "name": "山旅戶外登山用品工作室",
+   "city": "新北市",
+   "district": "",
+   "address": "承天路9號2樓",
+   "phone": "0939 235 991",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E6%97%85%E6%88%B6%E5%A4%96%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81%E5%B7%A5%E4%BD%9C%E5%AE%A4%20%E6%96%B0%E5%8C%97%E5%B8%82%E6%89%BF%E5%A4%A9%E8%B7%AF9%E8%99%9F2%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.9,
+   "rating_count": 36,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11c2nt3k4",
+   "name": "大山野營_新北新店店",
+   "city": "新北市",
+   "district": "",
+   "address": "安康路二段3-1號",
+   "phone": "02 8666 9903",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%B1%B1%E9%87%8E%E7%87%9F_%E6%96%B0%E5%8C%97%E6%96%B0%E5%BA%97%E5%BA%97%20%E6%96%B0%E5%8C%97%E5%B8%82%E5%AE%89%E5%BA%B7%E8%B7%AF%E4%BA%8C%E6%AE%B53-1%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.6,
+   "rating_count": 591,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11y3mywbfm",
+   "name": "Chill Outdoor 萩凹豆露營用品專賣店 新莊店",
+   "city": "新北市",
+   "district": "",
+   "address": "福營路197號",
+   "phone": "02 2902 3312",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Chill%20Outdoor%20%E8%90%A9%E5%87%B9%E8%B1%86%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%20%E6%96%B0%E8%8E%8A%E5%BA%97%20%E6%96%B0%E5%8C%97%E5%B8%82%E7%A6%8F%E7%87%9F%E8%B7%AF197%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.8,
+   "rating_count": 515,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11l4sx71nt",
+   "name": "gogoscuba 台灣最大潛水裝備商城-中和旗艦店",
+   "city": "新北市",
+   "district": "",
+   "address": "建八路231-1號",
+   "phone": "02 2222 0322",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=gogoscuba%20%E5%8F%B0%E7%81%A3%E6%9C%80%E5%A4%A7%E6%BD%9B%E6%B0%B4%E8%A3%9D%E5%82%99%E5%95%86%E5%9F%8E-%E4%B8%AD%E5%92%8C%E6%97%97%E8%89%A6%E5%BA%97%20%E6%96%B0%E5%8C%97%E5%B8%82%E5%BB%BA%E5%85%AB%E8%B7%AF231-1%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.8,
+   "rating_count": 402,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11rgk42nk4",
+   "name": "IDiver海怪－潛水概念店(水肺、自由潛水專賣)",
+   "city": "新北市",
+   "district": "",
+   "address": "慶利街3號",
+   "phone": "02 8273 3629",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=IDiver%E6%B5%B7%E6%80%AA%EF%BC%8D%E6%BD%9B%E6%B0%B4%E6%A6%82%E5%BF%B5%E5%BA%97%28%E6%B0%B4%E8%82%BA%E3%80%81%E8%87%AA%E7%94%B1%E6%BD%9B%E6%B0%B4%E5%B0%88%E8%B3%A3%29%20%E6%96%B0%E5%8C%97%E5%B8%82%E6%85%B6%E5%88%A9%E8%A1%973%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.8,
+   "rating_count": 283,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-1v1shyx3",
+   "name": "城市綠洲戶外生活館 桃園店",
+   "city": "桃園市",
+   "district": "",
+   "address": "中正路896號1.2樓",
+   "phone": "03 356 7118",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%20%E6%A1%83%E5%9C%92%E5%BA%97%20%E6%A1%83%E5%9C%92%E5%B8%82%E4%B8%AD%E6%AD%A3%E8%B7%AF896%E8%99%9F1.2%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 242,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-11c2kjxnb3",
+   "name": "野道家露營用品",
+   "city": "桃園市",
+   "district": "",
+   "address": "國豐七街106號",
+   "phone": "0972 231 252",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%87%8E%E9%81%93%E5%AE%B6%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%20%E6%A1%83%E5%9C%92%E5%B8%82%E5%9C%8B%E8%B1%90%E4%B8%83%E8%A1%97106%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.8,
+   "rating_count": 1664,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-1tht9whp",
+   "name": "歐都納戶外用品(桃園中山店)",
+   "city": "桃園市",
+   "district": "",
+   "address": "中山路450號",
+   "phone": "03 336 0980",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E6%A1%83%E5%9C%92%E4%B8%AD%E5%B1%B1%E5%BA%97%29%20%E6%A1%83%E5%9C%92%E5%B8%82%E4%B8%AD%E5%B1%B1%E8%B7%AF450%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.7,
+   "rating_count": 184,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-11j0j17f53",
+   "name": "大山野營 登山露營戶外用品_桃園蘆竹店",
+   "city": "桃園市",
+   "district": "",
+   "address": "大竹路55號",
+   "phone": "03 216 0598",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%B1%B1%E9%87%8E%E7%87%9F%20%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81_%E6%A1%83%E5%9C%92%E8%98%86%E7%AB%B9%E5%BA%97%20%E6%A1%83%E5%9C%92%E5%B8%82%E5%A4%A7%E7%AB%B9%E8%B7%AF55%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 345,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-11b77k3vvh",
+   "name": "探險家戶外用品(中壢店)",
+   "city": "桃園市",
+   "district": "",
+   "address": "環中東路675-1號",
+   "phone": "03 433 5333",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%8E%A2%E9%9A%AA%E5%AE%B6%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E4%B8%AD%E5%A3%A2%E5%BA%97%29%20%E6%A1%83%E5%9C%92%E5%B8%82%E7%92%B0%E4%B8%AD%E6%9D%B1%E8%B7%AF675-1%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 1254,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-1pztqjbtt",
+   "name": "台灣吉普賽登山旅遊休閒用品(奈實國際有限公司)",
+   "city": "桃園市",
+   "district": "",
+   "address": "協同街71號",
+   "phone": "03 437 3092",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E7%81%A3%E5%90%89%E6%99%AE%E8%B3%BD%E7%99%BB%E5%B1%B1%E6%97%85%E9%81%8A%E4%BC%91%E9%96%92%E7%94%A8%E5%93%81%28%E5%A5%88%E5%AF%A6%E5%9C%8B%E9%9A%9B%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%29%20%E6%A1%83%E5%9C%92%E5%B8%82%E5%8D%94%E5%90%8C%E8%A1%9771%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.8,
+   "rating_count": 175,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-11dfgsjyz1",
+   "name": "愛露愛玩露營用品店",
+   "city": "桃園市",
+   "district": "",
+   "address": "和平路 1168 巷7號",
+   "phone": "03 363 0385",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%84%9B%E9%9C%B2%E6%84%9B%E7%8E%A9%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%E5%BA%97%20%E6%A1%83%E5%9C%92%E5%B8%82%E5%92%8C%E5%B9%B3%E8%B7%AF%201168%20%E5%B7%B77%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.9,
+   "rating_count": 1741,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-12m9mhbd1",
+   "name": "綠卡野營戶外用品專賣店",
+   "city": "桃園市",
+   "district": "",
+   "address": "三民路三段363號",
+   "phone": "03 347 4111",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%B6%A0%E5%8D%A1%E9%87%8E%E7%87%9F%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%20%E6%A1%83%E5%9C%92%E5%B8%82%E4%B8%89%E6%B0%91%E8%B7%AF%E4%B8%89%E6%AE%B5363%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.6,
+   "rating_count": 122,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-11nb1nmk8z",
+   "name": "gogoscuba 台灣最大潛水裝備商城 (桃園店)",
+   "city": "桃園市",
+   "district": "",
+   "address": "中北路111號4 樓",
+   "phone": "03 283 0349",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=gogoscuba%20%E5%8F%B0%E7%81%A3%E6%9C%80%E5%A4%A7%E6%BD%9B%E6%B0%B4%E8%A3%9D%E5%82%99%E5%95%86%E5%9F%8E%20%28%E6%A1%83%E5%9C%92%E5%BA%97%29%20%E6%A1%83%E5%9C%92%E5%B8%82%E4%B8%AD%E5%8C%97%E8%B7%AF111%E8%99%9F4%20%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.9,
+   "rating_count": 77,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-11yz7ltkt0",
+   "name": "High Bar Scuba Taoyuan 海8潛水桃園分店",
+   "city": "桃園市",
+   "district": "",
+   "address": "中央街323號",
+   "phone": "03 338 8087",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=High%20Bar%20Scuba%20Taoyuan%20%E6%B5%B78%E6%BD%9B%E6%B0%B4%E6%A1%83%E5%9C%92%E5%88%86%E5%BA%97%20%E6%A1%83%E5%9C%92%E5%B8%82%E4%B8%AD%E5%A4%AE%E8%A1%97323%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.9,
+   "rating_count": 75,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11jzs0jg04",
+   "name": "逐露天下 露營用品專賣店 新北板橋店",
+   "city": "新北市",
+   "district": "",
+   "address": "環漢路四段662號之一",
+   "phone": "02 2687 4188",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%80%90%E9%9C%B2%E5%A4%A9%E4%B8%8B%20%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%20%E6%96%B0%E5%8C%97%E6%9D%BF%E6%A9%8B%E5%BA%97%20%E6%96%B0%E5%8C%97%E5%B8%82%E7%92%B0%E6%BC%A2%E8%B7%AF%E5%9B%9B%E6%AE%B5662%E8%99%9F%E4%B9%8B%E4%B8%80",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.9,
+   "rating_count": 4252,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-11clyt2r7",
+   "name": "阿爾卑斯戶外",
+   "city": "新北市",
+   "district": "",
+   "address": "國光街2號",
+   "phone": "02 2671 3632",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E7%88%BE%E5%8D%91%E6%96%AF%E6%88%B6%E5%A4%96%20%E6%96%B0%E5%8C%97%E5%B8%82%E5%9C%8B%E5%85%89%E8%A1%972%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.8,
+   "rating_count": 336,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-1pzrl99bz",
+   "name": "玉山戶外用品社",
+   "city": "新北市",
+   "district": "",
+   "address": "忠孝路114號",
+   "phone": "0939 960 629",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%8E%89%E5%B1%B1%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E7%A4%BE%20%E6%96%B0%E5%8C%97%E5%B8%82%E5%BF%A0%E5%AD%9D%E8%B7%AF114%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 105,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt-1tdd2mx",
+   "name": "Outdoorbase Experience 野遊彩繪天空（露營/登山用品）",
+   "city": "新北市",
+   "district": "",
+   "address": "淡金路四段11號",
+   "phone": "02 8631 1318",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Outdoorbase%20Experience%20%E9%87%8E%E9%81%8A%E5%BD%A9%E7%B9%AA%E5%A4%A9%E7%A9%BA%EF%BC%88%E9%9C%B2%E7%87%9F/%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81%EF%BC%89%20%E6%96%B0%E5%8C%97%E5%B8%82%E6%B7%A1%E9%87%91%E8%B7%AF%E5%9B%9B%E6%AE%B511%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 271,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc-11h4dkvwd1",
+   "name": "Hiker 嗨客戶外",
+   "city": "新竹市",
+   "district": "",
+   "address": "南大路13號",
+   "phone": "03 562 0561",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Hiker%20%E5%97%A8%E5%AE%A2%E6%88%B6%E5%A4%96%20%E6%96%B0%E7%AB%B9%E5%B8%82%E5%8D%97%E5%A4%A7%E8%B7%AF13%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 5.0,
+   "rating_count": 581,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc-11fp36ld09",
+   "name": "悠遊山水 OUTDOOR-新竹中央店/登山 露營 旅遊",
+   "city": "新竹市",
+   "district": "",
+   "address": "中央路317號",
+   "phone": "03 667 3068",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%82%A0%E9%81%8A%E5%B1%B1%E6%B0%B4%20OUTDOOR-%E6%96%B0%E7%AB%B9%E4%B8%AD%E5%A4%AE%E5%BA%97/%E7%99%BB%E5%B1%B1%20%E9%9C%B2%E7%87%9F%20%E6%97%85%E9%81%8A%20%E6%96%B0%E7%AB%B9%E5%B8%82%E4%B8%AD%E5%A4%AE%E8%B7%AF317%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.4,
+   "rating_count": 129,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc-1tr159fz",
+   "name": "名將運動登山用品 運動幣/客家幣特約 Minjjun Sports & Outdoors",
+   "city": "新竹市",
+   "district": "",
+   "address": "勝利路17號",
+   "phone": "03 526 6883",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E5%B0%87%E9%81%8B%E5%8B%95%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81%20%E9%81%8B%E5%8B%95%E5%B9%A3/%E5%AE%A2%E5%AE%B6%E5%B9%A3%E7%89%B9%E7%B4%84%20Minjjun%20Sports%20%26%20Outdoors%20%E6%96%B0%E7%AB%B9%E5%B8%82%E5%8B%9D%E5%88%A9%E8%B7%AF17%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 429,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc-11b6rwnvvc",
+   "name": "城市綠洲戶外生活館【新竹店】GARMIN 滑雪 登山 溯溪 單車 旅遊 機能服飾 露營",
+   "city": "新竹市",
+   "district": "",
+   "address": "東大路一段132號",
+   "phone": "03 531 3917",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%E3%80%90%E6%96%B0%E7%AB%B9%E5%BA%97%E3%80%91GARMIN%20%E6%BB%91%E9%9B%AA%20%E7%99%BB%E5%B1%B1%20%E6%BA%AF%E6%BA%AA%20%E5%96%AE%E8%BB%8A%20%E6%97%85%E9%81%8A%20%E6%A9%9F%E8%83%BD%E6%9C%8D%E9%A3%BE%20%E9%9C%B2%E7%87%9F%20%E6%96%B0%E7%AB%B9%E5%B8%82%E6%9D%B1%E5%A4%A7%E8%B7%AF%E4%B8%80%E6%AE%B5132%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.2,
+   "rating_count": 397,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc-1td02swq",
+   "name": "風成鄉野情(風成休旅有限公司)登山用品/旅遊用品/",
+   "city": "新竹市",
+   "district": "",
+   "address": "東光路22號",
+   "phone": "03 573 5012",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%A2%A8%E6%88%90%E9%84%89%E9%87%8E%E6%83%85%28%E9%A2%A8%E6%88%90%E4%BC%91%E6%97%85%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%29%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81/%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81/%20%E6%96%B0%E7%AB%B9%E5%B8%82%E6%9D%B1%E5%85%89%E8%B7%AF22%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 213,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc-12llfvs31",
+   "name": "歐都納戶外用品(新竹北大店)",
+   "city": "新竹市",
+   "district": "",
+   "address": "北大路158號1樓",
+   "phone": "03 533 7238",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E6%96%B0%E7%AB%B9%E5%8C%97%E5%A4%A7%E5%BA%97%29%20%E6%96%B0%E7%AB%B9%E5%B8%82%E5%8C%97%E5%A4%A7%E8%B7%AF158%E8%99%9F1%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.7,
+   "rating_count": 119,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc2-11qntrh74l",
+   "name": "悠遊戶外芎林旗艦店",
+   "city": "新竹縣",
+   "district": "",
+   "address": "文德路26號",
+   "phone": "03 512 0110",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%82%A0%E9%81%8A%E6%88%B6%E5%A4%96%E8%8A%8E%E6%9E%97%E6%97%97%E8%89%A6%E5%BA%97%20%E6%96%B0%E7%AB%B9%E7%B8%A3%E6%96%87%E5%BE%B7%E8%B7%AF26%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.9,
+   "rating_count": 1061,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hc2-1v3kkt8s",
+   "name": "城市綠洲戶外生活館【竹北店】GARMIN 登山 單車 露營 立槳 浮潛 戶外裝備 滑雪 機能服飾",
+   "city": "新竹縣",
+   "district": "",
+   "address": "中華路307-1號",
+   "phone": "03 552 9378",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%E3%80%90%E7%AB%B9%E5%8C%97%E5%BA%97%E3%80%91GARMIN%20%E7%99%BB%E5%B1%B1%20%E5%96%AE%E8%BB%8A%20%E9%9C%B2%E7%87%9F%20%E7%AB%8B%E6%A7%B3%20%E6%B5%AE%E6%BD%9B%20%E6%88%B6%E5%A4%96%E8%A3%9D%E5%82%99%20%E6%BB%91%E9%9B%AA%20%E6%A9%9F%E8%83%BD%E6%9C%8D%E9%A3%BE%20%E6%96%B0%E7%AB%B9%E7%B8%A3%E4%B8%AD%E8%8F%AF%E8%B7%AF307-1%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.3,
+   "rating_count": 519,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11hz11py",
+   "name": "山風戶外-登山露營旅行用品",
+   "city": "臺中市",
+   "district": "",
+   "address": "永春東七路756號",
+   "phone": "04 2380 9336",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E9%A2%A8%E6%88%B6%E5%A4%96-%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E6%97%85%E8%A1%8C%E7%94%A8%E5%93%81%20%E8%87%BA%E4%B8%AD%E5%B8%82%E6%B0%B8%E6%98%A5%E6%9D%B1%E4%B8%83%E8%B7%AF756%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.9,
+   "rating_count": 168,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11y063zs",
+   "name": "台北山水 戶外用品專門店 - 河南店",
+   "city": "臺中市",
+   "district": "",
+   "address": "河南路二段482號",
+   "phone": "04 2702 1866",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B1%B1%E6%B0%B4%20%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E5%B0%88%E9%96%80%E5%BA%97%20-%20%E6%B2%B3%E5%8D%97%E5%BA%97%20%E8%87%BA%E4%B8%AD%E5%B8%82%E6%B2%B3%E5%8D%97%E8%B7%AF%E4%BA%8C%E6%AE%B5482%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.4,
+   "rating_count": 476,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11ng0h7k8f",
+   "name": "AMOUTER Life 戶外人 台中店",
+   "city": "臺中市",
+   "district": "",
+   "address": "福康路82號",
+   "phone": "04 2462 2582",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=AMOUTER%20Life%20%E6%88%B6%E5%A4%96%E4%BA%BA%20%E5%8F%B0%E4%B8%AD%E5%BA%97%20%E8%87%BA%E4%B8%AD%E5%B8%82%E7%A6%8F%E5%BA%B7%E8%B7%AF82%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.8,
+   "rating_count": 133,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-119tfgc6",
+   "name": "桃源戶外-大墩店 登山露營旅遊",
+   "city": "臺中市",
+   "district": "",
+   "address": "大墩路175號",
+   "phone": "04 2472 2002",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%A1%83%E6%BA%90%E6%88%B6%E5%A4%96-%E5%A4%A7%E5%A2%A9%E5%BA%97%20%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E6%97%85%E9%81%8A%20%E8%87%BA%E4%B8%AD%E5%B8%82%E5%A4%A7%E5%A2%A9%E8%B7%AF175%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.3,
+   "rating_count": 705,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11bw22dtp9",
+   "name": "山巔雲間戶外用品館（Merrell鞋款零碼出清78折起-新年活動開跑）",
+   "city": "臺中市",
+   "district": "",
+   "address": "台灣大道四段786巷19號",
+   "phone": "04 2462 9952",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%B7%94%E9%9B%B2%E9%96%93%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E9%A4%A8%EF%BC%88Merrell%E9%9E%8B%E6%AC%BE%E9%9B%B6%E7%A2%BC%E5%87%BA%E6%B8%8578%E6%8A%98%E8%B5%B7-%E6%96%B0%E5%B9%B4%E6%B4%BB%E5%8B%95%E9%96%8B%E8%B7%91%EF%BC%89%20%E8%87%BA%E4%B8%AD%E5%B8%82%E5%8F%B0%E7%81%A3%E5%A4%A7%E9%81%93%E5%9B%9B%E6%AE%B5786%E5%B7%B719%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.7,
+   "rating_count": 292,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11b7rtt555",
+   "name": "天嵐戶外用品",
+   "city": "臺中市",
+   "district": "",
+   "address": "中正路615號",
+   "phone": "04 2512 3349",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E5%B5%90%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%20%E8%87%BA%E4%B8%AD%E5%B8%82%E4%B8%AD%E6%AD%A3%E8%B7%AF615%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 492,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11h06c6z7j",
+   "name": "水漾森林戶外生活館-樂業店",
+   "city": "臺中市",
+   "district": "",
+   "address": "樂業路495號",
+   "phone": "0978 200 278",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%B0%B4%E6%BC%BE%E6%A3%AE%E6%9E%97%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8-%E6%A8%82%E6%A5%AD%E5%BA%97%20%E8%87%BA%E4%B8%AD%E5%B8%82%E6%A8%82%E6%A5%AD%E8%B7%AF495%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.9,
+   "rating_count": 537,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11c3yqystc",
+   "name": "城市綠洲戶外生活館【台中市政店】單車 SCOTT 登山 Garmin 露營 單車 浮潛 SUP立槳 機能服飾 自行車",
+   "city": "臺中市",
+   "district": "",
+   "address": "市政路652號",
+   "phone": "04 2259 5661",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%E3%80%90%E5%8F%B0%E4%B8%AD%E5%B8%82%E6%94%BF%E5%BA%97%E3%80%91%E5%96%AE%E8%BB%8A%20SCOTT%20%E7%99%BB%E5%B1%B1%20Garmin%20%E9%9C%B2%E7%87%9F%20%E5%96%AE%E8%BB%8A%20%E6%B5%AE%E6%BD%9B%20SUP%E7%AB%8B%E6%A7%B3%20%E6%A9%9F%E8%83%BD%E6%9C%8D%E9%A3%BE%20%E8%87%AA%E8%A1%8C%E8%BB%8A%20%E8%87%BA%E4%B8%AD%E5%B8%82%E5%B8%82%E6%94%BF%E8%B7%AF652%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.6,
+   "rating_count": 401,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11b7vk378h",
+   "name": "成功戶外用品(大里RV)",
+   "city": "臺中市",
+   "district": "",
+   "address": "慈德路230號",
+   "phone": "04 2493 9388",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%88%90%E5%8A%9F%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%A4%A7%E9%87%8CRV%29%20%E8%87%BA%E4%B8%AD%E5%B8%82%E6%85%88%E5%BE%B7%E8%B7%AF230%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 247,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-11bwhb3831",
+   "name": "OUTDOOR MAN Tainan",
+   "city": "臺南市",
+   "district": "",
+   "address": "中華東路三段125號",
+   "phone": "06 289 0728",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=OUTDOOR%20MAN%20Tainan%20%E8%87%BA%E5%8D%97%E5%B8%82%E4%B8%AD%E8%8F%AF%E6%9D%B1%E8%B7%AF%E4%B8%89%E6%AE%B5125%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.3,
+   "rating_count": 776,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-1pzxnsxsh",
+   "name": "綠野戶外休閒用品",
+   "city": "臺南市",
+   "district": "",
+   "address": "勝利路30號",
+   "phone": "06 208 0320",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%B6%A0%E9%87%8E%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%E7%94%A8%E5%93%81%20%E8%87%BA%E5%8D%97%E5%B8%82%E5%8B%9D%E5%88%A9%E8%B7%AF30%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 117,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-1tdcjq3r",
+   "name": "維京山屋戶外用品專賣店",
+   "city": "臺南市",
+   "district": "",
+   "address": "大同路一段66號",
+   "phone": "06 215 3106",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%B6%AD%E4%BA%AC%E5%B1%B1%E5%B1%8B%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%20%E8%87%BA%E5%8D%97%E5%B8%82%E5%A4%A7%E5%90%8C%E8%B7%AF%E4%B8%80%E6%AE%B566%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 159,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-1q67q6pf9",
+   "name": "秀山莊戶外用品 裕義店",
+   "city": "臺南市",
+   "district": "",
+   "address": "裕義路726號",
+   "phone": "06 331 7217",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%A7%80%E5%B1%B1%E8%8E%8A%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%20%E8%A3%95%E7%BE%A9%E5%BA%97%20%E8%87%BA%E5%8D%97%E5%B8%82%E8%A3%95%E7%BE%A9%E8%B7%AF726%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.3,
+   "rating_count": 336,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-11c0qgpbvh",
+   "name": "結交世界JJSJ OUTDOOR-戶外旅遊用品 裕和店",
+   "city": "臺南市",
+   "district": "",
+   "address": "裕和路261號",
+   "phone": "06 331 6655",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%B5%90%E4%BA%A4%E4%B8%96%E7%95%8CJJSJ%20OUTDOOR-%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%20%E8%A3%95%E5%92%8C%E5%BA%97%20%E8%87%BA%E5%8D%97%E5%B8%82%E8%A3%95%E5%92%8C%E8%B7%AF261%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 217,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-11rxrlwqzw",
+   "name": "ARCTIC 安平店 (台南HOKA、On專賣店)",
+   "city": "臺南市",
+   "district": "",
+   "address": "育平路371號",
+   "phone": "06 298 0101",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=ARCTIC%20%E5%AE%89%E5%B9%B3%E5%BA%97%20%28%E5%8F%B0%E5%8D%97HOKA%E3%80%81On%E5%B0%88%E8%B3%A3%E5%BA%97%29%20%E8%87%BA%E5%8D%97%E5%B8%82%E8%82%B2%E5%B9%B3%E8%B7%AF371%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 139,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-1pp2tx88h",
+   "name": "歐都納戶外用品(台南新光三越西門店)",
+   "city": "臺南市",
+   "district": "",
+   "address": "西門路一段658號",
+   "phone": "06 303 1169",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%8F%B0%E5%8D%97%E6%96%B0%E5%85%89%E4%B8%89%E8%B6%8A%E8%A5%BF%E9%96%80%E5%BA%97%29%20%E8%87%BA%E5%8D%97%E5%B8%82%E8%A5%BF%E9%96%80%E8%B7%AF%E4%B8%80%E6%AE%B5658%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 5.0,
+   "rating_count": 150,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tn-12m93792d",
+   "name": "豐利(登峰)戶外用品生活館",
+   "city": "臺南市",
+   "district": "",
+   "address": "五妃街210號",
+   "phone": "06 214 1523",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E8%B1%90%E5%88%A9%28%E7%99%BB%E5%B3%B0%29%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E7%94%9F%E6%B4%BB%E9%A4%A8%20%E8%87%BA%E5%8D%97%E5%B8%82%E4%BA%94%E5%A6%83%E8%A1%97210%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.2,
+   "rating_count": 108,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-11f19y4b8m",
+   "name": "享趣戶外休閒館",
+   "city": "高雄市",
+   "district": "",
+   "address": "河北二路144號",
+   "phone": "07 216 8999",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E4%BA%AB%E8%B6%A3%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%E9%A4%A8%20%E9%AB%98%E9%9B%84%E5%B8%82%E6%B2%B3%E5%8C%97%E4%BA%8C%E8%B7%AF144%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.9,
+   "rating_count": 96,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-11bxf4g6pk",
+   "name": "野外營戶外旅遊用品店",
+   "city": "高雄市",
+   "district": "",
+   "address": "民族一路186-1號",
+   "phone": "07 382 2383",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%87%8E%E5%A4%96%E7%87%9F%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E5%BA%97%20%E9%AB%98%E9%9B%84%E5%B8%82%E6%B0%91%E6%97%8F%E4%B8%80%E8%B7%AF186-1%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 315,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-1pzt7h50l",
+   "name": "狐狸家族戶外旅遊用品專賣店",
+   "city": "高雄市",
+   "district": "",
+   "address": "天祥二路16號",
+   "phone": "07 350 7957",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%8B%90%E7%8B%B8%E5%AE%B6%E6%97%8F%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%20%E9%AB%98%E9%9B%84%E5%B8%82%E5%A4%A9%E7%A5%A5%E4%BA%8C%E8%B7%AF16%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.4,
+   "rating_count": 168,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-11xk1dp91",
+   "name": "天龍戶外-登山露營用品專賣(全通股東會紀念品兌換處)",
+   "city": "高雄市",
+   "district": "",
+   "address": "光華一路148-65號",
+   "phone": "07 716 3735",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E9%BE%8D%E6%88%B6%E5%A4%96-%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%28%E5%85%A8%E9%80%9A%E8%82%A1%E6%9D%B1%E6%9C%83%E7%B4%80%E5%BF%B5%E5%93%81%E5%85%8C%E6%8F%9B%E8%99%95%29%20%E9%AB%98%E9%9B%84%E5%B8%82%E5%85%89%E8%8F%AF%E4%B8%80%E8%B7%AF148-65%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 66,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-11n154hxs8",
+   "name": "探險家戶外用品-高雄仁武門市",
+   "city": "高雄市",
+   "district": "",
+   "address": "京吉三路170號",
+   "phone": "07 374 3222",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%8E%A2%E9%9A%AA%E5%AE%B6%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81-%E9%AB%98%E9%9B%84%E4%BB%81%E6%AD%A6%E9%96%80%E5%B8%82%20%E9%AB%98%E9%9B%84%E5%B8%82%E4%BA%AC%E5%90%89%E4%B8%89%E8%B7%AF170%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 483,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-11tp9xcn1y",
+   "name": "山小孩戶外用品工作室 / Mountain Kids Outdoor Studio",
+   "city": "高雄市",
+   "district": "",
+   "address": "明華路11號",
+   "phone": "07 552 0779",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%B0%8F%E5%AD%A9%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E5%B7%A5%E4%BD%9C%E5%AE%A4%20/%20Mountain%20Kids%20Outdoor%20Studio%20%E9%AB%98%E9%9B%84%E5%B8%82%E6%98%8E%E8%8F%AF%E8%B7%AF11%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 5.0,
+   "rating_count": 618,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-1hm343h19",
+   "name": "高雄山湖郊戶外旅遊登山露營用品GORE-TEX排汗衫雪衣羽絨衣鳳山專賣店",
+   "city": "高雄市",
+   "district": "",
+   "address": "建國路三段67號",
+   "phone": "07 719 7788",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%AB%98%E9%9B%84%E5%B1%B1%E6%B9%96%E9%83%8A%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81GORE-TEX%E6%8E%92%E6%B1%97%E8%A1%AB%E9%9B%AA%E8%A1%A3%E7%BE%BD%E7%B5%A8%E8%A1%A3%E9%B3%B3%E5%B1%B1%E5%B0%88%E8%B3%A3%E5%BA%97%20%E9%AB%98%E9%9B%84%E5%B8%82%E5%BB%BA%E5%9C%8B%E8%B7%AF%E4%B8%89%E6%AE%B567%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.0,
+   "rating_count": 138,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-1pzw1248k",
+   "name": "踏青野營用品社",
+   "city": "高雄市",
+   "district": "",
+   "address": "河南路87號",
+   "phone": "07 711 6438",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E8%B8%8F%E9%9D%92%E9%87%8E%E7%87%9F%E7%94%A8%E5%93%81%E7%A4%BE%20%E9%AB%98%E9%9B%84%E5%B8%82%E6%B2%B3%E5%8D%97%E8%B7%AF87%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.2,
+   "rating_count": 136,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hl-1vsk5s",
+   "name": "Happy Outdoor花蓮戶外旅遊用品店",
+   "city": "花蓮縣",
+   "district": "",
+   "address": "介禮街26號",
+   "phone": "03 835 7718",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Happy%20Outdoor%E8%8A%B1%E8%93%AE%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E5%BA%97%20%E8%8A%B1%E8%93%AE%E7%B8%A3%E4%BB%8B%E7%A6%AE%E8%A1%9726%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 158,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hl-11gb3t2d8r",
+   "name": "樂遊時尚戶外休閒旅遊用品店",
+   "city": "花蓮縣",
+   "district": "",
+   "address": "南京街217號970",
+   "phone": "03 832 3766",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%A8%82%E9%81%8A%E6%99%82%E5%B0%9A%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E5%BA%97%20%E8%8A%B1%E8%93%AE%E7%B8%A3%E5%8D%97%E4%BA%AC%E8%A1%97217%E8%99%9F970",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 39,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hl-1pzw23xs1",
+   "name": "健野戶外休閒用品",
+   "city": "花蓮縣",
+   "district": "",
+   "address": "節約街29號",
+   "phone": "03 834 0802",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%81%A5%E9%87%8E%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%E7%94%A8%E5%93%81%20%E8%8A%B1%E8%93%AE%E7%B8%A3%E7%AF%80%E7%B4%84%E8%A1%9729%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 25,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tt-1tf7vgqj",
+   "name": "友愛自然 戶外休閒用品",
+   "city": "臺東縣",
+   "district": "",
+   "address": "仁二街257 號",
+   "phone": "089 238 085",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%8F%8B%E6%84%9B%E8%87%AA%E7%84%B6%20%E6%88%B6%E5%A4%96%E4%BC%91%E9%96%92%E7%94%A8%E5%93%81%20%E8%87%BA%E6%9D%B1%E7%B8%A3%E4%BB%81%E4%BA%8C%E8%A1%97257%20%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 43,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tt-1tlml1zp",
+   "name": "歐都納戶外用品(台東店)",
+   "city": "臺東縣",
+   "district": "",
+   "address": "新生路332號",
+   "phone": "089 341 505",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%8F%B0%E6%9D%B1%E5%BA%97%29%20%E8%87%BA%E6%9D%B1%E7%B8%A3%E6%96%B0%E7%94%9F%E8%B7%AF332%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.3,
+   "rating_count": 87,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tt-11np7lv6x9",
+   "name": "Decathlon 迪卡儂 台東 台東店",
+   "city": "臺東縣",
+   "district": "",
+   "address": "中興路三段592號1樓",
+   "phone": "089 219 092",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Decathlon%20%E8%BF%AA%E5%8D%A1%E5%84%82%20%E5%8F%B0%E6%9D%B1%20%E5%8F%B0%E6%9D%B1%E5%BA%97%20%E8%87%BA%E6%9D%B1%E7%B8%A3%E4%B8%AD%E8%88%88%E8%B7%AF%E4%B8%89%E6%AE%B5592%E8%99%9F1%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.6,
+   "rating_count": 306,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11bydqr4l",
+   "name": "山道具屋",
+   "city": "臺北市",
+   "district": "",
+   "address": "德行東路90巷5號",
+   "phone": "0911 264 362",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E9%81%93%E5%85%B7%E5%B1%8B%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%BE%B7%E8%A1%8C%E6%9D%B1%E8%B7%AF90%E5%B7%B75%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.6,
+   "rating_count": 109,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt2-11bzrd4g6d",
+   "name": "遠野登山戶外旅遊休閒用品社",
+   "city": "南投縣",
+   "district": "",
+   "address": "中山路二段228號",
+   "phone": "049 290 4720",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%81%A0%E9%87%8E%E7%99%BB%E5%B1%B1%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E4%BC%91%E9%96%92%E7%94%A8%E5%93%81%E7%A4%BE%20%E5%8D%97%E6%8A%95%E7%B8%A3%E4%B8%AD%E5%B1%B1%E8%B7%AF%E4%BA%8C%E6%AE%B5228%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 53,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl-1tdnhw5t",
+   "name": "城市綠洲戶外生活館【宜蘭店】",
+   "city": "宜蘭縣",
+   "district": "",
+   "address": "民權路二段38巷6號",
+   "phone": "03 931 2684",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%E3%80%90%E5%AE%9C%E8%98%AD%E5%BA%97%E3%80%91%20%E5%AE%9C%E8%98%AD%E7%B8%A3%E6%B0%91%E6%AC%8A%E8%B7%AF%E4%BA%8C%E6%AE%B538%E5%B7%B76%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.7,
+   "rating_count": 179,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl-1pzq2d9ww",
+   "name": "城市綠洲戶外生活館【羅東店】",
+   "city": "宜蘭縣",
+   "district": "",
+   "address": "五結路三段498號",
+   "phone": "03 960 2092",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%E3%80%90%E7%BE%85%E6%9D%B1%E5%BA%97%E3%80%91%20%E5%AE%9C%E8%98%AD%E7%B8%A3%E4%BA%94%E7%B5%90%E8%B7%AF%E4%B8%89%E6%AE%B5498%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.3,
+   "rating_count": 243,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl-11c1rfyyz6",
+   "name": "歐都納戶外用品(宜蘭羅東店)",
+   "city": "宜蘭縣",
+   "district": "",
+   "address": "興東路242號",
+   "phone": "03 955 8098",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%AE%9C%E8%98%AD%E7%BE%85%E6%9D%B1%E5%BA%97%29%20%E5%AE%9C%E8%98%AD%E7%B8%A3%E8%88%88%E6%9D%B1%E8%B7%AF242%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.8,
+   "rating_count": 157,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl-11h7cqfbh",
+   "name": "宜蘭露營用品裝備 小玩家-宜蘭店",
+   "city": "宜蘭縣",
+   "district": "",
+   "address": "泰山路455號",
+   "phone": "03 936 6368",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%AE%9C%E8%98%AD%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%E8%A3%9D%E5%82%99%20%E5%B0%8F%E7%8E%A9%E5%AE%B6-%E5%AE%9C%E8%98%AD%E5%BA%97%20%E5%AE%9C%E8%98%AD%E7%B8%A3%E6%B3%B0%E5%B1%B1%E8%B7%AF455%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.7,
+   "rating_count": 110,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "cy-1pzr9psgb",
+   "name": "嘉義山水登山露營專賣店 - 嘉義登山露營用品推薦 租借帳篷 防寒裝備 雪地旅遊週邊用品 嘉義戶外登山 野溪 野營 保暖羽絨衣首選 網友推薦好評",
+   "city": "嘉義市",
+   "district": "",
+   "address": "興仁街193號",
+   "phone": "05 225 5662",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%98%89%E7%BE%A9%E5%B1%B1%E6%B0%B4%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E5%B0%88%E8%B3%A3%E5%BA%97%20-%20%E5%98%89%E7%BE%A9%E7%99%BB%E5%B1%B1%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%E6%8E%A8%E8%96%A6%20%E7%A7%9F%E5%80%9F%E5%B8%B3%E7%AF%B7%20%E9%98%B2%E5%AF%92%E8%A3%9D%E5%82%99%20%E9%9B%AA%E5%9C%B0%E6%97%85%E9%81%8A%E9%80%B1%E9%82%8A%E7%94%A8%E5%93%81%20%E5%98%89%E7%BE%A9%E6%88%B6%E5%A4%96%E7%99%BB%E5%B1%B1%20%E9%87%8E%E6%BA%AA%20%E9%87%8E%E7%87%9F%20%E4%BF%9D%E6%9A%96%E7%BE%BD%E7%B5%A8%E8%A1%A3%E9%A6%96%E9%81%B8%20%E7%B6%B2%E5%8F%8B%E6%8E%A8%E8%96%A6%E5%A5%BD%E8%A9%95%20%E5%98%89%E7%BE%A9%E5%B8%82%E8%88%88%E4%BB%81%E8%A1%97193%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 117,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "cy-1vr1tdmq",
+   "name": "歐都納戶外用品(嘉義民生店)",
+   "city": "嘉義市",
+   "district": "",
+   "address": "民生北路170號",
+   "phone": "05 225 2896",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%98%89%E7%BE%A9%E6%B0%91%E7%94%9F%E5%BA%97%29%20%E5%98%89%E7%BE%A9%E5%B8%82%E6%B0%91%E7%94%9F%E5%8C%97%E8%B7%AF170%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 131,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "cy-12j3slkrg",
+   "name": "玉山登山社",
+   "city": "嘉義市",
+   "district": "",
+   "address": "上海路243號",
+   "phone": "0912 981 313",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%8E%89%E5%B1%B1%E7%99%BB%E5%B1%B1%E7%A4%BE%20%E5%98%89%E7%BE%A9%E5%B8%82%E4%B8%8A%E6%B5%B7%E8%B7%AF243%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.8,
+   "rating_count": 154,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "cy-11b6cq723s",
+   "name": "黎陽戶外用品-仁愛店",
+   "city": "嘉義市",
+   "district": "",
+   "address": "仁愛路16號",
+   "phone": "05 286 5641",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%BB%8E%E9%99%BD%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81-%E4%BB%81%E6%84%9B%E5%BA%97%20%E5%98%89%E7%BE%A9%E5%B8%82%E4%BB%81%E6%84%9B%E8%B7%AF16%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.3,
+   "rating_count": 109,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "pt-11c5140mhb",
+   "name": "露戰隊戶外用品",
+   "city": "屏東縣",
+   "district": "",
+   "address": "公園東路7-6號",
+   "phone": "08 721 3703",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%9C%B2%E6%88%B0%E9%9A%8A%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%20%E5%B1%8F%E6%9D%B1%E7%B8%A3%E5%85%AC%E5%9C%92%E6%9D%B1%E8%B7%AF7-6%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 396,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "pt-11b7lm2l59",
+   "name": "歐都納戶外用品(屏東太平洋百貨)",
+   "city": "屏東縣",
+   "district": "",
+   "address": "中正路72號4樓",
+   "phone": "08 732 1853",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%B1%8F%E6%9D%B1%E5%A4%AA%E5%B9%B3%E6%B4%8B%E7%99%BE%E8%B2%A8%29%20%E5%B1%8F%E6%9D%B1%E7%B8%A3%E4%B8%AD%E6%AD%A3%E8%B7%AF72%E8%99%9F4%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 5.0,
+   "rating_count": 174,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "pt-11ckxx9ddb",
+   "name": "野人戶外旅遊生活館",
+   "city": "屏東縣",
+   "district": "",
+   "address": "介壽路125號",
+   "phone": "08 788 5886",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%87%8E%E4%BA%BA%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E7%94%9F%E6%B4%BB%E9%A4%A8%20%E5%B1%8F%E6%9D%B1%E7%B8%A3%E4%BB%8B%E5%A3%BD%E8%B7%AF125%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 79,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "pt-11c52nr1gh",
+   "name": "德晉門市部",
+   "city": "屏東縣",
+   "district": "",
+   "address": "龍洲路72號",
+   "phone": "08 869 1818",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%BE%B7%E6%99%89%E9%96%80%E5%B8%82%E9%83%A8%20%E5%B1%8F%E6%9D%B1%E7%B8%A3%E9%BE%8D%E6%B4%B2%E8%B7%AF72%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營",
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 1296,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "pt-1pp2x5r72",
+   "name": "迪卡儂 屏東店",
+   "city": "屏東縣",
+   "district": "",
+   "address": "自由路550號1樓",
+   "phone": "0988 310 806",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E8%BF%AA%E5%8D%A1%E5%84%82%20%E5%B1%8F%E6%9D%B1%E5%BA%97%20%E5%B1%8F%E6%9D%B1%E7%B8%A3%E8%87%AA%E7%94%B1%E8%B7%AF550%E8%99%9F1%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.4,
+   "rating_count": 3791,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ml-11bzsfb1ww",
+   "name": "悠遊山水戶外生活館-頭份店 /登山 露營 旅遊 戶外用品專賣店 ( The North Face、Fjällräven、Mont-bell )",
+   "city": "苗栗縣",
+   "district": "",
+   "address": "和平路259號",
+   "phone": "037 661 498",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%82%A0%E9%81%8A%E5%B1%B1%E6%B0%B4%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8-%E9%A0%AD%E4%BB%BD%E5%BA%97%20/%E7%99%BB%E5%B1%B1%20%E9%9C%B2%E7%87%9F%20%E6%97%85%E9%81%8A%20%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%20%28%20The%20North%20Face%E3%80%81Fj%C3%A4llr%C3%A4ven%E3%80%81Mont-bell%20%29%20%E8%8B%97%E6%A0%97%E7%B8%A3%E5%92%8C%E5%B9%B3%E8%B7%AF259%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.6,
+   "rating_count": 54,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ml-11z63b9656",
+   "name": "游牧人露營專賣店-苗栗店（ 野營/車露/野餐/登山/戶外活動/玩水用品/電動腳踏車/車架）",
+   "city": "苗栗縣",
+   "district": "",
+   "address": "仁愛路二段98號",
+   "phone": "0970 904 633",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%B8%B8%E7%89%A7%E4%BA%BA%E9%9C%B2%E7%87%9F%E5%B0%88%E8%B3%A3%E5%BA%97-%E8%8B%97%E6%A0%97%E5%BA%97%EF%BC%88%20%E9%87%8E%E7%87%9F/%E8%BB%8A%E9%9C%B2/%E9%87%8E%E9%A4%90/%E7%99%BB%E5%B1%B1/%E6%88%B6%E5%A4%96%E6%B4%BB%E5%8B%95/%E7%8E%A9%E6%B0%B4%E7%94%A8%E5%93%81/%E9%9B%BB%E5%8B%95%E8%85%B3%E8%B8%8F%E8%BB%8A/%E8%BB%8A%E6%9E%B6%EF%BC%89%20%E8%8B%97%E6%A0%97%E7%B8%A3%E4%BB%81%E6%84%9B%E8%B7%AF%E4%BA%8C%E6%AE%B598%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "露營"
+   ],
+   "rating": 4.8,
+   "rating_count": 76,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ml-1pzqtq5rb",
+   "name": "城市綠洲戶外生活館【頭份尚順店】購物中心 4F GARMIN 摺疊車 登山 露營 機能服飾 滑雪 溯溪 水類活動",
+   "city": "苗栗縣",
+   "district": "",
+   "address": "育樂街8號",
+   "phone": "037 595 881",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%E3%80%90%E9%A0%AD%E4%BB%BD%E5%B0%9A%E9%A0%86%E5%BA%97%E3%80%91%E8%B3%BC%E7%89%A9%E4%B8%AD%E5%BF%83%204F%20GARMIN%20%E6%91%BA%E7%96%8A%E8%BB%8A%20%E7%99%BB%E5%B1%B1%20%E9%9C%B2%E7%87%9F%20%E6%A9%9F%E8%83%BD%E6%9C%8D%E9%A3%BE%20%E6%BB%91%E9%9B%AA%20%E6%BA%AF%E6%BA%AA%20%E6%B0%B4%E9%A1%9E%E6%B4%BB%E5%8B%95%20%E8%8B%97%E6%A0%97%E7%B8%A3%E8%82%B2%E6%A8%82%E8%A1%978%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.4,
+   "rating_count": 204,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ch-11dzvtpb5w",
+   "name": "綠野仙蹤",
+   "city": "彰化縣",
+   "district": "",
+   "address": "中華西路336號",
+   "phone": "04 763 6536",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%B6%A0%E9%87%8E%E4%BB%99%E8%B9%A4%20%E5%BD%B0%E5%8C%96%E7%B8%A3%E4%B8%AD%E8%8F%AF%E8%A5%BF%E8%B7%AF336%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 46,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ch-1pzphl198",
+   "name": "長穎戶外旅遊用品社",
+   "city": "彰化縣",
+   "district": "",
+   "address": "金馬路三段446-36號",
+   "phone": "04 762 9798",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E7%A9%8E%E6%88%B6%E5%A4%96%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E7%A4%BE%20%E5%BD%B0%E5%8C%96%E7%B8%A3%E9%87%91%E9%A6%AC%E8%B7%AF%E4%B8%89%E6%AE%B5446-36%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 88,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ch-11bc73glc7",
+   "name": "登山屋休閒旅遊用品有限公司 彰化員林登山屋 | 戶外用品 | 登山攀岩裝備 | 露營用品| 運動用品 | 旅遊用品",
+   "city": "彰化縣",
+   "district": "",
+   "address": "中山路二段307號",
+   "phone": "04 835 7883",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E7%99%BB%E5%B1%B1%E5%B1%8B%E4%BC%91%E9%96%92%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%20%E5%BD%B0%E5%8C%96%E5%93%A1%E6%9E%97%E7%99%BB%E5%B1%B1%E5%B1%8B%20%7C%20%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%20%7C%20%E7%99%BB%E5%B1%B1%E6%94%80%E5%B2%A9%E8%A3%9D%E5%82%99%20%7C%20%E9%9C%B2%E7%87%9F%E7%94%A8%E5%93%81%7C%20%E9%81%8B%E5%8B%95%E7%94%A8%E5%93%81%20%7C%20%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%20%E5%BD%B0%E5%8C%96%E7%B8%A3%E4%B8%AD%E5%B1%B1%E8%B7%AF%E4%BA%8C%E6%AE%B5307%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "攀岩"
+   ],
+   "rating": 4.4,
+   "rating_count": 117,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ch-1tgnpd79",
+   "name": "歐都納戶外用品(彰化中山店)",
+   "city": "彰化縣",
+   "district": "",
+   "address": "中山路二段10號",
+   "phone": "04 711 8948",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%BD%B0%E5%8C%96%E4%B8%AD%E5%B1%B1%E5%BA%97%29%20%E5%BD%B0%E5%8C%96%E7%B8%A3%E4%B8%AD%E5%B1%B1%E8%B7%AF%E4%BA%8C%E6%AE%B510%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.8,
+   "rating_count": 172,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ch-12m9hc9jb",
+   "name": "中國登山用品社",
+   "city": "彰化縣",
+   "district": "",
+   "address": "三民東街38號",
+   "phone": "04 835 0355",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9C%8B%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81%E7%A4%BE%20%E5%BD%B0%E5%8C%96%E7%B8%A3%E4%B8%89%E6%B0%91%E6%9D%B1%E8%A1%9738%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.7,
+   "rating_count": 37,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl2-11b6nkrxs1",
+   "name": "城市綠洲戶外生活館【斗六店】 GARMIN 單車 登山 露營 滑雪 機能服飾 攀岩 溯溪 立槳",
+   "city": "雲林縣",
+   "district": "",
+   "address": "仁義路6號",
+   "phone": "05 537 5099",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%9F%8E%E5%B8%82%E7%B6%A0%E6%B4%B2%E6%88%B6%E5%A4%96%E7%94%9F%E6%B4%BB%E9%A4%A8%E3%80%90%E6%96%97%E5%85%AD%E5%BA%97%E3%80%91%20GARMIN%20%E5%96%AE%E8%BB%8A%20%E7%99%BB%E5%B1%B1%20%E9%9C%B2%E7%87%9F%20%E6%BB%91%E9%9B%AA%20%E6%A9%9F%E8%83%BD%E6%9C%8D%E9%A3%BE%20%E6%94%80%E5%B2%A9%20%E6%BA%AF%E6%BA%AA%20%E7%AB%8B%E6%A7%B3%20%E9%9B%B2%E6%9E%97%E7%B8%A3%E4%BB%81%E7%BE%A9%E8%B7%AF6%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.6,
+   "rating_count": 181,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl2-12m93s3dx",
+   "name": "東大登山旅遊用品社",
+   "city": "雲林縣",
+   "district": "",
+   "address": "鎮北路50號",
+   "phone": "05 532 3676",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E5%A4%A7%E7%99%BB%E5%B1%B1%E6%97%85%E9%81%8A%E7%94%A8%E5%93%81%E7%A4%BE%20%E9%9B%B2%E6%9E%97%E7%B8%A3%E9%8E%AE%E5%8C%97%E8%B7%AF50%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 121,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl2-12m95pjrm",
+   "name": "虎友社",
+   "city": "雲林縣",
+   "district": "",
+   "address": "安溪26-16號",
+   "phone": "05 632 4858",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E8%99%8E%E5%8F%8B%E7%A4%BE%20%E9%9B%B2%E6%9E%97%E7%B8%A3%E5%AE%89%E6%BA%AA26-16%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.6,
+   "rating_count": 221,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "yl2-11hf3m94mk",
+   "name": "迪卡儂 雲林店",
+   "city": "雲林縣",
+   "district": "",
+   "address": "雲林路二段297號",
+   "phone": "05 552 9259",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E8%BF%AA%E5%8D%A1%E5%84%82%20%E9%9B%B2%E6%9E%97%E5%BA%97%20%E9%9B%B2%E6%9E%97%E7%B8%A3%E9%9B%B2%E6%9E%97%E8%B7%AF%E4%BA%8C%E6%AE%B5297%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 924,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kl-11fmdnrn9q",
+   "name": "歐都納戶外用品(基隆愛三店)",
+   "city": "基隆市",
+   "district": "",
+   "address": "愛三路44號1樓",
+   "phone": "02 2427 8754",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%9F%BA%E9%9A%86%E6%84%9B%E4%B8%89%E5%BA%97%29%20%E5%9F%BA%E9%9A%86%E5%B8%82%E6%84%9B%E4%B8%89%E8%B7%AF44%E8%99%9F1%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.8,
+   "rating_count": 89,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "pt-11sj9qmd69",
+   "name": "潛鯨",
+   "city": "屏東縣",
+   "district": "",
+   "address": "環城北路167號",
+   "phone": "0981 125 229",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%BD%9B%E9%AF%A8%20%E5%B1%8F%E6%9D%B1%E7%B8%A3%E7%92%B0%E5%9F%8E%E5%8C%97%E8%B7%AF167%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 161,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "pt-1q678q8y",
+   "name": "CTdiver 墾丁PADI潛水中心",
+   "city": "屏東縣",
+   "district": "",
+   "address": "大光路85-5號",
+   "phone": "08 886 7561",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=CTdiver%20%E5%A2%BE%E4%B8%81PADI%E6%BD%9B%E6%B0%B4%E4%B8%AD%E5%BF%83%20%E5%B1%8F%E6%9D%B1%E7%B8%A3%E5%A4%A7%E5%85%89%E8%B7%AF85-5%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.9,
+   "rating_count": 441,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "ty-11gd1s27bc",
+   "name": "浮兒樂 Float Club - 水上用品專家",
+   "city": "桃園市",
+   "district": "",
+   "address": "建德路243號",
+   "phone": "03 368 9544",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%B5%AE%E5%85%92%E6%A8%82%20Float%20Club%20-%20%E6%B0%B4%E4%B8%8A%E7%94%A8%E5%93%81%E5%B0%88%E5%AE%B6%20%E6%A1%83%E5%9C%92%E5%B8%82%E5%BB%BA%E5%BE%B7%E8%B7%AF243%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 871,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11w3g4n39t",
+   "name": "日大潛水rida diving-台中店(全台最大潛水用品專賣店)",
+   "city": "臺中市",
+   "district": "",
+   "address": "經貿九路550號",
+   "phone": "0972 376 370",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E5%A4%A7%E6%BD%9B%E6%B0%B4rida%20diving-%E5%8F%B0%E4%B8%AD%E5%BA%97%28%E5%85%A8%E5%8F%B0%E6%9C%80%E5%A4%A7%E6%BD%9B%E6%B0%B4%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%29%20%E8%87%BA%E4%B8%AD%E5%B8%82%E7%B6%93%E8%B2%BF%E4%B9%9D%E8%B7%AF550%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 1337,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11f36m1l",
+   "name": "宇洋潛水Cosmos Ocean逢甲旗艦店",
+   "city": "臺中市",
+   "district": "",
+   "address": "福星北二街5號",
+   "phone": "04 2452 4860",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%AE%87%E6%B4%8B%E6%BD%9B%E6%B0%B4Cosmos%20Ocean%E9%80%A2%E7%94%B2%E6%97%97%E8%89%A6%E5%BA%97%20%E8%87%BA%E4%B8%AD%E5%B8%82%E7%A6%8F%E6%98%9F%E5%8C%97%E4%BA%8C%E8%A1%975%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.9,
+   "rating_count": 2187,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tc-11h71hr36",
+   "name": "海洋芒果 台中市政店",
+   "city": "臺中市",
+   "district": "",
+   "address": "大墩十七街110號",
+   "phone": "04 2328 7780",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E6%B4%8B%E8%8A%92%E6%9E%9C%20%E5%8F%B0%E4%B8%AD%E5%B8%82%E6%94%BF%E5%BA%97%20%E8%87%BA%E4%B8%AD%E5%B8%82%E5%A4%A7%E5%A2%A9%E5%8D%81%E4%B8%83%E8%A1%97110%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 710,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-12qf54xmt",
+   "name": "日大潛水RIDA Diving (全台最大潛水用品專賣店）",
+   "city": "高雄市",
+   "district": "",
+   "address": "民生一路164號",
+   "phone": "0936 803 555",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E5%A4%A7%E6%BD%9B%E6%B0%B4RIDA%20Diving%20%28%E5%85%A8%E5%8F%B0%E6%9C%80%E5%A4%A7%E6%BD%9B%E6%B0%B4%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97%EF%BC%89%20%E9%AB%98%E9%9B%84%E5%B8%82%E6%B0%91%E7%94%9F%E4%B8%80%E8%B7%AF164%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 2866,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-11qn84fjh1",
+   "name": "Scuba YD 潛水旗艦店｜SUPE 台灣總代理｜客製化雷雕｜水肺課程報名中",
+   "city": "高雄市",
+   "district": "",
+   "address": "中山一路57號美麗島捷運站2號出口",
+   "phone": "07 350 3323",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Scuba%20YD%20%E6%BD%9B%E6%B0%B4%E6%97%97%E8%89%A6%E5%BA%97%EF%BD%9CSUPE%20%E5%8F%B0%E7%81%A3%E7%B8%BD%E4%BB%A3%E7%90%86%EF%BD%9C%E5%AE%A2%E8%A3%BD%E5%8C%96%E9%9B%B7%E9%9B%95%EF%BD%9C%E6%B0%B4%E8%82%BA%E8%AA%B2%E7%A8%8B%E5%A0%B1%E5%90%8D%E4%B8%AD%20%E9%AB%98%E9%9B%84%E5%B8%82%E4%B8%AD%E5%B1%B1%E4%B8%80%E8%B7%AF57%E8%99%9F%E7%BE%8E%E9%BA%97%E5%B3%B6%E6%8D%B7%E9%81%8B%E7%AB%992%E8%99%9F%E5%87%BA%E5%8F%A3",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 1061,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "kh-11lffn2913",
+   "name": "Aropec潛水衝浪溯溪游泳三鐵戶外運動(高雄店)",
+   "city": "高雄市",
+   "district": "",
+   "address": "自由二路330號",
+   "phone": "07 556 8958",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Aropec%E6%BD%9B%E6%B0%B4%E8%A1%9D%E6%B5%AA%E6%BA%AF%E6%BA%AA%E6%B8%B8%E6%B3%B3%E4%B8%89%E9%90%B5%E6%88%B6%E5%A4%96%E9%81%8B%E5%8B%95%28%E9%AB%98%E9%9B%84%E5%BA%97%29%20%E9%AB%98%E9%9B%84%E5%B8%82%E8%87%AA%E7%94%B1%E4%BA%8C%E8%B7%AF330%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 5.0,
+   "rating_count": 457,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11c5bhp9w3",
+   "name": "愚公移山登山用品店",
+   "city": "臺北市",
+   "district": "",
+   "address": "光復北路11巷99號地下1樓",
+   "phone": "02 2311 7381",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%84%9A%E5%85%AC%E7%A7%BB%E5%B1%B1%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81%E5%BA%97%20%E8%87%BA%E5%8C%97%E5%B8%82%E5%85%89%E5%BE%A9%E5%8C%97%E8%B7%AF11%E5%B7%B799%E8%99%9F%E5%9C%B0%E4%B8%8B1%E6%A8%93",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "露營"
+   ],
+   "rating": 4.5,
+   "rating_count": 418,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "tp-11bzx8xk7l",
+   "name": "GOHIKING戶外登山用品專賣店-信義門市 (blackyak, injinji, Rewoolution, phenix台灣總代理-力寳龍企業)",
+   "city": "臺北市",
+   "district": "",
+   "address": "信義路三段166-1號",
+   "phone": "02 2700 6508",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=GOHIKING%E6%88%B6%E5%A4%96%E7%99%BB%E5%B1%B1%E7%94%A8%E5%93%81%E5%B0%88%E8%B3%A3%E5%BA%97-%E4%BF%A1%E7%BE%A9%E9%96%80%E5%B8%82%20%28blackyak%2C%20injinji%2C%20Rewoolution%2C%20phenix%E5%8F%B0%E7%81%A3%E7%B8%BD%E4%BB%A3%E7%90%86-%E5%8A%9B%E5%AF%B3%E9%BE%8D%E4%BC%81%E6%A5%AD%29%20%E8%87%BA%E5%8C%97%E5%B8%82%E4%BF%A1%E7%BE%A9%E8%B7%AF%E4%B8%89%E6%AE%B5166-1%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備",
+    "服飾"
+   ],
+   "rating": 4.7,
+   "rating_count": 151,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt2-11f04mcjsl",
+   "name": "東東戶外用品",
+   "city": "南投縣",
+   "district": "",
+   "address": "八卦路1242號",
+   "phone": null,
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E6%9D%B1%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%20%E5%8D%97%E6%8A%95%E7%B8%A3%E5%85%AB%E5%8D%A6%E8%B7%AF1242%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "登山裝備"
+   ],
+   "rating": 4.6,
+   "rating_count": 66,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "nt2-1vnrhs3z",
+   "name": "歐都納戶外用品(南投店)",
+   "city": "南投縣",
+   "district": "",
+   "address": "民族路321號",
+   "phone": null,
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E6%AD%90%E9%83%BD%E7%B4%8D%E6%88%B6%E5%A4%96%E7%94%A8%E5%93%81%28%E5%8D%97%E6%8A%95%E5%BA%97%29%20%E5%8D%97%E6%8A%95%E7%B8%A3%E6%B0%91%E6%97%8F%E8%B7%AF321%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "服飾",
+    "登山裝備"
+   ],
+   "rating": 4.5,
+   "rating_count": 70,
+   "checked_on": "2026-11-25"
+  },
+  {
+   "id": "hl-11glxwqn9g",
+   "name": "和平潛水",
+   "city": "花蓮縣",
+   "district": "",
+   "address": "和平路341號",
+   "phone": "03 832 6444",
+   "google_maps_url": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E5%B9%B3%E6%BD%9B%E6%B0%B4%20%E8%8A%B1%E8%93%AE%E7%B8%A3%E5%92%8C%E5%B9%B3%E8%B7%AF341%E8%99%9F",
+   "hours": null,
+   "categories": [
+    "潛水"
+   ],
+   "rating": 4.8,
+   "rating_count": 21,
+   "checked_on": "2026-11-25"
+  }
+ ]
+}

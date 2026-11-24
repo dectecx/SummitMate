@@ -236,6 +236,39 @@ func (e SharedVisibility) Valid() bool {
 	}
 }
 
+// Defines values for ShopCategories.
+const (
+	Empty ShopCategories = "登山裝備"
+	N1    ShopCategories = "服飾"
+	N2    ShopCategories = "食物"
+	N3    ShopCategories = "露營"
+	N4    ShopCategories = "潛水"
+	N5    ShopCategories = "攀岩"
+	N6    ShopCategories = "其他"
+)
+
+// Valid indicates whether the value is a known member of the ShopCategories enum.
+func (e ShopCategories) Valid() bool {
+	switch e {
+	case Empty:
+		return true
+	case N1:
+		return true
+	case N2:
+		return true
+	case N3:
+		return true
+	case N4:
+		return true
+	case N5:
+		return true
+	case N6:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SyncEntity.
 const (
 	Favorites      SyncEntity = "favorites"
@@ -785,6 +818,38 @@ type SharedSetSummary struct {
 // SharedVisibility defines model for SharedVisibility.
 type SharedVisibility string
 
+// Shop defines model for Shop.
+type Shop struct {
+	Address    string             `json:"address"`
+	Categories []ShopCategories   `json:"categories"`
+	CheckedOn  openapi_types.Date `json:"checked_on"`
+
+	// City County or city
+	City          string `json:"city"`
+	District      string `json:"district"`
+	GoogleMapsUrl string `json:"google_maps_url"`
+
+	// Hours Opening hours as free text
+	Hours *string `json:"hours"`
+	Id    string  `json:"id"`
+	Name  string  `json:"name"`
+	Phone *string `json:"phone"`
+
+	// Rating Google Maps rating when checked
+	Rating      float32 `json:"rating"`
+	RatingCount *int    `json:"rating_count"`
+}
+
+// ShopCategories defines model for Shop.Categories.
+type ShopCategories string
+
+// ShopDataset defines model for ShopDataset.
+type ShopDataset struct {
+	Shops     []Shop    `json:"shops"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Version   string    `json:"version"`
+}
+
 // SyncEntity defines model for SyncEntity.
 type SyncEntity string
 
@@ -913,6 +978,11 @@ type ResendVerificationJSONBody struct {
 
 // GetExploreMountainsParams defines parameters for GetExploreMountains.
 type GetExploreMountainsParams struct {
+	IfNoneMatch *string `json:"If-None-Match,omitempty"`
+}
+
+// GetExploreShopsParams defines parameters for GetExploreShops.
+type GetExploreShopsParams struct {
 	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 }
 
@@ -1071,6 +1141,9 @@ type ServerInterface interface {
 	// GetExploreMountains Read-only mountain reference data (public, no token)
 	// (GET /explore/mountains)
 	GetExploreMountains(w http.ResponseWriter, r *http.Request, params GetExploreMountainsParams)
+	// GetExploreShops Outdoor and hiking gear shops (public, no token)
+	// (GET /explore/shops)
+	GetExploreShops(w http.ResponseWriter, r *http.Request, params GetExploreShopsParams)
 	// ListFriends My friends and the pending requests I received or sent
 	// (GET /friends)
 	ListFriends(w http.ResponseWriter, r *http.Request)
@@ -1233,6 +1306,12 @@ func (_ Unimplemented) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 // GetExploreMountains Read-only mountain reference data (public, no token)
 // (GET /explore/mountains)
 func (_ Unimplemented) GetExploreMountains(w http.ResponseWriter, r *http.Request, params GetExploreMountainsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetExploreShops Outdoor and hiking gear shops (public, no token)
+// (GET /explore/shops)
+func (_ Unimplemented) GetExploreShops(w http.ResponseWriter, r *http.Request, params GetExploreShopsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1603,6 +1682,47 @@ func (siw *ServerInterfaceWrapper) GetExploreMountains(w http.ResponseWriter, r 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetExploreMountains(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetExploreShops operation middleware
+func (siw *ServerInterfaceWrapper) GetExploreShops(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetExploreShopsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-None-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-None-Match")]; found {
+		var IfNoneMatch string
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-None-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-None-Match", valueList[0], &IfNoneMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-None-Match", Err: err})
+			return
+		}
+
+		params.IfNoneMatch = &IfNoneMatch
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetExploreShops(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2758,6 +2878,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/explore/mountains", wrapper.GetExploreMountains)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/explore/shops", wrapper.GetExploreShops)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/shared-sets", wrapper.ListSharedSets)

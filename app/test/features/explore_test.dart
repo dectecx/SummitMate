@@ -199,7 +199,7 @@ void main() {
       expect(find.text('需申請入園與入山'), findsOneWidget);
       expect(find.textContaining('尚未經人工核實'), findsOneWidget);
       expect(find.text('登入後可以查看天氣預報。'), findsOneWidget, reason: 'a guest has no token for the weather endpoint');
-      expect(find.text('https://example.org/yushan-main'), findsOneWidget);
+      expect(find.textContaining('example.org', findRichText: true), findsOneWidget, reason: 'sources show the site name and open the address when tapped');
       await app.dispose(tester);
     });
 

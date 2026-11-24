@@ -27,6 +27,7 @@ const BasePath = "/api/v1"
 var publicPaths = map[string]bool{
 	"/health":                   true,
 	"/explore/mountains":        true,
+	"/explore/shops":            true,
 	"/auth/register":            true,
 	"/auth/verify-email":        true,
 	"/auth/resend-verification": true,
