@@ -53,6 +53,7 @@ func run() error {
 		RefreshTTL:    cfg.RefreshTokenTTL,
 		CodeTTL:       cfg.AuthCodeTTL,
 		BcryptCost:    cfg.BcryptCost,
+		FixedCode:     devFixedCode(cfg),
 		LoginFailures: ratelimit.NewMemory(5, 15*time.Minute),
 		Resend:        ratelimit.NewMemory(1, time.Minute),
 	})
@@ -103,4 +104,13 @@ func run() error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 	return srv.Shutdown(shutdownCtx)
+}
+
+// devFixedCode lets development and test environments pass verification with
+// 000000 so no mail is needed. Production never gets a fixed code.
+func devFixedCode(cfg config.Config) string {
+	if cfg.IsProduction() {
+		return ""
+	}
+	return "000000"
 }

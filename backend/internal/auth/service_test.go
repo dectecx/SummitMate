@@ -317,3 +317,15 @@ func TestRefreshTokenHashing(t *testing.T) {
 	assert.NotContains(t, ah, a)
 	assert.False(t, errors.Is(nil, ErrNotFound))
 }
+
+func TestNextCodeFixedAndRandom(t *testing.T) {
+	fixed := &Service{opt: Options{FixedCode: "000000"}}
+	if c, _ := fixed.nextCode(); c != "000000" {
+		t.Fatalf("fixed code = %q", c)
+	}
+	random := &Service{}
+	c, err := random.nextCode()
+	if err != nil || len(c) != 6 {
+		t.Fatalf("random code = %q, %v", c, err)
+	}
+}

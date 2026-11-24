@@ -26,6 +26,8 @@ type Options struct {
 	RefreshTTL time.Duration
 	CodeTTL    time.Duration
 	BcryptCost int
+	// FixedCode, when set, replaces the random verification code. Development only.
+	FixedCode string
 	// Limiters. nil disables the corresponding limit.
 	LoginFailures ratelimit.Limiter // key: email; counts failed logins
 	Resend        ratelimit.Limiter // key: email; counts code sends
@@ -129,7 +131,7 @@ func (s *Service) Register(ctx context.Context, in RegisterInput) (string, error
 }
 
 func (s *Service) sendCode(ctx context.Context, u store.User) error {
-	code, err := newVerificationCode()
+	code, err := s.nextCode()
 	if err != nil {
 		return err
 	}
@@ -439,4 +441,13 @@ func (s *Service) FindByEmail(ctx context.Context, rawEmail string) ([]store.Use
 		return []store.User{}, nil
 	}
 	return []store.User{u}, nil
+}
+
+// nextCode returns the verification code to send: the fixed development code
+// when configured, otherwise a random one.
+func (s *Service) nextCode() (string, error) {
+	if s.opt.FixedCode != "" {
+		return s.opt.FixedCode, nil
+	}
+	return newVerificationCode()
 }
