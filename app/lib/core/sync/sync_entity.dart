@@ -114,6 +114,7 @@ const mealItemsEntity = SyncEntity(
     'calories': Col(ColType.real),
     'quantity': Col(ColType.integer),
     'note': Col(ColType.text),
+    'sort_order': Col(ColType.integer),
   },
 );
 

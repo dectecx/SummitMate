@@ -106,6 +106,7 @@ var entities = map[string]entity{
 		"calories":         {kind: kFloat},
 		"quantity":         {kind: kInt},
 		"note":             {kind: kText},
+		"sort_order":       {kind: kInt},
 	}},
 	"library_items": {table: "library_items", access: accessOwner, validate: validateLibraryItem, cols: map[string]column{
 		"kind":     {kind: kText, required: true, immutable: true},

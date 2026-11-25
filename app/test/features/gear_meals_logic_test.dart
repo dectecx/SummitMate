@@ -6,8 +6,8 @@ import 'package:summitmate/features/meals/domain/meal_logic.dart';
 GearItem gear(String id, {String name = '', double w = 0, String cat = 'other', int qty = 1, bool packed = false, int order = 0}) =>
     GearItem(id: id, tripId: 't', name: name.isEmpty ? id : name, weight: w, category: cat, quantity: qty, isChecked: packed, sortOrder: order);
 
-MealEntry meal(String id, int day, {String type = 'lunch', double w = 0, double kcal = 0, int qty = 1, String? name}) => MealEntry(
-  MealItem(id: id, tripId: 't', mealPlanDayId: 'd$day', mealType: type, name: name ?? id, weight: w, calories: kcal, quantity: qty, note: ''),
+MealEntry meal(String id, int day, {String type = 'lunch', double w = 0, double kcal = 0, int qty = 1, String? name, int order = 0}) => MealEntry(
+  MealItem(id: id, tripId: 't', mealPlanDayId: 'd$day', mealType: type, name: name ?? id, weight: w, calories: kcal, quantity: qty, note: '', sortOrder: order),
   day,
 );
 

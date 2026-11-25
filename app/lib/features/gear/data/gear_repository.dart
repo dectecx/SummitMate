@@ -46,6 +46,14 @@ class GearRepository {
     return id;
   }
 
+  /// Stores the order the person dragged one category into: [ids] get 0, 1, 2, … and only changed rows are uploaded.
+  Future<void> reorder(List<String> ids) => _db.transaction(() async {
+    for (var i = 0; i < ids.length; i++) {
+      final changed = await (_db.update(_db.gearItems)..where((g) => g.id.equals(ids[i]) & g.sortOrder.equals(i).not())).write(GearItemsCompanion(sortOrder: Value(i)));
+      if (changed > 0) await _outbox.upsert('gear_items', ids[i], {'sort_order': i});
+    }
+  });
+
   /// Changes only the fields that are given.
   Future<void> update(String id, {String? name, double? weight, String? category, int? quantity, bool? isChecked}) async {
     final patch = <String, Object?>{

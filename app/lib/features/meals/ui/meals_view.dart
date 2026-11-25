@@ -9,17 +9,27 @@ import '../providers.dart';
 import 'meal_form_sheet.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
-import '../../../shared/group_card.dart';
+import '../../../shared/reorderable_group.dart';
 
 /// "餐食": the person's own meal plan, one day at a time, with weight and calorie totals.
-class MealsView extends ConsumerWidget {
+class MealsView extends ConsumerStatefulWidget {
   const MealsView({super.key, required this.trip, required this.day, required this.onDayChanged});
   final Trip trip;
   final int day;
   final ValueChanged<int> onDayChanged;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MealsView> createState() => _MealsViewState();
+}
+
+class _MealsViewState extends ConsumerState<MealsView> {
+  bool _reordering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final trip = widget.trip;
+    final day = widget.day;
+    final onDayChanged = widget.onDayChanged;
     final all = ref.watch(mealsProvider(trip.id)).value ?? const <MealEntry>[];
     final days = mealDayIndexes(trip, all);
     final today = entriesOfDay(all, day);
@@ -63,28 +73,40 @@ class MealsView extends ConsumerWidget {
         Expanded(
           child: groups.isEmpty
               ? const ComingSoon(illustration: Illustration.meal, message: '這一天還沒有餐點。這份計畫只有你看得到，按右下角新增。')
-              : ListView(
-                  padding: const EdgeInsets.only(bottom: 96),
-                  children: [
+              : CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(padding: const EdgeInsets.fromLTRB(16, 4, 16, 0), child: ReorderToggle(reordering: _reordering, onChanged: (v) => setState(() => _reordering = v))),
+                      ),
+                    ),
                     for (final g in groups)
-                      GroupCard(
+                      ReorderableGroupSliver(
+                        key: ValueKey('meal-group-${g.type.key}'),
                         title: g.type.label,
                         trailing: formatWeight(g.entries.fold<double>(0, (sum, e) => sum + e.weight)),
-                        children: [
-                          for (final e in g.entries)
-                            ListTile(
-                              shape: const RoundedRectangleBorder(),
-                              onTap: () => showMealFormSheet(context, tripId: trip.id, dayIndex: day, entry: e),
-                              title: Text(e.item.name.isEmpty ? '（未命名）' : e.item.name),
-                              subtitle: Text([if (e.item.quantity > 1) '× ${e.item.quantity}', if (e.item.note.isNotEmpty) e.item.note].join('  ·  ')),
-                              trailing: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [Text(formatWeight(e.weight)), Text(formatKcal(e.calories), style: theme.textTheme.bodySmall)],
-                              ),
-                            ),
-                        ],
+                        reordering: _reordering,
+                        ids: [for (final e in g.entries) e.item.id],
+                        onReorder: (ids) => ref.read(mealRepositoryProvider).reorder(ids),
+                        itemBuilder: (_, i) {
+                          final e = g.entries[i];
+                          return ListTile(
+                            shape: const RoundedRectangleBorder(),
+                            onTap: _reordering ? null : () => showMealFormSheet(context, tripId: trip.id, dayIndex: day, entry: e),
+                            title: Text(e.item.name.isEmpty ? '（未命名）' : e.item.name),
+                            subtitle: Text([if (e.item.quantity > 1) '× ${e.item.quantity}', if (e.item.note.isNotEmpty) e.item.note].join('  ·  ')),
+                            trailing: _reordering
+                                ? ReorderHandle(index: i)
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [Text(formatWeight(e.weight)), Text(formatKcal(e.calories), style: theme.textTheme.bodySmall)],
+                                  ),
+                          );
+                        },
                       ),
+                    const SliverPadding(padding: EdgeInsets.only(bottom: 96)),
                   ],
                 ),
         ),

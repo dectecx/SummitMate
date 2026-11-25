@@ -40,7 +40,14 @@ List<({MealType type, List<MealEntry> entries})> groupMeals(List<MealEntry> dayE
   }
   return [
     for (final t in MealType.values)
-      if (groups[t] != null) (type: t, entries: groups[t]!..sort((a, b) => a.item.name.compareTo(b.item.name))),
+      if (groups[t] != null)
+        (
+          type: t,
+          entries: groups[t]!..sort((a, b) {
+            final o = a.item.sortOrder.compareTo(b.item.sortOrder);
+            return o != 0 ? o : a.item.name.compareTo(b.item.name);
+          }),
+        ),
   ];
 }
 

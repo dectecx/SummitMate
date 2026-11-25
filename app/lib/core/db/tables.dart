@@ -119,6 +119,7 @@ class MealItems extends Table {
   RealColumn get calories => real().withDefault(const Constant(0))();
   IntColumn get quantity => integer().withDefault(const Constant(1))();
   TextColumn get note => text().withDefault(const Constant(''))();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

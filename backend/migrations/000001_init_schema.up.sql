@@ -172,6 +172,7 @@ CREATE TABLE meal_items (
     calories         DOUBLE PRECISION NOT NULL DEFAULT 0 CHECK (calories >= 0),
     quantity         INT              NOT NULL DEFAULT 1 CHECK (quantity >= 0),
     note             TEXT             NOT NULL DEFAULT '',
+    sort_order       INT              NOT NULL DEFAULT 0,
     deleted_at       TIMESTAMPTZ,
     created_at       TIMESTAMPTZ      NOT NULL DEFAULT clock_timestamp(),
     created_by       UUID             NOT NULL REFERENCES users(id),

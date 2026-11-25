@@ -63,7 +63,10 @@ class TemplateRepository {
     final meals = await _meals.watch(tripId).first;
     return [
       for (final g in gear) SetItem(kind: SetItem.gearKind, name: g.name, category: g.category, weight: g.weight, quantity: g.quantity),
-      for (final m in meals..sort((a, b) => a.dayIndex.compareTo(b.dayIndex)))
+      for (final m in meals..sort((a, b) {
+        final d = a.dayIndex.compareTo(b.dayIndex);
+        return d != 0 ? d : a.item.sortOrder.compareTo(b.item.sortOrder);
+      }))
         SetItem(kind: SetItem.mealKind, name: m.item.name, category: m.item.mealType, weight: m.item.weight, calories: m.item.calories, quantity: m.item.quantity, day: m.dayIndex < 1 ? 1 : m.dayIndex, note: m.item.note),
     ];
   }

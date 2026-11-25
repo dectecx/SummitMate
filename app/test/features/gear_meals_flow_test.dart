@@ -21,6 +21,34 @@ Future<AppHarness> startWithTrip(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('gear can be dragged into order by its handle, only in reorder mode', (tester) async {
+    final app = await startWithTrip(tester);
+    await tapText(tester, '裝備');
+    for (final name in ['甲', '乙']) {
+      await tapText(tester, '新增裝備');
+      await enter(tester, '名稱', name);
+      await tapText(tester, '新增');
+    }
+    expect(find.byIcon(Icons.drag_handle), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('reorder-toggle')));
+    await settle(tester);
+    expect(find.byIcon(Icons.drag_handle), findsNWidgets(2));
+    final gesture = await tester.startGesture(tester.getCenter(find.byIcon(Icons.drag_handle).first));
+    await tester.pump(const Duration(milliseconds: 100));
+    for (var i = 0; i < 6; i++) {
+      await gesture.moveBy(const Offset(0, 20));
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await gesture.up();
+    await settle(tester);
+
+    final rows = await real(tester, () => app.db.select(app.db.gearItems).get());
+    rows.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    expect(rows.map((r) => r.name), ['乙', '甲']);
+    await app.dispose(tester);
+  });
+
   testWidgets('gear: add items, see totals, pack, edit and delete', (tester) async {
     final app = await startWithTrip(tester);
     await tapText(tester, '裝備');
@@ -139,6 +167,9 @@ void main() {
   });
 
   testWidgets('the sample trip comes with a packing list and a meal plan', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400); // tall: the grouped list is lazy
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final app = await AppHarness.start(tester, welcomeSeen: true, overrides: [clockProvider.overrideWithValue(() => _now)]);
     await tapText(tester, '用範例行程試試看');
     await tapText(tester, '裝備');

@@ -54,6 +54,33 @@ void main() {
       expect(await opSummary(db), ['delete:gear_items/$id']);
     });
 
+    test('reordering renumbers the dragged rows and uploads only those that moved', () async {
+      final a = await gear.add(trip, name: 'a');
+      final b = await gear.add(trip, name: 'b');
+      final c = await gear.add(trip, name: 'c');
+      await db.delete(db.outbox).go();
+
+      await gear.reorder([a, c, b]);
+      final rows = {for (final r in await db.select(db.gearItems).get()) r.id: r.sortOrder};
+      expect([rows[a], rows[c], rows[b]], [0, 1, 2]);
+      expect(await opSummary(db), unorderedEquals(['upsert:gear_items/$b', 'upsert:gear_items/$c']));
+
+      final d = await gear.add(trip, name: 'd');
+      expect((await db.select(db.gearItems).get()).firstWhere((r) => r.id == d).sortOrder, 3, reason: 'new items go last');
+    });
+
+    test('meals keep the dragged order too', () async {
+      final a = await meals.add(trip, dayIndex: 1, name: 'a', mealType: 'lunch');
+      final b = await meals.add(trip, dayIndex: 1, name: 'b', mealType: 'lunch');
+      await db.delete(db.outbox).go();
+
+      await meals.reorder([b, a]);
+      final rows = {for (final r in await db.select(db.mealItems).get()) r.id: r.sortOrder};
+      expect([rows[b], rows[a]], [0, 1]);
+      final ops = await db.select(db.outbox).get();
+      expect(ops.map(patchOf), everyElement(contains('sort_order')));
+    });
+
     test('gear of the sample trip is never queued', () async {
       final sample = await trips.createSample(today: DateTime(2026, 5, 1));
       expect(await select(db, "SELECT id FROM gear_items WHERE trip_id = '$sample'"), isNotEmpty, reason: 'the sample comes with a packing list');

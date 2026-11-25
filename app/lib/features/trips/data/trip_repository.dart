@@ -149,12 +149,14 @@ class TripRepository {
         return dayId;
       }
 
+      var mealOrder = 0;
       Future<void> meal(String dayId, String type, String name, double grams, double kcal, {int quantity = 1}) =>
           _db.into(_db.mealItems).insert(
             MealItemsCompanion.insert(
               id: _uuid.v7(),
               tripId: id,
               mealPlanDayId: dayId,
+              sortOrder: Value(mealOrder++),
               mealType: Value(type),
               name: Value(name),
               weight: Value(grams),

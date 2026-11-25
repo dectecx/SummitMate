@@ -37,6 +37,12 @@ class MealRepository {
     final id = _uuid.v7();
     await _db.transaction(() async {
       final dayId = await _dayFor(tripId, dayIndex);
+      final last = await (_db.select(_db.mealItems)
+            ..where((m) => m.tripId.equals(tripId))
+            ..orderBy([(m) => OrderingTerm.desc(m.sortOrder)])
+            ..limit(1))
+          .getSingleOrNull();
+      final order = (last?.sortOrder ?? -1) + 1;
       await _db.into(_db.mealItems).insert(
         MealItemsCompanion.insert(
           id: id,
@@ -48,17 +54,26 @@ class MealRepository {
           calories: Value(calories),
           quantity: Value(quantity),
           note: Value(note),
+          sortOrder: Value(order),
         ),
       );
       await _outbox.upsert(
         'meal_items',
         id,
-        {'trip_id': tripId, 'meal_plan_day_id': dayId, 'meal_type': mealType, 'name': name, 'weight': weight, 'calories': calories, 'quantity': quantity, 'note': note},
+        {'trip_id': tripId, 'meal_plan_day_id': dayId, 'meal_type': mealType, 'name': name, 'weight': weight, 'calories': calories, 'quantity': quantity, 'note': note, 'sort_order': order},
         isCreate: true,
       );
     });
     return id;
   }
+
+  /// Stores the order the person dragged one group into: [ids] get 0, 1, 2, … and only changed rows are uploaded.
+  Future<void> reorder(List<String> ids) => _db.transaction(() async {
+    for (var i = 0; i < ids.length; i++) {
+      final changed = await (_db.update(_db.mealItems)..where((m) => m.id.equals(ids[i]) & m.sortOrder.equals(i).not())).write(MealItemsCompanion(sortOrder: Value(i)));
+      if (changed > 0) await _outbox.upsert('meal_items', ids[i], {'sort_order': i});
+    }
+  });
 
   Future<String> _dayFor(String tripId, int dayIndex) async {
     final existing = await (_db.select(_db.mealPlanDays)..where((d) => d.tripId.equals(tripId) & d.dayIndex.equals(dayIndex))).getSingleOrNull();
