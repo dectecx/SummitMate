@@ -117,6 +117,8 @@ class _Lists extends ConsumerWidget {
                       ),
                       IconButton.filled(
                         tooltip: '接受',
+                        // A list row would otherwise paint the tick in its own grey, invisible on the filled circle.
+                        style: IconButton.styleFrom(foregroundColor: theme.colorScheme.onPrimary, backgroundColor: theme.colorScheme.primary),
                         icon: const Icon(Icons.check),
                         onPressed: () => _do(context, ref, () => api.accept(r.id)),
                       ),

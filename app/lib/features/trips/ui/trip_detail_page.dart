@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../app/router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
@@ -34,6 +35,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
   late final TabController _tabs = TabController(length: 5, vsync: this)
     ..addListener(() => setState(() {}));
   int? _day;
+  bool _hadTrip = false; // the trip was shown here at least once
   int _mealDay = 1;
 
   @override
@@ -55,7 +57,18 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
   Widget build(BuildContext context) {
     final tripAsync = ref.watch(tripProvider(widget.tripId));
     final trip = tripAsync.value;
+    if (trip != null) _hadTrip = true;
     if (trip == null) {
+      // A trip that was on screen and is gone (signed out or switched account, removed by the owner) leaves a dead
+      // page in this tab. Go back to the list the next time the tab is visible; going while it is hidden would
+      // yank the person over to this tab.
+      if (_hadTrip && !tripAsync.isLoading && TickerMode.valuesOf(context).enabled) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && (ModalRoute.of(context)?.isCurrent ?? false) && ref.read(tripProvider(widget.tripId)).value == null) {
+            context.go(Routes.trips);
+          }
+        });
+      }
       return Scaffold(
         appBar: AppBar(),
         body: tripAsync.isLoading
@@ -180,6 +193,6 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
     );
     if (ok != true) return;
     await ref.read(tripRepositoryProvider).delete(trip.id);
-    if (context.mounted) context.pop();
+    if (context.mounted) context.go(Routes.trips); // not pop: the missing-trip redirect may already have left
   }
 }

@@ -158,7 +158,7 @@ Future<void> _leave(BuildContext context, WidgetRef ref, Trip trip, String myId)
   final ok = await _confirm(context, title: '離開「${trip.name}」？', message: '離開後這個行程會從你的手機移除，你的裝備與餐食規劃也會一併消失。', action: '離開');
   if (ok != true) return;
   await ref.read(memberRepositoryProvider).leave(trip.id, myId);
-  if (context.mounted) context.pop();
+  if (context.mounted) context.go(Routes.trips); // not pop: the missing-trip redirect may already have left
 }
 
 Future<bool?> _confirm(BuildContext context, {required String title, required String message, required String action}) {

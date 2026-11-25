@@ -30,6 +30,22 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a trip page whose data went away leaves for the list when the tab is seen again', (tester) async {
+    final app = await start(tester);
+    await createTrip(tester, '會消失的行程'); // its page is open in the trips tab
+    await tapText(tester, '我');
+
+    await act(tester, () => app.db.delete(app.db.trips).go()); // what signing out or switching account does
+    await settle(tester);
+    expect(find.text('訪客模式'), findsOneWidget, reason: 'clearing the data must not switch tabs by itself');
+
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('行程')));
+    await settle(tester);
+    expect(find.textContaining('找不到這個行程'), findsNothing);
+    expect(find.text('還沒有行程'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('creating a trip validates the name and opens the new trip', (tester) async {
     final app = await start(tester);
     await tapText(tester, '建立第一個行程');
