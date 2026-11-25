@@ -21,7 +21,7 @@ class FavoriteHeart extends ConsumerWidget {
       visualDensity: compact ? VisualDensity.compact : null,
       isSelected: on,
       icon: const Icon(Icons.favorite_border),
-      selectedIcon: Icon(Icons.favorite, color: Theme.of(context).colorScheme.error),
+      selectedIcon: Icon(Icons.favorite, color: Theme.of(context).colorScheme.tertiary),
       onPressed: () => ref.read(favoriteRepositoryProvider).toggle(FavoriteKind.mountain, mountainId),
     );
   }
