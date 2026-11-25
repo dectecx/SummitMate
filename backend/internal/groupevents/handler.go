@@ -98,7 +98,7 @@ func summary(e Event) api.GroupEventSummary {
 	return api.GroupEventSummary{
 		Id: e.ID, Title: e.Title, Category: api.GroupEventCategory(e.Category), Location: e.Location,
 		StartDate: openapi_types.Date{Time: e.StartDate}, EndDate: dateOut(e.EndDate), MaxMembers: e.MaxMembers,
-		ApprovedCount: e.ApprovedCount, LikeCount: e.LikeCount, CommentCount: e.CommentCount,
+		ApprovedCount: e.ApprovedCount, PendingCount: e.PendingCount, LikeCount: e.LikeCount, CommentCount: e.CommentCount,
 		Status: api.GroupEventStatus(e.Status), ApprovalRequired: e.ApprovalRequired,
 		Host:      api.EventUser{Id: e.HostID, DisplayName: e.HostName, Avatar: e.HostAvatar},
 		CreatedAt: e.CreatedAt, Liked: e.Liked, MyStatus: strOrNil(e.MyStatus), IsHost: e.IsHost,
@@ -108,7 +108,7 @@ func summary(e Event) api.GroupEventSummary {
 func detail(e Event) (api.GroupEventDetail, error) {
 	s := summary(e)
 	d := api.GroupEventDetail{
-		ApprovalRequired: s.ApprovalRequired, ApprovedCount: s.ApprovedCount, Category: s.Category,
+		ApprovalRequired: s.ApprovalRequired, ApprovedCount: s.ApprovedCount, PendingCount: s.PendingCount, Category: s.Category,
 		CommentCount: s.CommentCount, CreatedAt: s.CreatedAt, EndDate: s.EndDate, Host: s.Host, Id: s.Id,
 		IsHost: s.IsHost, LikeCount: s.LikeCount, Liked: s.Liked, Location: s.Location, MaxMembers: s.MaxMembers,
 		MyStatus: s.MyStatus, StartDate: s.StartDate, Status: s.Status, Title: s.Title,

@@ -8,8 +8,8 @@
 
 | 入口 | 行為 |
 | :-- | :-- |
-| 「探索」頁籤頂端的分段切換 | 「山岳｜揪團」。揪團分段是揪團列表（不新增頁籤） |
-| 揪團列表 | 分頁籤：全部、即將出發、熱門、我參加的、我主辦的；搜尋標題或地點；每張卡片顯示標題、分類、地點、日期、人數（已通過／上限）、按讚數、留言數 |
+| 「揪團」頁籤 | 頂端分「找團｜我的團」。主辦的揪團有待審核申請時，頁籤圖示、「我的團」與「我主辦的」顯示數量 |
+| 揪團列表 | 找團：全部、即將出發、熱門；我的團（需登入）：我參加的、我主辦的；搜尋標題或地點；每張卡片顯示標題、分類、地點、日期、人數（已通過／上限）、按讚數、留言數 |
 | 揪團詳情 | 標題、分類、主辦人、地點、日期、人數、說明、行程路線預覽（快照）、隊員私密留言（鎖定／解鎖）、公開留言、按讚、底部動態按鈕（申請加入／審核中／已加入／再次申請） |
 | 建立／編輯揪團（登入） | 標題、分類、地點、日期、人數上限、說明、是否需審核、隊員私密留言、可選「連結現有行程」 |
 | 主辦人管理（登入） | 申請名單：通過／拒絕（可填拒絕原因）；編輯、取消揪團 |
@@ -89,7 +89,7 @@ CREATE TABLE reports (
 // GroupEventSummary
 { "id": "uuid", "title": "…", "category": "hiking|camping|bouldering|other", "location": "…",
   "start_date": "2026-12-05", "end_date": "2026-12-07"|null, "max_members": 8,
-  "approved_count": 3, "like_count": 12, "comment_count": 5,
+  "approved_count": 3, "pending_count": 0 (待審核人數，非主辦人一律 0), "like_count": 12, "comment_count": 5,
   "status": "open|closed|cancelled", "approval_required": true,
   "host": {"display_name": "陳大山", "avatar": "🐻"}, "created_at": "…",
   "liked": false, "my_status": null|"pending"|"approved"|"rejected"|"cancelled", "is_host": false }
@@ -139,7 +139,8 @@ CREATE TABLE reports (
 
 - 新 feature：`features/events/`（`data / domain / ui`）。API 用 `authedDioProvider`（optional auth 端點也走它，沒有 token 時就不帶）。
 - 不寫入本機資料庫（線上資料）；列表與詳情用 Riverpod 的 Future 狀態，下拉重新整理。
-- 「探索」頁籤頂端加 `SegmentedButton`（山岳｜揪團）；揪團分段內含分頁籤與搜尋。
+- 「揪團」是底部導覽的獨立頁籤（路由 `/events`），頂端 `SegmentedButton`（找團｜我的團），兩邊各自保留搜尋與篩選。
+- 待審核數量＝我主辦、未取消、未過期揪團的 `pending_count` 總和。登入時、點頁籤時、審核或移除後重新抓取；不輪詢、不推播，抓不到就不顯示。
 - 建立揪團可「連結現有行程」：只列出我是團長的本機行程；快照由前端從本機行程資料組出（節點依天數與時間排序，最多 200 個）。
 - 詳情頁底部動態按鈕依 `is_host / my_status / status / approved_count` 決定；主辦人另有「管理申請」與「編輯／取消」。
 - 離線時顯示「需要連線」與重試，不顯示過期內容。

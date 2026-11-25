@@ -61,6 +61,7 @@ type Event struct {
 	HostAvatar string
 
 	ApprovedCount int
+	PendingCount  int // applications waiting for review, host only
 	LikeCount     int
 	CommentCount  int
 

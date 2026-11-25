@@ -73,7 +73,7 @@ func (r *PgRepository) WithTx(ctx context.Context, fn func(Tx) error) error {
 var likeEscaper = strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
 
 const summaryCols = `e.id, e.host_id, e.title, e.category, e.location, e.start_date, e.end_date, e.max_members,
-	ac.n, lc.n, cc.n, e.status, e.approval_required, u.display_name, u.avatar, e.created_at,
+	ac.n, pc.n, lc.n, cc.n, e.status, e.approval_required, u.display_name, u.avatar, e.created_at,
 	(ml.user_id IS NOT NULL), COALESCE(ma.status, '')`
 
 const detailCols = `, e.description, e.private_message, e.linked_trip_id, e.trip_snapshot, e.snapshot_updated_at,
@@ -83,6 +83,7 @@ const detailCols = `, e.description, e.private_message, e.linked_trip_id, e.trip
 const eventFrom = ` FROM group_events e
 	JOIN users u ON u.id = e.host_id
 	JOIN LATERAL (SELECT count(*) AS n FROM group_event_applications a WHERE a.event_id = e.id AND a.status = 'approved') ac ON TRUE
+	JOIN LATERAL (SELECT count(*) AS n FROM group_event_applications a WHERE a.event_id = e.id AND a.status = 'pending' AND e.host_id = $1::uuid) pc ON TRUE
 	JOIN LATERAL (SELECT count(*) AS n FROM group_event_likes l WHERE l.event_id = e.id) lc ON TRUE
 	JOIN LATERAL (SELECT count(*) AS n FROM group_event_comments c WHERE c.event_id = e.id AND c.deleted_at IS NULL) cc ON TRUE
 	LEFT JOIN group_event_likes ml ON ml.event_id = e.id AND ml.user_id = $1::uuid
@@ -91,7 +92,7 @@ const eventFrom = ` FROM group_events e
 func scanEvent(row pgx.Row, detail bool) (Event, error) {
 	var e Event
 	dst := []any{&e.ID, &e.HostID, &e.Title, &e.Category, &e.Location, &e.StartDate, &e.EndDate, &e.MaxMembers,
-		&e.ApprovedCount, &e.LikeCount, &e.CommentCount, &e.Status, &e.ApprovalRequired, &e.HostName, &e.HostAvatar,
+		&e.ApprovedCount, &e.PendingCount, &e.LikeCount, &e.CommentCount, &e.Status, &e.ApprovalRequired, &e.HostName, &e.HostAvatar,
 		&e.CreatedAt, &e.Liked, &e.MyStatus}
 	if detail {
 		dst = append(dst, &e.Description, &e.PrivateMessage, &e.LinkedTripID, &e.TripSnapshot, &e.SnapshotAt, &e.MyRejection)

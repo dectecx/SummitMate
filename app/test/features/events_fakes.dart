@@ -24,6 +24,7 @@ EventDetail ev(
   String? end,
   int max = 8,
   int approved = 3,
+  int pending = 0,
   int likes = 2,
   int comments = 0,
   EventStatus status = EventStatus.open,
@@ -45,6 +46,7 @@ EventDetail ev(
   endDate: end,
   maxMembers: max,
   approvedCount: approved,
+  pendingCount: pending,
   likeCount: likes,
   commentCount: comments,
   status: status,
@@ -364,9 +366,8 @@ Future<AppHarness> startEvents(
   return app;
 }
 
-/// Opens the explore tab on the group events segment.
+/// Opens the group events tab (on 找團).
 Future<void> openEvents(WidgetTester tester) async {
-  await tapText(tester, '探索');
   await tapText(tester, '揪團');
   await settle(tester);
 }

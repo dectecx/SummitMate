@@ -72,7 +72,9 @@ class _ApplicationsPageState extends ConsumerState<ApplicationsPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
-    if (mounted) await _load(silent: true);
+    if (!mounted) return;
+    ref.invalidate(pendingApplicationsProvider);
+    await _load(silent: true);
   }
 
   Future<void> _approve(Application a) =>

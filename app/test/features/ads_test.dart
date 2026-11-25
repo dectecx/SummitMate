@@ -5,7 +5,7 @@ import 'package:summitmate/core/ads/ads.dart';
 import 'harness.dart';
 
 void main() {
-  testWidgets('the banner appears on the trips and explore lists only, and takes no space by default', (tester) async {
+  testWidgets('the banner appears on the trips, events and explore lists only, and takes no space by default', (tester) async {
     const banner = Key('test-banner');
     final app = await AppHarness.start(
       tester,
@@ -13,6 +13,8 @@ void main() {
       overrides: [adBannerBuilderProvider.overrideWithValue((_) => const SizedBox(key: banner, height: 50))],
     );
     expect(find.byKey(banner), findsOneWidget, reason: 'trips tab');
+    await tapText(tester, '揪團');
+    expect(find.byKey(banner), findsOneWidget, reason: 'events tab');
     await tapText(tester, '探索');
     expect(find.byKey(banner), findsOneWidget, reason: 'explore tab');
     await tapText(tester, '地圖');

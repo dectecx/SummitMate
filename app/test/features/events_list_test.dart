@@ -22,29 +22,63 @@ FakeEventsApi sample() => FakeEventsApi(
 Finder card(String id) => find.byKey(ValueKey('event-$id'));
 
 void main() {
-  testWidgets('the explore tab switches between mountains and group events, and mountains stay as they were', (
-    tester,
-  ) async {
-    final api = sample();
-    final explore = FakeExploreApi(payloadOf([m('yushan-main', '玉山主峰', 3952), m('xueshan-main', '雪山主峰', 3886)]));
-    final app = await startEvents(tester, api, overrides: [exploreApiProvider.overrideWithValue(explore)]);
+  testWidgets('group events have their own tab, and explore keeps only mountains and shops', (tester) async {
+    final explore = FakeExploreApi(payloadOf([m('yushan-main', '玉山主峰', 3952)]));
+    final app = await startEvents(tester, sample(), overrides: [exploreApiProvider.overrideWithValue(explore)]);
     await tapText(tester, '探索');
-    expect(find.text('玉山主峰'), findsOneWidget, reason: 'mountains are the first segment');
-    expect(find.byKey(const ValueKey('events-search')), findsNothing);
+    expect(find.text('玉山主峰'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const ValueKey('explore-segment')), matching: find.text('揪團')), findsNothing);
     expect(find.text('建立揪團'), findsNothing);
 
-    await tapText(tester, '揪團');
+    await openEvents(tester);
     expect(find.text('玉山主峰'), findsNothing);
     expect(card('e1'), findsOneWidget);
     expect(find.text('建立揪團'), findsOneWidget);
+    await app.dispose(tester);
+  });
 
-    await tapText(tester, '山岳');
-    expect(find.text('玉山主峰'), findsOneWidget);
-    await tester.enterText(find.widgetWithText(TextField, '搜尋山名或地區'), '雪山');
+  testWidgets('pending applications are counted on the tab, 我的團 and the hosted event, and open there first', (tester) async {
+    final api = sample();
+    api.events.addAll([
+      ev('h1', '待審核的團', isHost: true, pending: 2, start: '2026-12-28'),
+      ev('h2', '過期的團', isHost: true, pending: 5, start: '2026-11-01'),
+      ev('h3', '取消的團', isHost: true, pending: 4, status: EventStatus.cancelled, start: '2026-12-29'),
+    ]);
+    final app = await startEvents(tester, api, signedIn: true);
     await settle(tester);
-    expect(find.text('玉山主峰'), findsNothing);
-    expect(find.text('雪山主峰'), findsOneWidget);
-    expect(find.text('建立揪團'), findsNothing);
+    final navBadge = find.descendant(of: find.byType(NavigationBar), matching: find.text('2'));
+    expect(navBadge, findsOneWidget, reason: 'seen without opening the tab');
+
+    await openEvents(tester);
+    await tapText(tester, '我的團');
+    expect(find.text('我主辦的（2 待審核）'), findsOneWidget);
+    expect(find.descendant(of: card('h1'), matching: find.text('待審核 2')), findsOneWidget);
+    expect(find.descendant(of: card('h2'), matching: find.textContaining('待審核')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a guest sees no pending count and is asked to sign in under 我的團', (tester) async {
+    final api = sample()..events.add(ev('h1', '待審核的團', isHost: true, pending: 2));
+    final app = await startEvents(tester, api);
+    await openEvents(tester);
+    expect(api.listCalls.any((c) => c.scope == EventScope.hosting), isFalse);
+    await tapText(tester, '我的團');
+    expect(find.byKey(const ValueKey('events-signin')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('each side keeps its search and filter when switching', (tester) async {
+    final app = await startEvents(tester, sample(), signedIn: true);
+    await openEvents(tester);
+    await tester.enterText(find.byKey(const ValueKey('events-search')), '南投');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await settle(tester);
+    await tapText(tester, '我的團');
+    expect(card('e4'), findsOneWidget);
+    await tapText(tester, '找團');
+    expect(find.widgetWithText(TextField, '南投'), findsOneWidget);
+    expect(card('e2'), findsOneWidget);
+    expect(card('e1'), findsNothing);
     await app.dispose(tester);
   });
 
@@ -90,7 +124,8 @@ void main() {
     expect(api.listCalls.last.scope, EventScope.popular);
     expect(tester.getTopLeft(card('e3')).dy, lessThan(tester.getTopLeft(card('e1')).dy), reason: 'most liked first');
 
-    await tapText(tester, '我參加的');
+    expect(find.text('我參加的'), findsNothing, reason: 'mine are on the other side');
+    await tapText(tester, '我的團');
     expect(api.listCalls.last.scope, EventScope.joined);
     expect(card('e4'), findsOneWidget);
     expect(card('e1'), findsNothing);
@@ -185,7 +220,8 @@ void main() {
     await openEvents(tester);
     final calls = api.listCalls.length;
 
-    await tapText(tester, '我參加的');
+    expect(find.text('我參加的'), findsNothing, reason: 'mine are on the other side');
+    await tapText(tester, '我的團');
     expect(find.text('登入後使用'), findsOneWidget);
     expect(find.byKey(const ValueKey('events-signin')), findsOneWidget);
     expect(card('e4'), findsNothing);
@@ -193,7 +229,7 @@ void main() {
     expect(find.text('登入後使用'), findsOneWidget);
     expect(api.listCalls.length, calls, reason: 'nothing is requested while locked');
 
-    await tapText(tester, '全部');
+    await tapText(tester, '找團');
     expect(card('e1'), findsOneWidget);
     expect(find.text('登入後使用'), findsNothing);
 

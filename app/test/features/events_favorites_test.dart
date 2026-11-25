@@ -21,7 +21,8 @@ void main() {
     await settle(tester);
     await tapText(tester, '我');
     await tapText(tester, '我的收藏');
-    await tapText(tester, '揪團');
+    await tester.tap(find.widgetWithText(Tab, '揪團'));
+    await settle(tester);
     await settleUntil(tester, find.byKey(const ValueKey('event-e1')));
     expect(find.text('嘉明湖三日'), findsOneWidget);
     expect(find.text('雪山東峰'), findsNothing);

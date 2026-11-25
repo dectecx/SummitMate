@@ -566,6 +566,9 @@ type GroupEventDetail struct {
 	// MyStatus The caller's application status (pending, approved, rejected, cancelled), null if never applied or no token
 	MyStatus *string `json:"my_status"`
 
+	// PendingCount Applications waiting for review; 0 unless the caller is the host
+	PendingCount int `json:"pending_count"`
+
 	// PrivateMessage Null unless the caller is the host or an approved applicant
 	PrivateMessage *string `json:"private_message"`
 
@@ -608,10 +611,13 @@ type GroupEventSummary struct {
 	MaxMembers int    `json:"max_members"`
 
 	// MyStatus The caller's application status (pending, approved, rejected, cancelled), null if never applied or no token
-	MyStatus  *string            `json:"my_status"`
-	StartDate openapi_types.Date `json:"start_date"`
-	Status    GroupEventStatus   `json:"status"`
-	Title     string             `json:"title"`
+	MyStatus *string `json:"my_status"`
+
+	// PendingCount Applications waiting for review; 0 unless the caller is the host
+	PendingCount int                `json:"pending_count"`
+	StartDate    openapi_types.Date `json:"start_date"`
+	Status       GroupEventStatus   `json:"status"`
+	Title        string             `json:"title"`
 }
 
 // LikeState defines model for LikeState.

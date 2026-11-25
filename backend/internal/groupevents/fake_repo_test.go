@@ -42,10 +42,13 @@ func (f *fakeRepo) WithTx(_ context.Context, fn func(Tx) error) error {
 }
 
 func (f *fakeRepo) counts(e *Event) {
-	e.ApprovedCount, e.LikeCount, e.CommentCount = 0, 0, 0
+	e.ApprovedCount, e.PendingCount, e.LikeCount, e.CommentCount = 0, 0, 0, 0
 	for _, a := range f.apps {
 		if a.EventID == e.ID && a.Status == AppApproved {
 			e.ApprovedCount++
+		}
+		if a.EventID == e.ID && a.Status == AppPending {
+			e.PendingCount++
 		}
 	}
 	for k, ok := range f.likes {

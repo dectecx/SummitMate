@@ -7,16 +7,14 @@ import 'package:material_ui/material_ui.dart';
 import '../../app/router.dart';
 import '../../core/ads/ads.dart';
 import '../../shared/coming_soon.dart';
-import '../events/ui/event_widgets.dart';
-import '../events/ui/events_view.dart';
 import 'domain/mountain_models.dart';
 import 'providers.dart';
 import 'ui/shops_view.dart';
 import '../../../shared/brand/illustrations.dart';
 
-enum _Segment { mountains, events, shops }
+enum _Segment { mountains, shops }
 
-/// "探索": browse and search mountains, or group events.
+/// "探索": browse and search mountains and outdoor shops.
 class ExploreTab extends ConsumerStatefulWidget {
   const ExploreTab({super.key});
 
@@ -41,9 +39,6 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
     return Scaffold(
       appBar: AppBar(title: const Text('探索')),
       bottomNavigationBar: const AdBannerSlot(),
-      floatingActionButton: _segment == _Segment.events
-          ? FloatingActionButton.extended(key: const ValueKey('events-create'), onPressed: () => openCreateEvent(context, ref), icon: const Icon(Icons.add), label: const Text('建立揪團'))
-          : null,
       body: Column(
         children: [
           Padding(
@@ -52,7 +47,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
               key: const ValueKey('explore-segment'),
               expandedInsets: EdgeInsets.zero,
               showSelectedIcon: false,
-              segments: const [ButtonSegment(value: _Segment.mountains, label: Text('山岳')), ButtonSegment(value: _Segment.events, label: Text('揪團')), ButtonSegment(value: _Segment.shops, label: Text('用品店'))],
+              segments: const [ButtonSegment(value: _Segment.mountains, label: Text('山岳')), ButtonSegment(value: _Segment.shops, label: Text('用品店'))],
               selected: {_segment},
               onSelectionChanged: (s) => setState(() => _segment = s.first),
             ),
@@ -60,7 +55,6 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
           Expanded(
             child: switch (_segment) {
               _Segment.mountains => _mountains(),
-              _Segment.events => const EventsView(),
               _Segment.shops => const ShopsView(),
             },
           ),

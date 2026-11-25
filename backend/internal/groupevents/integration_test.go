@@ -409,6 +409,15 @@ func TestListScopesSearchAndPaging(t *testing.T) {
 	assert.Nil(t, byID[last]["my_status"])
 	assert.EqualValues(t, 2, byID[soon]["like_count"])
 	assert.Equal(t, false, byID[last]["is_host"])
+	// pending applications are counted for the host only
+	assert.EqualValues(t, 0, byID[later]["pending_count"])
+	hosted := map[string]any{}
+	for _, it := range list(host, "?scope=hosting")["items"].([]any) {
+		m := it.(map[string]any)
+		hosted[m["id"].(string)] = m["pending_count"]
+	}
+	assert.EqualValues(t, 1, hosted[later])
+	assert.EqualValues(t, 0, hosted[soon], "a withdrawn application no longer waits")
 }
 
 func TestApplyLifecycleAndTripMembers(t *testing.T) {

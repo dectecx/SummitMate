@@ -78,6 +78,7 @@ class EventSummary {
     this.endDate,
     required this.maxMembers,
     required this.approvedCount,
+    this.pendingCount = 0,
     required this.likeCount,
     required this.commentCount,
     required this.status,
@@ -99,6 +100,9 @@ class EventSummary {
   final String? endDate;
   final int maxMembers;
   final int approvedCount;
+
+  /// Applications waiting for review; 0 unless the person is the host.
+  final int pendingCount;
   final int likeCount;
   final int commentCount;
   final EventStatus status;
@@ -118,6 +122,7 @@ class EventSummary {
     endDate: (j['end_date'] as String?)?.split('T').first,
     maxMembers: ((j['max_members'] as num?) ?? 0).toInt(),
     approvedCount: ((j['approved_count'] as num?) ?? 0).toInt(),
+    pendingCount: ((j['pending_count'] as num?) ?? 0).toInt(),
     likeCount: ((j['like_count'] as num?) ?? 0).toInt(),
     commentCount: ((j['comment_count'] as num?) ?? 0).toInt(),
     status: EventStatus.parse(j['status'] as String?),
@@ -138,6 +143,7 @@ class EventSummary {
     'end_date': endDate,
     'max_members': maxMembers,
     'approved_count': approvedCount,
+    'pending_count': pendingCount,
     'like_count': likeCount,
     'comment_count': commentCount,
     'status': status.name,
@@ -160,6 +166,7 @@ class EventDetail extends EventSummary {
     super.endDate,
     required super.maxMembers,
     required super.approvedCount,
+    super.pendingCount,
     required super.likeCount,
     required super.commentCount,
     required super.status,
@@ -203,6 +210,7 @@ class EventDetail extends EventSummary {
       endDate: s.endDate,
       maxMembers: s.maxMembers,
       approvedCount: s.approvedCount,
+      pendingCount: s.pendingCount,
       likeCount: s.likeCount,
       commentCount: s.commentCount,
       status: s.status,
@@ -252,6 +260,7 @@ class EventDetail extends EventSummary {
     endDate: endDate,
     maxMembers: maxMembers,
     approvedCount: approvedCount ?? this.approvedCount,
+    pendingCount: pendingCount,
     likeCount: likeCount ?? this.likeCount,
     commentCount: commentCount ?? this.commentCount,
     status: status,

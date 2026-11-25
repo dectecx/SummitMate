@@ -1299,7 +1299,7 @@ components:
 
     GroupEventSummary:
       type: object
-      required: [id, title, category, location, start_date, end_date, max_members, approved_count, like_count, comment_count, status, approval_required, host, created_at, liked, my_status, is_host]
+      required: [id, title, category, location, start_date, end_date, max_members, approved_count, pending_count, like_count, comment_count, status, approval_required, host, created_at, liked, my_status, is_host]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -1309,6 +1309,7 @@ components:
         end_date: { type: string, format: date, nullable: true }
         max_members: { type: integer }
         approved_count: { type: integer }
+        pending_count: { type: integer, description: Applications waiting for review; 0 unless the caller is the host }
         like_count: { type: integer }
         comment_count: { type: integer }
         status: { $ref: "#/components/schemas/GroupEventStatus" }

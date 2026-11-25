@@ -13,7 +13,7 @@ import '../domain/event_logic.dart';
 final eventsSignedInProvider = Provider<bool>((ref) => ref.watch(accountIdProvider) != null);
 
 /// Tells a guest the action needs an account and offers to sign in. [next] is where to come back to.
-Future<void> promptSignIn(BuildContext context, {String next = Routes.explore}) async {
+Future<void> promptSignIn(BuildContext context, {String next = Routes.events}) async {
   final go = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -196,6 +196,8 @@ class EventTags extends StatelessWidget {
       children: [
         _Tag(event.category.label),
         if (event.isHost) const _Tag('我主辦'),
+        if (event.isHost && event.pendingCount > 0 && event.status != EventStatus.cancelled && !isExpired(event.startDate, today))
+          _Tag('待審核 ${event.pendingCount}', warn: true),
         if (!event.isHost && event.myStatus == ApplicationStatus.approved) const _Tag('已加入'),
         if (!event.isHost && event.myStatus == ApplicationStatus.pending) const _Tag('審核中'),
         if (event.status == EventStatus.cancelled)

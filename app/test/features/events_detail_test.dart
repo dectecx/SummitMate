@@ -174,7 +174,7 @@ void main() {
       );
       final app = await startEvents(tester, api, signedIn: true);
       await openEvents(tester);
-      await tapText(tester, '我參加的');
+      await tapText(tester, '我的團');
       await openEvent(tester, 'e1');
       expect(actionLabel(tester), '揪團已取消');
       expect(actionEnabled(tester), isFalse);

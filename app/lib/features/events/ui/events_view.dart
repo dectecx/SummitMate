@@ -9,9 +9,16 @@ import '../data/events_api.dart';
 import '../providers.dart';
 import 'event_widgets.dart';
 
-/// The "揪團" part of the explore tab: filters, search and the list of group events. Needs a connection.
+/// One side of the "揪團" tab: filters, search and a list of group events. Needs a connection.
 class EventsView extends ConsumerStatefulWidget {
-  const EventsView({super.key});
+  const EventsView({super.key, required this.scopes, this.initialScope, this.active = true});
+
+  /// The filters offered; the first one is selected unless [initialScope] says otherwise.
+  final List<EventScope> scopes;
+  final EventScope? initialScope;
+
+  /// Whether this side is the one shown; coming back to it reloads, keeping the search and filter.
+  final bool active;
 
   @override
   ConsumerState<EventsView> createState() => _EventsViewState();
@@ -20,7 +27,7 @@ class EventsView extends ConsumerStatefulWidget {
 class _EventsViewState extends ConsumerState<EventsView> {
   final _search = TextEditingController();
   final _items = <EventSummary>[];
-  EventScope _scope = EventScope.all;
+  late EventScope _scope = widget.initialScope ?? widget.scopes.first;
   String? _cursor;
   bool _loading = false;
   EventsException? _error;
@@ -30,6 +37,12 @@ class _EventsViewState extends ConsumerState<EventsView> {
   void initState() {
     super.initState();
     _load(reset: true);
+  }
+
+  @override
+  void didUpdateWidget(EventsView old) {
+    super.didUpdateWidget(old);
+    if (widget.active && !old.active) _load(reset: true);
   }
 
   @override
@@ -81,7 +94,9 @@ class _EventsViewState extends ConsumerState<EventsView> {
 
   Future<void> _open(EventSummary e) async {
     await context.push(Routes.event(e.id));
-    if (mounted) _load(reset: true);
+    if (!mounted) return;
+    ref.invalidate(pendingApplicationsProvider);
+    _load(reset: true);
   }
 
   @override
@@ -93,6 +108,7 @@ class _EventsViewState extends ConsumerState<EventsView> {
       return DateTime(n.year, n.month, n.day);
     }();
     final locked = _locked;
+    final pending = ref.watch(pendingApplicationsProvider).value ?? 0;
     return Column(
       children: [
         Padding(
@@ -125,12 +141,12 @@ class _EventsViewState extends ConsumerState<EventsView> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             children: [
-              for (final s in EventScope.values)
+              for (final s in widget.scopes)
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
                     key: ValueKey('events-scope-${s.name}'),
-                    label: Text(s.label),
+                    label: Text(s == EventScope.hosting && pending > 0 ? '${s.label}（$pending 待審核）' : s.label),
                     selected: _scope == s,
                     onSelected: (_) => _setScope(s),
                   ),
@@ -140,7 +156,10 @@ class _EventsViewState extends ConsumerState<EventsView> {
         ),
         Expanded(
           child: RefreshIndicator(
-            onRefresh: () => _load(reset: true),
+            onRefresh: () {
+              ref.invalidate(pendingApplicationsProvider);
+              return _load(reset: true);
+            },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 88),
@@ -153,7 +172,7 @@ class _EventsViewState extends ConsumerState<EventsView> {
                     action: FilledButton(
                       key: const ValueKey('events-signin'),
                       style: FilledButton.styleFrom(minimumSize: const Size(160, 48)),
-                      onPressed: () => context.push(Routes.withQuery(Routes.login, {'next': Routes.explore})),
+                      onPressed: () => context.push(Routes.withQuery(Routes.login, {'next': Routes.events})),
                       child: const Text('登入'),
                     ),
                   )

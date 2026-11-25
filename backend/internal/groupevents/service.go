@@ -137,6 +137,7 @@ func finish(e Event, viewer *uuid.UUID) Event {
 		e.PrivateMessage = ""
 	}
 	if !e.IsHost {
+		e.PendingCount = 0
 		e.LinkedTripID = nil
 	}
 	if e.MyStatus != AppRejected {
