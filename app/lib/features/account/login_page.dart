@@ -69,53 +69,47 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final locked = widget.email != null;
     return Scaffold(
       appBar: AppBar(title: const Text('登入')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            if (locked)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text('請用同一個帳號重新登入，才不會遺失還沒上傳的資料。'),
-              ),
-            Form(
-              key: _form,
-              child: AutofillGroup(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _email,
-                      readOnly: locked,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
-                      validator: validateEmail,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                    ),
-                    const SizedBox(height: 16),
-                    PasswordField(
-                      controller: _password,
-                      textInputAction: TextInputAction.done,
-                      autofillHints: const [AutofillHints.password],
-                      validator: (v) => (v ?? '').isEmpty ? '請輸入密碼' : null,
-                      onSubmitted: _submit,
-                    ),
-                  ],
-                ),
+      body: AuthPageBody(
+        title: '歡迎回來',
+        subtitle: locked ? '請用同一個帳號重新登入，才不會遺失還沒上傳的資料。' : '登入後行程會自動備份，換手機也找得回來',
+        children: [
+          Form(
+            key: _form,
+            child: AutofillGroup(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _email,
+                    readOnly: locked,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.email],
+                    validator: validateEmail,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                  ),
+                  const SizedBox(height: 16),
+                  PasswordField(
+                    controller: _password,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.password],
+                    validator: (v) => (v ?? '').isEmpty ? '請輸入密碼' : null,
+                    onSubmitted: _submit,
+                  ),
+                ],
               ),
             ),
-            FormErrorText(_error),
-            const SizedBox(height: 24),
-            BusyFilledButton(label: '登入', busy: _busy, onPressed: _submit),
-            if (!locked) ...[
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => context.pushReplacement(Routes.withQuery(Routes.register, {'next': widget.next})),
-                child: const Text('還沒有帳號？註冊'),
-              ),
-            ],
+          ),
+          FormErrorText(_error),
+          const SizedBox(height: 24),
+          BusyFilledButton(label: '登入', busy: _busy, onPressed: _submit),
+          if (!locked) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => context.pushReplacement(Routes.withQuery(Routes.register, {'next': widget.next})),
+              child: const Text('還沒有帳號？註冊'),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

@@ -5,8 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../app/router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/coming_soon.dart';
-import '../../gear/domain/gear_logic.dart';
-import '../../meals/domain/meal_logic.dart';
+import '../../../shared/settings_section.dart';
 import '../../trips/providers.dart';
 import '../domain/set_item.dart';
 import '../providers.dart';
@@ -23,18 +22,25 @@ class TemplatesPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('我的範本')),
       body: templates.isEmpty
-          ? const ComingSoon(illustration: Illustration.gear, message: '還沒有範本。\n在行程右上角選「存成範本」，就能把這個行程的裝備與餐點存起來，之後套用到別的行程。')
+          ? const ComingSoon(
+              illustration: Illustration.gear,
+              message: '還沒有範本。\n在行程右上角選「存成範本」，就能把這個行程的裝備與餐點存起來，之後套用到別的行程。',
+            )
           : ListView(
+              padding: const EdgeInsets.only(bottom: 32),
               children: [
-                for (final t in templates)
-                  ListTile(
-                    key: ValueKey('template-${t.id}'),
-                    leading: const Icon(Icons.inventory_2_outlined),
-                    title: Text(t.title),
-                    subtitle: Text(summaryOf(decodeSetItems(t.items))),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push(Routes.template(t.id)),
-                  ),
+                SettingsSection(
+                  children: [
+                    for (final t in templates)
+                      SettingsTile(
+                        key: ValueKey('template-${t.id}'),
+                        icon: Icons.inventory_2_outlined,
+                        title: t.title,
+                        subtitle: summaryOf(decodeSetItems(t.items)),
+                        onTap: () => context.push(Routes.template(t.id)),
+                      ),
+                  ],
+                ),
               ],
             ),
     );
@@ -48,10 +54,12 @@ class TemplateDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(templateProvider(templateId)).value;
-    if (t == null) return Scaffold(appBar: AppBar(), body: const ComingSoon(illustration: Illustration.search, message: '找不到這份範本，可能已被刪除'));
+    if (t == null)
+      return Scaffold(
+        appBar: AppBar(),
+        body: const ComingSoon(illustration: Illustration.search, message: '找不到這份範本，可能已被刪除'),
+      );
     final items = decodeSetItems(t.items);
-    final gear = items.where((i) => i.isGear).toList();
-    final meals = items.where((i) => i.isMeal).toList()..sort((a, b) => a.day.compareTo(b.day));
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
@@ -75,7 +83,11 @@ class TemplateDetailPage extends ConsumerWidget {
                     actions: [
                       TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
                       FilledButton(
-                        style: FilledButton.styleFrom(minimumSize: const Size(88, 44), backgroundColor: Theme.of(ctx).colorScheme.error, foregroundColor: Theme.of(ctx).colorScheme.onError),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(88, 44),
+                          backgroundColor: Theme.of(ctx).colorScheme.error,
+                          foregroundColor: Theme.of(ctx).colorScheme.onError,
+                        ),
                         onPressed: () => Navigator.pop(ctx, true),
                         child: const Text('刪除'),
                       ),
@@ -99,27 +111,31 @@ class TemplateDetailPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
-          Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: Text(summaryOf(items), style: theme.textTheme.bodyMedium)),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: FilledButton.tonalIcon(
-                key: const ValueKey('template-apply'),
-                onPressed: () => _applyToATrip(context, ref, items),
-                icon: const Icon(Icons.playlist_add),
-                label: const Text('套用到行程'),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      summaryOf(items),
+                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      key: const ValueKey('template-apply'),
+                      onPressed: () => _applyToATrip(context, ref, items),
+                      icon: const Icon(Icons.playlist_add),
+                      label: const Text('套用到行程'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          if (gear.isNotEmpty) ...[
-            Padding(padding: const EdgeInsets.fromLTRB(16, 20, 16, 4), child: Text('裝備', style: theme.textTheme.titleSmall)),
-            for (final i in gear) ListTile(dense: true, title: Text(i.quantity > 1 ? '${i.name} × ${i.quantity}' : i.name), subtitle: Text('${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}')),
-          ],
-          if (meals.isNotEmpty) ...[
-            Padding(padding: const EdgeInsets.fromLTRB(16, 20, 16, 4), child: Text('餐點', style: theme.textTheme.titleSmall)),
-            for (final i in meals) ListTile(dense: true, title: Text(i.quantity > 1 ? '${i.name} × ${i.quantity}' : i.name), subtitle: Text('D${i.day}  ·  ${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal')),
-          ],
+          SetItemSections(items: items),
         ],
       ),
     );
@@ -140,8 +156,12 @@ class TemplateDetailPage extends ConsumerWidget {
         child: ListView(
           shrinkWrap: true,
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(24, 0, 24, 8), child: Text('套用到哪個行程？', style: Theme.of(ctx).textTheme.titleLarge)),
-            for (final t in trips) ListTile(key: ValueKey('apply-trip-${t.id}'), title: Text(t.name), onTap: () => Navigator.pop(ctx, t)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              child: Text('套用到哪個行程？', style: Theme.of(ctx).textTheme.titleLarge),
+            ),
+            for (final t in trips)
+              ListTile(key: ValueKey('apply-trip-${t.id}'), title: Text(t.name), onTap: () => Navigator.pop(ctx, t)),
           ],
         ),
       ),

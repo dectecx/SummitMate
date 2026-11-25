@@ -33,7 +33,9 @@ class AddFriendButton extends ConsumerWidget {
         try {
           final result = await ref.read(friendsApiProvider).sendRequest(userId);
           ref.invalidate(friendsProvider);
-          messenger.showSnackBar(SnackBar(content: Text(result == FriendRequestResult.accepted ? '你和 $name 成為好友了' : '已送出邀請，等 $name 接受')));
+          messenger.showSnackBar(
+            SnackBar(content: Text(result == FriendRequestResult.accepted ? '你和 $name 成為好友了' : '已送出邀請，等 $name 接受')),
+          );
         } on FriendsException catch (e) {
           messenger.showSnackBar(SnackBar(content: Text(e.text)));
         }

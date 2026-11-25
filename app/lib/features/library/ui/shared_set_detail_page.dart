@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
-import '../../gear/domain/gear_logic.dart';
-import '../../meals/domain/meal_logic.dart';
 import '../../trips/providers.dart';
 import '../data/shared_sets_api.dart';
 import '../providers.dart';
@@ -64,10 +62,18 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('這份組合需要 Key'),
-        content: TextField(controller: c, autofocus: true, decoration: InputDecoration(labelText: 'Key', errorText: wrong ? 'Key 不正確' : null)),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          decoration: InputDecoration(labelText: 'Key', errorText: wrong ? 'Key 不正確' : null),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(style: FilledButton.styleFrom(minimumSize: const Size(88, 44)), onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('開啟')),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(88, 44)),
+            onPressed: () => Navigator.pop(ctx, c.text.trim()),
+            child: const Text('開啟'),
+          ),
         ],
       ),
     );
@@ -93,8 +99,12 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
         child: ListView(
           shrinkWrap: true,
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(24, 0, 24, 8), child: Text('加到哪個行程？', style: Theme.of(ctx).textTheme.titleLarge)),
-            for (final t in trips) ListTile(key: ValueKey('add-trip-${t.id}'), title: Text(t.name), onTap: () => Navigator.pop(ctx, t)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              child: Text('加到哪個行程？', style: Theme.of(ctx).textTheme.titleLarge),
+            ),
+            for (final t in trips)
+              ListTile(key: ValueKey('add-trip-${t.id}'), title: Text(t.name), onTap: () => Navigator.pop(ctx, t)),
           ],
         ),
       ),
@@ -113,7 +123,11 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           FilledButton(
-            style: FilledButton.styleFrom(minimumSize: const Size(88, 44), backgroundColor: Theme.of(ctx).colorScheme.error, foregroundColor: Theme.of(ctx).colorScheme.onError),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(88, 44),
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('取消分享'),
           ),
@@ -141,39 +155,67 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
             : Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error?.text ?? '無法開啟', textAlign: TextAlign.center), const SizedBox(height: 12), OutlinedButton(onPressed: () => _open(), child: const Text('重試'))]),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_error?.text ?? '無法開啟', textAlign: TextAlign.center),
+                      const SizedBox(height: 12),
+                      OutlinedButton(onPressed: () => _open(), child: const Text('重試')),
+                    ],
+                  ),
                 ),
               ),
       );
     }
-    final gear = d.items.where((i) => i.isGear).toList();
-    final meals = d.items.where((i) => i.isMeal).toList()..sort((a, b) => a.day.compareTo(b.day));
     return Scaffold(
       appBar: AppBar(title: Text(d.summary.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
-          Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: Text('${d.summary.authorName}  ·  ${d.summary.visibility.label}\n${summaryText(d.summary)}', style: theme.textTheme.bodyMedium)),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilledButton.icon(key: const ValueKey('shared-save'), onPressed: () => _saveAsTemplate(d), icon: const Icon(Icons.inventory_2_outlined), label: const Text('存成我的範本')),
-                FilledButton.tonalIcon(key: const ValueKey('shared-add'), onPressed: () => _addToTrip(d), icon: const Icon(Icons.playlist_add), label: const Text('加到行程')),
-                if (d.summary.mine) OutlinedButton.icon(key: const ValueKey('shared-delete'), onPressed: () => _delete(d), icon: const Icon(Icons.cloud_off_outlined), label: const Text('取消分享')),
-              ],
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      '${d.summary.authorName}  ·  ${d.summary.visibility.label}\n${summaryText(d.summary)}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      key: const ValueKey('shared-save'),
+                      onPressed: () => _saveAsTemplate(d),
+                      icon: const Icon(Icons.inventory_2_outlined),
+                      label: const Text('存成我的範本'),
+                    ),
+                    const SizedBox(height: 8),
+                    FilledButton.tonalIcon(
+                      key: const ValueKey('shared-add'),
+                      onPressed: () => _addToTrip(d),
+                      icon: const Icon(Icons.playlist_add),
+                      label: const Text('加到行程'),
+                    ),
+                    if (d.summary.mine) ...[
+                      const SizedBox(height: 4),
+                      TextButton.icon(
+                        key: const ValueKey('shared-delete'),
+                        onPressed: () => _delete(d),
+                        icon: const Icon(Icons.cloud_off_outlined),
+                        label: const Text('取消分享'),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
-          if (gear.isNotEmpty) ...[
-            Padding(padding: const EdgeInsets.fromLTRB(16, 20, 16, 4), child: Text('裝備', style: theme.textTheme.titleSmall)),
-            for (final i in gear) ListTile(dense: true, title: Text(i.quantity > 1 ? '${i.name} × ${i.quantity}' : i.name), subtitle: Text('${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}')),
-          ],
-          if (meals.isNotEmpty) ...[
-            Padding(padding: const EdgeInsets.fromLTRB(16, 20, 16, 4), child: Text('餐點', style: theme.textTheme.titleSmall)),
-            for (final i in meals) ListTile(dense: true, title: Text(i.quantity > 1 ? '${i.name} × ${i.quantity}' : i.name), subtitle: Text('D${i.day}  ·  ${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal')),
-          ],
+          SetItemSections(items: d.items),
         ],
       ),
     );

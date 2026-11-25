@@ -90,31 +90,36 @@ class _VerifyPageState extends ConsumerState<VerifyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('驗證 Email')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Text('我們寄了一組 6 位數驗證碼到\n${widget.email}', style: Theme.of(context).textTheme.bodyLarge),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _code,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.done,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(letterSpacing: 8),
-              decoration: const InputDecoration(hintText: '000000'),
-              onSubmitted: (_) => _submit(),
+      body: AuthPageBody(
+        title: '輸入驗證碼',
+        subtitle: '我們寄了一組 6 位數驗證碼到\n${widget.email}',
+        children: [
+          TextField(
+            controller: _code,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(letterSpacing: 8),
+            decoration: const InputDecoration(hintText: '000000'),
+            onSubmitted: (_) => _submit(),
+          ),
+          FormErrorText(_error),
+          if (_info != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                _info!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
             ),
-            FormErrorText(_error),
-            if (_info != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_info!)),
-            const SizedBox(height: 24),
-            BusyFilledButton(label: '驗證並登入', busy: _busy, onPressed: _submit),
-            const SizedBox(height: 8),
-            TextButton(onPressed: _wait > 0 ? null : _resend, child: Text(_wait > 0 ? '$_wait 秒後可重新寄送' : '重新寄送驗證碼')),
-          ],
-        ),
+          const SizedBox(height: 24),
+          BusyFilledButton(label: '驗證並登入', busy: _busy, onPressed: _submit),
+          const SizedBox(height: 8),
+          TextButton(onPressed: _wait > 0 ? null : _resend, child: Text(_wait > 0 ? '$_wait 秒後可重新寄送' : '重新寄送驗證碼')),
+        ],
       ),
     );
   }

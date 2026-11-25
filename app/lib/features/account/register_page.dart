@@ -42,7 +42,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     });
     final email = _email.text.trim().toLowerCase();
     try {
-      await ref.read(authRepositoryProvider).register(email: email, password: _password.text, displayName: _name.text.trim());
+      await ref
+          .read(authRepositoryProvider)
+          .register(email: email, password: _password.text, displayName: _name.text.trim());
       if (mounted) context.pushReplacement(Routes.withQuery(Routes.verify, {'email': email, 'next': widget.next}));
     } on Object catch (e) {
       if (!mounted) return;
@@ -59,58 +61,58 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('註冊')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Form(
-              key: _form,
-              child: AutofillGroup(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _name,
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.nickname],
-                      validator: (v) => (v ?? '').trim().isEmpty ? '請輸入暱稱' : ((v ?? '').trim().length > 100 ? '暱稱太長了' : null),
-                      decoration: const InputDecoration(labelText: '暱稱', helperText: '隊友會看到這個名字'),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _email,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
-                      validator: validateEmail,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                    ),
-                    const SizedBox(height: 16),
-                    PasswordField(
-                      controller: _password,
-                      textInputAction: TextInputAction.done,
-                      autofillHints: const [AutofillHints.newPassword],
-                      validator: validateNewPassword,
-                      onSubmitted: _submit,
-                    ),
-                  ],
-                ),
+      body: AuthPageBody(
+        title: '建立帳號',
+        subtitle: '註冊後可備份行程，也能和隊友一起規劃',
+        children: [
+          Form(
+            key: _form,
+            child: AutofillGroup(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _name,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.nickname],
+                    validator: (v) =>
+                        (v ?? '').trim().isEmpty ? '請輸入暱稱' : ((v ?? '').trim().length > 100 ? '暱稱太長了' : null),
+                    decoration: const InputDecoration(labelText: '暱稱', helperText: '隊友會看到這個名字'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.email],
+                    validator: validateEmail,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                  ),
+                  const SizedBox(height: 16),
+                  PasswordField(
+                    controller: _password,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.newPassword],
+                    validator: validateNewPassword,
+                    onSubmitted: _submit,
+                  ),
+                ],
               ),
             ),
-            FormErrorText(_error),
-            if (_emailTaken)
-              TextButton(
-                onPressed: () => context.pushReplacement(Routes.withQuery(Routes.login, {'next': widget.next})),
-                child: const Text('改為登入'),
-              ),
-            const SizedBox(height: 24),
-            BusyFilledButton(label: '註冊並寄送驗證碼', busy: _busy, onPressed: _submit),
-            const SizedBox(height: 8),
+          ),
+          FormErrorText(_error),
+          if (_emailTaken)
             TextButton(
               onPressed: () => context.pushReplacement(Routes.withQuery(Routes.login, {'next': widget.next})),
-              child: const Text('已經有帳號？登入'),
+              child: const Text('改為登入'),
             ),
-          ],
-        ),
+          const SizedBox(height: 24),
+          BusyFilledButton(label: '註冊並寄送驗證碼', busy: _busy, onPressed: _submit),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => context.pushReplacement(Routes.withQuery(Routes.login, {'next': widget.next})),
+            child: const Text('已經有帳號？登入'),
+          ),
+        ],
       ),
     );
   }

@@ -24,13 +24,30 @@ class WelcomePage extends ConsumerWidget {
               const Spacer(flex: 2),
               const Center(child: SummitLogo(size: 96)),
               const SizedBox(height: 16),
-              Text('山友 SummitMate', textAlign: TextAlign.center, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                '山友 SummitMate',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
-              Text('規劃行程、裝備與糧食，上山也能用', textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
+              Text(
+                '規劃行程、裝備與糧食，上山也能用',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
               const Spacer(),
-              const _Point(icon: Icons.signal_cellular_off, text: '沒有訊號也能查看與修改'),
-              const _Point(icon: Icons.checklist, text: '行程、裝備、糧食一次規劃'),
-              const _Point(icon: Icons.cloud_sync_outlined, text: '登入後自動備份，換手機不怕'),
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Column(
+                    children: [
+                      _Point(icon: Icons.signal_cellular_off, text: '沒有訊號也能查看與修改'),
+                      _Point(icon: Icons.checklist, text: '行程、裝備、糧食一次規劃'),
+                      _Point(icon: Icons.cloud_sync_outlined, text: '登入後自動備份，換手機不怕'),
+                    ],
+                  ),
+                ),
+              ),
               const Spacer(flex: 2),
               FilledButton(
                 onPressed: () async {
@@ -60,11 +77,20 @@ class _Point extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 20, color: scheme.primary),
+          ),
           const SizedBox(width: 16),
           Expanded(child: Text(text, style: Theme.of(context).textTheme.bodyLarge)),
         ],

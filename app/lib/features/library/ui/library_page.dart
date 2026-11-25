@@ -2,7 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../shared/brand/illustrations.dart';
+import '../../../shared/coming_soon.dart';
 import '../../../shared/hint_banner.dart';
+import '../../../shared/settings_section.dart';
 import '../../gear/domain/gear_logic.dart';
 import '../../meals/domain/meal_logic.dart';
 import '../providers.dart';
@@ -32,9 +35,21 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
     return Scaffold(
       appBar: AppBar(
         title: const Text('我的裝備庫'),
-        bottom: TabBar(controller: _tabs, tabs: const [Tab(text: '裝備'), Tab(text: '食物')]),
+        bottom: TabBar(
+          controller: _tabs,
+          tabs: const [
+            Tab(text: '裝備'),
+            Tab(text: '食物'),
+          ],
+        ),
       ),
-      body: TabBarView(controller: _tabs, children: const [_ItemList(kind: 'gear'), _ItemList(kind: 'meal')]),
+      body: TabBarView(
+        controller: _tabs,
+        children: const [
+          _ItemList(kind: 'gear'),
+          _ItemList(kind: 'meal'),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         key: const ValueKey('library-add'),
         onPressed: () => showLibraryItemSheet(context, kind: _kind),
@@ -54,24 +69,29 @@ class _ItemList extends ConsumerWidget {
     final items = ref.watch(libraryItemsProvider(kind)).value ?? const <LibraryItem>[];
     final isGear = kind == 'gear';
     if (items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(isGear ? '還沒有裝備。在行程裡新增裝備時，會自動記在這裡，下次輸入名稱就能直接選。' : '還沒有常用食物。在行程裡新增餐點時，會自動記在這裡，下次輸入名稱就能直接選。', textAlign: TextAlign.center),
-        ),
+      return ComingSoon(
+        illustration: isGear ? Illustration.gear : Illustration.meal,
+        message: isGear ? '還沒有裝備。在行程裡新增裝備時，會自動記在這裡，下次輸入名稱就能直接選。' : '還沒有常用食物。在行程裡新增餐點時，會自動記在這裡，下次輸入名稱就能直接選。',
       );
     }
     return ListView(
       padding: const EdgeInsets.only(bottom: 96),
       children: [
         HintBanner(hintId: 'library-$kind', icon: Icons.bookmark_outline, text: '點一下可以修改；新增行程項目時輸入名稱就會出現建議。'),
-        for (final i in items)
-          ListTile(
-            key: ValueKey('library-${i.id}'),
-            title: Text(i.name),
-            subtitle: Text(isGear ? '${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}' : '${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal'),
-            onTap: () => showLibraryItemSheet(context, kind: kind, item: i),
-          ),
+        SettingsSection(
+          children: [
+            for (final i in items)
+              SettingsTile(
+                key: ValueKey('library-${i.id}'),
+                icon: isGear ? Icons.backpack_outlined : Icons.restaurant_outlined,
+                title: i.name,
+                subtitle: isGear
+                    ? '${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}'
+                    : '${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal',
+                onTap: () => showLibraryItemSheet(context, kind: kind, item: i),
+              ),
+          ],
+        ),
       ],
     );
   }

@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../shared/settings_section.dart';
+import '../../gear/domain/gear_logic.dart';
+import '../../meals/domain/meal_logic.dart';
 import '../data/shared_sets_api.dart';
 import '../data/template_repository.dart';
 import '../domain/set_item.dart';
@@ -40,7 +43,10 @@ Future<void> applyTemplateToTrip(BuildContext context, WidgetRef ref, Trip trip)
       child: ListView(
         shrinkWrap: true,
         children: [
-          Padding(padding: const EdgeInsets.fromLTRB(24, 0, 24, 8), child: Text('套用哪一份範本？', style: Theme.of(ctx).textTheme.titleLarge)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+            child: Text('套用哪一份範本？', style: Theme.of(ctx).textTheme.titleLarge),
+          ),
           for (final t in templates)
             ListTile(
               key: ValueKey('apply-${t.id}'),
@@ -57,13 +63,11 @@ Future<void> applyTemplateToTrip(BuildContext context, WidgetRef ref, Trip trip)
   messenger.showSnackBar(SnackBar(content: Text(resultText(r))));
 }
 
-String summaryOf(List<SetItem> items) => '裝備 ${gearCountOf(items)} 件  ·  餐點 ${mealCountOf(items)} 項  ·  ${(gearWeightOf(items) / 1000).toStringAsFixed(1)} kg';
+String summaryOf(List<SetItem> items) =>
+    '裝備 ${gearCountOf(items)} 件  ·  餐點 ${mealCountOf(items)} 項  ·  ${(gearWeightOf(items) / 1000).toStringAsFixed(1)} kg';
 
 String resultText(ApplyResult r) {
-  final parts = [
-    if (r.gearAdded > 0) '裝備 ${r.gearAdded} 件',
-    if (r.mealsAdded > 0) '餐點 ${r.mealsAdded} 項',
-  ];
+  final parts = [if (r.gearAdded > 0) '裝備 ${r.gearAdded} 件', if (r.mealsAdded > 0) '餐點 ${r.mealsAdded} 項'];
   final skipped = r.gearSkipped > 0 ? '（${r.gearSkipped} 件已有，略過）' : '';
   return parts.isEmpty ? '沒有新增任何項目$skipped' : '已加入 ${parts.join('、')}$skipped';
 }
@@ -74,7 +78,12 @@ Future<String?> _askTitle(BuildContext context, {String initial = ''}) {
     context: context,
     builder: (ctx) => AlertDialog(
       title: const Text('範本名稱'),
-      content: TextField(controller: controller, autofocus: true, maxLength: 200, decoration: const InputDecoration(hintText: '例如：兩天一夜夏季')),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        maxLength: 200,
+        decoration: const InputDecoration(hintText: '例如：兩天一夜夏季'),
+      ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
         FilledButton(
@@ -111,7 +120,9 @@ Future<void> shareTemplate(BuildContext context, WidgetRef ref, Template templat
   );
   if (choice == null) return;
   try {
-    final s = await ref.read(sharedSetsApiProvider).create(title: choice.title, visibility: choice.visibility, key: choice.key, items: items);
+    final s = await ref
+        .read(sharedSetsApiProvider)
+        .create(title: choice.title, visibility: choice.visibility, key: choice.key, items: items);
     final hint = s.visibility == SharedVisibility.protected ? '（Key：${choice.key}，請告訴想給的人）' : '';
     messenger.showSnackBar(SnackBar(content: Text('已分享「${s.title}」（${s.visibility.label}）$hint')));
   } on SharedSetsException catch (e) {
@@ -147,7 +158,11 @@ class _ShareDialogState extends State<_ShareDialog> {
     if (_visibility == SharedVisibility.protected && !RegExp(r'^[A-Za-z0-9]{4,12}$').hasMatch(key)) {
       return setState(() => _error = 'Key 要 4 到 12 個英文字母或數字');
     }
-    Navigator.pop(context, (title: title, visibility: _visibility, key: _visibility == SharedVisibility.protected ? key : null));
+    Navigator.pop(context, (
+      title: title,
+      visibility: _visibility,
+      key: _visibility == SharedVisibility.protected ? key : null,
+    ));
   }
 
   @override
@@ -159,7 +174,11 @@ class _ShareDialogState extends State<_ShareDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(controller: _title, maxLength: 200, decoration: const InputDecoration(labelText: '標題')),
+            TextField(
+              controller: _title,
+              maxLength: 200,
+              decoration: const InputDecoration(labelText: '標題'),
+            ),
             const SizedBox(height: 8),
             SegmentedButton<SharedVisibility>(
               key: const ValueKey('share-visibility'),
@@ -176,14 +195,70 @@ class _ShareDialogState extends State<_ShareDialog> {
               SharedVisibility.protected => '所有人找得到標題，但要輸入 Key 才看得到內容。',
               SharedVisibility.private => '只有你看得到，等於雲端備份一份。',
             }, style: Theme.of(context).textTheme.bodySmall),
-            if (_visibility == SharedVisibility.protected) TextField(controller: _key, decoration: const InputDecoration(labelText: 'Key（4 到 12 個英數字）')),
-            if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error))),
+            if (_visibility == SharedVisibility.protected)
+              TextField(
+                controller: _key,
+                decoration: const InputDecoration(labelText: 'Key（4 到 12 個英數字）'),
+              ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              ),
           ],
         ),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-        FilledButton(key: const ValueKey('share-confirm'), style: FilledButton.styleFrom(minimumSize: const Size(88, 44)), onPressed: _submit, child: const Text('分享')),
+        FilledButton(
+          key: const ValueKey('share-confirm'),
+          style: FilledButton.styleFrom(minimumSize: const Size(88, 44)),
+          onPressed: _submit,
+          child: const Text('分享'),
+        ),
+      ],
+    );
+  }
+}
+
+/// The gear and the meals of a set, each as a captioned card of rows (used by the template and shared-set pages).
+class SetItemSections extends StatelessWidget {
+  const SetItemSections({super.key, required this.items});
+  final List<SetItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final gear = items.where((i) => i.isGear).toList();
+    final meals = items.where((i) => i.isMeal).toList()..sort((a, b) => a.day.compareTo(b.day));
+    String name(SetItem i) => i.quantity > 1 ? '${i.name} × ${i.quantity}' : i.name;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (gear.isNotEmpty)
+          SettingsSection(
+            title: '裝備',
+            children: [
+              for (final i in gear)
+                SettingsTile(
+                  icon: Icons.backpack_outlined,
+                  title: name(i),
+                  subtitle: '${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}',
+                ),
+            ],
+          ),
+        if (meals.isNotEmpty)
+          SettingsSection(
+            title: '餐點',
+            children: [
+              for (final i in meals)
+                SettingsTile(
+                  icon: Icons.restaurant_outlined,
+                  title: name(i),
+                  subtitle:
+                      'D${i.day}  ·  ${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal',
+                ),
+            ],
+          ),
       ],
     );
   }

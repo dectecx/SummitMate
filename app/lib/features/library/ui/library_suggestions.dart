@@ -21,7 +21,10 @@ class LibrarySuggestions extends ConsumerWidget {
       builder: (context, value, _) {
         final q = value.text.trim().toLowerCase();
         if (q.isEmpty) return const SizedBox.shrink();
-        final shown = items.where((i) => i.name.toLowerCase().contains(q) && i.name.toLowerCase() != q).take(5).toList();
+        final shown = items
+            .where((i) => i.name.toLowerCase().contains(q) && i.name.toLowerCase() != q)
+            .take(5)
+            .toList();
         if (shown.isEmpty) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -29,7 +32,15 @@ class LibrarySuggestions extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: Wrap(
               spacing: 8,
-              children: [for (final i in shown) ActionChip(key: ValueKey('lib-${i.id}'), avatar: const Icon(Icons.bookmark_outline, size: 18), label: Text(i.name), onPressed: () => onPick(i))],
+              children: [
+                for (final i in shown)
+                  ActionChip(
+                    key: ValueKey('lib-${i.id}'),
+                    avatar: const Icon(Icons.bookmark_outline, size: 18),
+                    label: Text(i.name),
+                    onPressed: () => onPick(i),
+                  ),
+              ],
             ),
           ),
         );

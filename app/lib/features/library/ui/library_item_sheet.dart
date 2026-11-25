@@ -37,7 +37,8 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
 
   bool get _isGear => widget.kind == 'gear';
 
-  static String _num(double? v) => v == null || v == 0 ? '' : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString());
+  static String _num(double? v) =>
+      v == null || v == 0 ? '' : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString());
 
   @override
   void dispose() {
@@ -54,9 +55,23 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
     final weight = double.tryParse(_weight.text.trim()) ?? 0;
     final calories = double.tryParse(_calories.text.trim()) ?? 0;
     if (widget.item == null) {
-      await repo.add(kind: widget.kind, name: _name.text.trim(), category: _category, weight: weight, calories: calories, note: _note.text.trim());
+      await repo.add(
+        kind: widget.kind,
+        name: _name.text.trim(),
+        category: _category,
+        weight: weight,
+        calories: calories,
+        note: _note.text.trim(),
+      );
     } else {
-      await repo.update(widget.item!.id, name: _name.text.trim(), category: _category, weight: weight, calories: calories, note: _note.text.trim());
+      await repo.update(
+        widget.item!.id,
+        name: _name.text.trim(),
+        category: _category,
+        weight: weight,
+        calories: calories,
+        note: _note.text.trim(),
+      );
     }
     if (mounted) Navigator.pop(context);
   }
@@ -70,7 +85,9 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
   Widget build(BuildContext context) {
     final editing = widget.item != null;
     final decimal = [FilteringTextInputFormatter.allow(RegExp(r'^\d{0,5}\.?\d{0,1}'))];
-    final options = _isGear ? [for (final c in GearCategory.values) (c.key, c.label)] : [for (final t in MealType.values) (t.key, t.label)];
+    final options = _isGear
+        ? [for (final c in GearCategory.values) (c.key, c.label)]
+        : [for (final t in MealType.values) (t.key, t.label)];
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.viewInsetsOf(context).bottom),
       child: SingleChildScrollView(
@@ -80,7 +97,10 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(editing ? (_isGear ? '編輯裝備' : '編輯食物') : (_isGear ? '新增到裝備庫' : '新增到常用食物'), style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                editing ? (_isGear ? '編輯裝備' : '編輯食物') : (_isGear ? '新增到裝備庫' : '新增到常用食物'),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _name,
@@ -121,7 +141,12 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
                 ],
               ),
               const SizedBox(height: 16),
-              TextFormField(controller: _note, minLines: 1, maxLines: 3, decoration: const InputDecoration(labelText: '備註（選填）')),
+              TextFormField(
+                controller: _note,
+                minLines: 1,
+                maxLines: 3,
+                decoration: const InputDecoration(labelText: '備註（選填）'),
+              ),
               const SizedBox(height: 24),
               FilledButton(onPressed: _save, child: Text(editing ? '儲存' : '新增')),
               if (editing)

@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/router.dart';
+import '../../../shared/brand/illustrations.dart';
+import '../../../shared/coming_soon.dart';
+import '../../../shared/settings_section.dart';
 import '../data/shared_sets_api.dart';
 import '../providers.dart';
 
@@ -28,9 +31,21 @@ class _SharedSetsPageState extends State<SharedSetsPage> with SingleTickerProvid
     return Scaffold(
       appBar: AppBar(
         title: const Text('雲端裝備組合'),
-        bottom: TabBar(controller: _tabs, tabs: const [Tab(text: '公開'), Tab(text: '我分享的')]),
+        bottom: TabBar(
+          controller: _tabs,
+          tabs: const [
+            Tab(text: '公開'),
+            Tab(text: '我分享的'),
+          ],
+        ),
       ),
-      body: TabBarView(controller: _tabs, children: const [_SetList(scope: 'public'), _SetList(scope: 'mine')]),
+      body: TabBarView(
+        controller: _tabs,
+        children: const [
+          _SetList(scope: 'public'),
+          _SetList(scope: 'mine'),
+        ],
+      ),
     );
   }
 }
@@ -75,7 +90,9 @@ class _SetListState extends ConsumerState<_SetList> with AutomaticKeepAliveClien
       }
     });
     try {
-      final page = await ref.read(sharedSetsApiProvider).list(scope: widget.scope, q: _search.text, cursor: reset ? null : _cursor);
+      final page = await ref
+          .read(sharedSetsApiProvider)
+          .list(scope: widget.scope, q: _search.text, cursor: reset ? null : _cursor);
       if (!mounted) return;
       setState(() {
         _items.addAll(page.items);
@@ -94,7 +111,6 @@ class _SetListState extends ConsumerState<_SetList> with AutomaticKeepAliveClien
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
     return Column(
       children: [
         if (widget.scope == 'public')
@@ -115,37 +131,49 @@ class _SetListState extends ConsumerState<_SetList> with AutomaticKeepAliveClien
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        Text(_error!.text, textAlign: TextAlign.center),
-                        const SizedBox(height: 12),
-                        OutlinedButton(onPressed: () => _load(reset: true), child: const Text('重試')),
-                      ],
+                  SizedBox(
+                    height: 360,
+                    child: ComingSoon(
+                      icon: Icons.cloud_off_outlined,
+                      message: _error!.text,
+                      action: OutlinedButton(onPressed: () => _load(reset: true), child: const Text('重試')),
                     ),
                   )
                 else if (!_loading && _items.isEmpty)
+                  SizedBox(
+                    height: 360,
+                    child: ComingSoon(
+                      illustration: Illustration.search,
+                      message: widget.scope == 'mine' ? '你還沒有分享過任何組合。到「我的範本」開啟一份範本，選「分享到雲端」。' : '沒有找到組合。',
+                    ),
+                  ),
+                if (_items.isNotEmpty)
+                  SettingsSection(
+                    children: [
+                      for (final s in _items)
+                        SettingsTile(
+                          key: ValueKey('shared-${s.id}'),
+                          icon: switch (s.visibility) {
+                            SharedVisibility.public => Icons.public,
+                            SharedVisibility.protected => Icons.lock_outline,
+                            SharedVisibility.private => Icons.visibility_off_outlined,
+                          },
+                          title: s.title,
+                          subtitle: '${s.authorName}  ·  ${s.visibility.label}\n${summaryText(s)}',
+                          onTap: () => context.push(Routes.sharedSet(s.id)),
+                        ),
+                    ],
+                  ),
+                if (_loading)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                if (!_loading && _cursor != null)
                   Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(widget.scope == 'mine' ? '你還沒有分享過任何組合。到「我的範本」開啟一份範本，選「分享到雲端」。' : '沒有找到組合。', textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+                    padding: const EdgeInsets.all(16),
+                    child: OutlinedButton(onPressed: () => _load(), child: const Text('載入更多')),
                   ),
-                for (final s in _items)
-                  ListTile(
-                    key: ValueKey('shared-${s.id}'),
-                    leading: Icon(switch (s.visibility) {
-                      SharedVisibility.public => Icons.public,
-                      SharedVisibility.protected => Icons.lock_outline,
-                      SharedVisibility.private => Icons.visibility_off_outlined,
-                    }),
-                    title: Text(s.title),
-                    subtitle: Text('${s.authorName}  ·  ${s.visibility.label}\n${summaryText(s)}'),
-                    isThreeLine: true,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push(Routes.sharedSet(s.id)),
-                  ),
-                if (_loading) const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
-                if (!_loading && _cursor != null) Padding(padding: const EdgeInsets.all(16), child: OutlinedButton(onPressed: () => _load(), child: const Text('載入更多'))),
               ],
             ),
           ),
@@ -155,4 +183,5 @@ class _SetListState extends ConsumerState<_SetList> with AutomaticKeepAliveClien
   }
 }
 
-String summaryText(SharedSetSummary s) => '裝備 ${s.gearCount} 件  ·  餐點 ${s.mealCount} 項  ·  ${(s.totalWeight / 1000).toStringAsFixed(1)} kg';
+String summaryText(SharedSetSummary s) =>
+    '裝備 ${s.gearCount} 件  ·  餐點 ${s.mealCount} 項  ·  ${(s.totalWeight / 1000).toStringAsFixed(1)} kg';
