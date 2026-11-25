@@ -9,14 +9,12 @@ import '../../explore/providers.dart';
 import '../domain/route_points.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
+import '../../../shared/form_sheet.dart';
 
 /// Bottom sheet to add a node, or to edit/view one when [item] is given.
 Future<void> showItemFormSheet(BuildContext context, {required Trip trip, ItineraryItem? item, int initialDay = 1, bool readOnly = false}) {
-  return showModalBottomSheet<void>(
+  return showFormSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    showDragHandle: true,
     builder: (_) => ItemFormSheet(trip: trip, item: item, initialDay: initialDay, readOnly: readOnly),
   );
 }

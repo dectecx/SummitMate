@@ -7,13 +7,11 @@ import '../../library/providers.dart';
 import '../../library/ui/library_suggestions.dart';
 import '../domain/gear_logic.dart';
 import '../providers.dart';
+import '../../../shared/form_sheet.dart';
 
 Future<void> showGearFormSheet(BuildContext context, {required String tripId, GearItem? item}) {
-  return showModalBottomSheet<void>(
+  return showFormSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    showDragHandle: true,
     builder: (_) => GearFormSheet(tripId: tripId, item: item),
   );
 }

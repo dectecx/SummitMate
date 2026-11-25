@@ -10,6 +10,7 @@ import '../../trips/providers.dart';
 import '../data/friends_api.dart';
 import '../providers.dart';
 import '../../../shared/brand/illustrations.dart';
+import '../../../shared/form_sheet.dart';
 
 /// "好友": my friends, requests waiting for my answer, and requests I sent. Needs sign-in and a connection.
 class FriendsPage extends ConsumerWidget {
@@ -179,12 +180,9 @@ class _Lists extends ConsumerWidget {
 }
 
 /// Sends a friend request to the person with this exact e-mail.
-Future<void> showAddFriendSheet(BuildContext context) => showModalBottomSheet<void>(
-  context: context,
-  isScrollControlled: true,
-  useRootNavigator: true,
-  showDragHandle: true,
-  builder: (_) => const AddFriendSheet(),
+Future<void> showAddFriendSheet(BuildContext context) => showFormSheet<void>(
+    context: context,
+    builder: (_) => const AddFriendSheet(),
 );
 
 class AddFriendSheet extends ConsumerStatefulWidget {

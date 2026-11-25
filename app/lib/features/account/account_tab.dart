@@ -298,9 +298,10 @@ Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
   try {
     await ref.read(authRepositoryProvider).deleteAccount();
   } on Object catch (e) {
-    if (context.mounted)
+    if (context.mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(authErrorMessage(e))));
+    }
   }
 }
 

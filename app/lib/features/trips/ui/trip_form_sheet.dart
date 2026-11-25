@@ -7,14 +7,12 @@ import '../../explore/domain/mountain_models.dart';
 import '../../explore/providers.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
+import '../../../shared/form_sheet.dart';
 
 /// Bottom sheet to create a trip, or to edit one when [trip] is given. Returns the trip id.
 Future<String?> showTripFormSheet(BuildContext context, {Trip? trip}) {
-  return showModalBottomSheet<String>(
+  return showFormSheet<String>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    showDragHandle: true,
     builder: (_) => TripFormSheet(trip: trip),
   );
 }

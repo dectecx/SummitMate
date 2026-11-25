@@ -45,7 +45,7 @@ void main() {
     await tester.tap(chip);
     await settle(tester);
     expect(find.widgetWithText(TextFormField, '900'), findsOneWidget);
-    await tester.tapAt(const Offset(5, 5)); // close the sheet without adding
+    await tester.tap(find.byKey(const ValueKey('sheet-close'))); // swiping or tapping outside no longer closes it
     await settle(tester);
 
     // The library page lists it and the item can be edited.

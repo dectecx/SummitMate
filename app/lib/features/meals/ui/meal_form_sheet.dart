@@ -7,13 +7,11 @@ import '../../library/providers.dart';
 import '../../library/ui/library_suggestions.dart';
 import '../domain/meal_logic.dart';
 import '../providers.dart';
+import '../../../shared/form_sheet.dart';
 
 Future<void> showMealFormSheet(BuildContext context, {required String tripId, required int dayIndex, MealEntry? entry}) {
-  return showModalBottomSheet<void>(
+  return showFormSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    showDragHandle: true,
     builder: (_) => MealFormSheet(tripId: tripId, dayIndex: dayIndex, entry: entry),
   );
 }

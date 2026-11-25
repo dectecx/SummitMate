@@ -6,14 +6,12 @@ import '../domain/member_logic.dart';
 import '../providers.dart';
 import '../../friends/data/friends_api.dart';
 import '../../friends/providers.dart';
+import '../../../shared/form_sheet.dart';
 
 /// Invite a registered person to the trip by e-mail.
 Future<void> showInviteSheet(BuildContext context, {required String tripId, required Set<String> existingUserIds}) {
-  return showModalBottomSheet<void>(
+  return showFormSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    showDragHandle: true,
     builder: (_) => InviteSheet(tripId: tripId, existingUserIds: existingUserIds),
   );
 }

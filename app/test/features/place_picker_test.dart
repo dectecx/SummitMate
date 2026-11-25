@@ -229,7 +229,7 @@ void main() {
     await tapText(tester, '沒山頭');
     await tapText(tester, '新增節點');
     expect(find.byType(ActionChip), findsNothing);
-    await tester.tapAt(const Offset(5, 5)); // close the sheet
+    await tester.tap(find.byKey(const ValueKey('sheet-close'))); // swiping or tapping outside no longer closes it
     await settle(tester);
     await tester.pageBack();
     await settle(tester);

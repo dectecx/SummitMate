@@ -54,11 +54,12 @@ class TemplateDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(templateProvider(templateId)).value;
-    if (t == null)
+    if (t == null) {
       return Scaffold(
         appBar: AppBar(),
         body: const ComingSoon(illustration: Illustration.search, message: '找不到這份範本，可能已被刪除'),
       );
+    }
     final items = decodeSetItems(t.items);
     final theme = Theme.of(context);
     return Scaffold(

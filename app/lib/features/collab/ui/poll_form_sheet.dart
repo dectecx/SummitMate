@@ -5,13 +5,11 @@ import '../../trips/providers.dart';
 import '../domain/collab_logic.dart';
 import '../providers.dart';
 import 'discussion_view.dart';
+import '../../../shared/form_sheet.dart';
 
 Future<void> showPollFormSheet(BuildContext context, {required String tripId}) {
-  return showModalBottomSheet<void>(
+  return showFormSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    showDragHandle: true,
     builder: (_) => PollFormSheet(tripId: tripId),
   );
 }

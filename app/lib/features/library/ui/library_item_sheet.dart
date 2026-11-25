@@ -6,14 +6,12 @@ import '../../../core/db/app_database.dart';
 import '../../gear/domain/gear_logic.dart';
 import '../../meals/domain/meal_logic.dart';
 import '../providers.dart';
+import '../../../shared/form_sheet.dart';
 
 /// Add or edit one library item. [kind] is 'gear' or 'meal'.
 Future<void> showLibraryItemSheet(BuildContext context, {required String kind, LibraryItem? item}) {
-  return showModalBottomSheet<void>(
+  return showFormSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    showDragHandle: true,
     builder: (_) => LibraryItemSheet(kind: kind, item: item),
   );
 }
