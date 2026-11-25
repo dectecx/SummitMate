@@ -16,7 +16,8 @@ import 'domain/map_logic.dart';
 import 'providers.dart';
 
 /// NLSC (內政部國土測繪中心) open-data e-map with contour lines, online only. Note the z/y/x order.
-const _nlscTileUrl = 'https://wmts.nlsc.gov.tw/wmts/EMAP5_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}';
+const _nlscTileUrl =
+    'https://wmts.nlsc.gov.tw/wmts/EMAP5_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}';
 
 /// "地圖": the topographic map with the mountains, the person's position; the Rudy Map when it is installed.
 class MapTab extends ConsumerStatefulWidget {
@@ -62,7 +63,10 @@ class _MapTabState extends ConsumerState<MapTab> {
           _rudy?.setMe(lat, lng);
           _rudy?.moveTo(lat, lng, minZoom: 13);
         } else {
-          _controller.move(LatLng(lat, lng), _controller.camera.zoom < 13 ? 13 : _controller.camera.zoom);
+          _controller.move(
+            LatLng(lat, lng),
+            _controller.camera.zoom < 13 ? 13 : _controller.camera.zoom,
+          );
         }
       case LocationDenied(:final permanent):
         _say(permanent ? '位置權限已被關閉，請到系統設定開啟。' : '需要位置權限才能顯示你的位置。');
@@ -73,7 +77,8 @@ class _MapTabState extends ConsumerState<MapTab> {
     }
   }
 
-  void _say(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  void _say(String text) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +88,12 @@ class _MapTabState extends ConsumerState<MapTab> {
     };
     final scheme = Theme.of(context).colorScheme;
     final source = ref.watch(mapSourceProvider);
-    ref.watch(rudyReadyProvider); // keep it loaded so the menu knows whether the files are there
-    final rudyStyle = source == MapSource.rudy ? ref.watch(rudyStyleProvider).value : null;
+    ref.watch(
+      rudyReadyProvider,
+    ); // keep it loaded so the menu knows whether the files are there
+    final rudyStyle = source == MapSource.rudy
+        ? ref.watch(rudyStyleProvider).value
+        : null;
     _usingRudy = rudyStyle != null;
     if (!_usingRudy) {
       _rudy = null;
@@ -115,10 +124,16 @@ class _MapTabState extends ConsumerState<MapTab> {
       body: Stack(
         children: [
           if (rudyStyle != null)
-            ref.watch(rudyMapBuilderProvider)(context, rudyStyle, mountains, _onPeaksTapped, (h) {
-              _rudy = h;
-              h.setMe(_me?.latitude, _me?.longitude);
-            })
+            ref.watch(rudyMapBuilderProvider)(
+              context,
+              rudyStyle,
+              mountains,
+              _onPeaksTapped,
+              (h) {
+                _rudy = h;
+                h.setMe(_me?.latitude, _me?.longitude);
+              },
+            )
           else
             FlutterMap(
               mapController: _controller,
@@ -137,7 +152,8 @@ class _MapTabState extends ConsumerState<MapTab> {
                 TileLayer(
                   urlTemplate: _nlscTileUrl,
                   userAgentPackageName: 'com.declab.summitmate',
-                  maxNativeZoom: 15, // z16 of the NLSC layer is only an enlarged z15
+                  maxNativeZoom:
+                      15, // z16 of the NLSC layer is only an enlarged z15
                   tileProvider: ref.watch(mapTileProviderProvider),
                 ),
                 MarkerLayer(
@@ -153,7 +169,14 @@ class _MapTabState extends ConsumerState<MapTab> {
                           child: _farView
                               ? Center(
                                   child: DecoratedBox(
-                                    decoration: BoxDecoration(color: scheme.primary, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.5)),
+                                    decoration: BoxDecoration(
+                                      color: scheme.primary,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
                                     child: const SizedBox.square(dimension: 9),
                                   ),
                                 )
@@ -161,7 +184,9 @@ class _MapTabState extends ConsumerState<MapTab> {
                                   Icons.landscape,
                                   color: scheme.primary,
                                   size: 24,
-                                  shadows: const [Shadow(blurRadius: 4, color: Colors.white)],
+                                  shadows: const [
+                                    Shadow(blurRadius: 4, color: Colors.white),
+                                  ],
                                 ),
                         ),
                       ),
@@ -197,13 +222,17 @@ class _MapTabState extends ConsumerState<MapTab> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: InkWell(
                   key: const ValueKey('map-attribution'),
-                  onTap: () => ref
-                      .read(linkOpenerProvider)(Uri.parse(_usingRudy ? rudyHomeUrl : 'https://maps.nlsc.gov.tw')),
+                  onTap: () => ref.read(linkOpenerProvider)(
+                    Uri.parse(
+                      _usingRudy ? rudyHomeUrl : 'https://maps.nlsc.gov.tw',
+                    ),
+                  ),
                   child: Text(
                     _usingRudy
                         ? rudyAttribution
                         : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(decoration: TextDecoration.underline),
+                    style: Theme.of(context).textTheme.labelSmall
+                        ?.copyWith(decoration: TextDecoration.underline),
                   ),
                 ),
               ),
@@ -214,24 +243,47 @@ class _MapTabState extends ConsumerState<MapTab> {
             right: 12,
             bottom: 32,
             child: Material(
-              elevation: 3,
-              color: scheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    tooltip: '我的位置',
-                    onPressed: _locate,
-                    icon: _locating
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.my_location),
+              elevation: 2,
+              color: scheme.surfaceContainerLowest,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: scheme.outlineVariant),
+              ),
+              child: IconButtonTheme(
+                data: IconButtonThemeData(
+                  style: IconButton.styleFrom(
+                    foregroundColor: scheme.primary,
+                    minimumSize: const Size(48, 48),
                   ),
-                  const Divider(height: 1),
-                  IconButton(tooltip: '放大', onPressed: () => _zoom(1), icon: const Icon(Icons.add)),
-                  const Divider(height: 1),
-                  IconButton(tooltip: '縮小', onPressed: () => _zoom(-1), icon: const Icon(Icons.remove)),
-                ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: '我的位置',
+                      onPressed: _locate,
+                      icon: _locating
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.my_location),
+                    ),
+                    const Divider(height: 1),
+                    IconButton(
+                      tooltip: '放大',
+                      onPressed: () => _zoom(1),
+                      icon: const Icon(Icons.add),
+                    ),
+                    const Divider(height: 1),
+                    IconButton(
+                      tooltip: '縮小',
+                      onPressed: () => _zoom(-1),
+                      icon: const Icon(Icons.remove),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -256,7 +308,12 @@ class _MapTabState extends ConsumerState<MapTab> {
   }
 
   void _onPeakTap(Mountain m, List<Mountain> all) {
-    final near = peaksNear(all, m.latitude, m.longitude, _controller.camera.zoom);
+    final near = peaksNear(
+      all,
+      m.latitude,
+      m.longitude,
+      _controller.camera.zoom,
+    );
     if (near.length <= 1) return _showMountain(m);
     _showNear(near);
   }
@@ -272,7 +329,10 @@ class _MapTabState extends ConsumerState<MapTab> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-              child: Text('附近的山（${near.length}）', style: Theme.of(ctx).textTheme.titleLarge),
+              child: Text(
+                '附近的山（${near.length}）',
+                style: Theme.of(ctx).textTheme.titleLarge,
+              ),
             ),
             for (final p in near)
               ListTile(

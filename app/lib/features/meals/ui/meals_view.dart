@@ -9,6 +9,7 @@ import '../providers.dart';
 import 'meal_form_sheet.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
+import '../../../shared/group_card.dart';
 
 /// "餐食": the person's own meal plan, one day at a time, with weight and calorie totals.
 class MealsView extends ConsumerWidget {
@@ -65,23 +66,25 @@ class MealsView extends ConsumerWidget {
               : ListView(
                   padding: const EdgeInsets.only(bottom: 96),
                   children: [
-                    for (final g in groups) ...[
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Text(g.type.label, style: theme.textTheme.titleSmall),
+                    for (final g in groups)
+                      GroupCard(
+                        title: g.type.label,
+                        trailing: formatWeight(g.entries.fold<double>(0, (sum, e) => sum + e.weight)),
+                        children: [
+                          for (final e in g.entries)
+                            ListTile(
+                              shape: const RoundedRectangleBorder(),
+                              onTap: () => showMealFormSheet(context, tripId: trip.id, dayIndex: day, entry: e),
+                              title: Text(e.item.name.isEmpty ? '（未命名）' : e.item.name),
+                              subtitle: Text([if (e.item.quantity > 1) '× ${e.item.quantity}', if (e.item.note.isNotEmpty) e.item.note].join('  ·  ')),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [Text(formatWeight(e.weight)), Text(formatKcal(e.calories), style: theme.textTheme.bodySmall)],
+                              ),
+                            ),
+                        ],
                       ),
-                      for (final e in g.entries)
-                        ListTile(
-                          onTap: () => showMealFormSheet(context, tripId: trip.id, dayIndex: day, entry: e),
-                          title: Text(e.item.name.isEmpty ? '（未命名）' : e.item.name),
-                          subtitle: Text([if (e.item.quantity > 1) '× ${e.item.quantity}', if (e.item.note.isNotEmpty) e.item.note].join('  ·  ')),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [Text(formatWeight(e.weight)), Text(formatKcal(e.calories), style: theme.textTheme.bodySmall)],
-                          ),
-                        ),
-                    ],
                   ],
                 ),
         ),

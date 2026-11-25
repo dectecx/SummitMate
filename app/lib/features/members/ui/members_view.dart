@@ -62,7 +62,19 @@ class MembersView extends ConsumerWidget {
               ),
             ),
           ),
-        for (final line in lines) _MemberTile(trip: trip, line: line, myRole: role),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Card(
+            child: Column(
+              children: [
+                for (var i = 0; i < lines.length; i++) ...[
+                  if (i > 0) Divider(height: 1, indent: 72, color: theme.colorScheme.outlineVariant),
+                  _MemberTile(trip: trip, line: lines[i], myRole: role),
+                ],
+              ],
+            ),
+          ),
+        ),
         if (signedIn && role != TripRole.owner && lines.any((l) => l.isMe))
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -88,7 +100,8 @@ class _MemberTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final manage = canManageMember(me: myRole, target: line.role);
     return ListTile(
-      leading: CircleAvatar(child: Text(line.avatar)),
+      shape: const RoundedRectangleBorder(),
+      leading: CircleAvatar(backgroundColor: Theme.of(context).colorScheme.primaryContainer, child: Text(line.avatar)),
       title: Text(line.isMe ? '${line.displayName}（你）' : line.displayName),
       subtitle: Text(line.role.label),
       trailing: manage
