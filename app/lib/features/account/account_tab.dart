@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../app/app.dart';
+import '../../shared/animations.dart';
+import '../../shared/brand/art/art_view.dart';
+import '../trips/domain/trip_art.dart';
 import '../../app/router.dart';
 import '../../core/auth/auth_repository.dart';
 import '../../core/auth/auth_state.dart';
@@ -63,7 +66,7 @@ class AccountTab extends ConsumerWidget {
           ),
           const SettingsSection(
             title: '設定',
-            children: [_SyncTile(), _ThemeTile()],
+            children: [_SyncTile(), _ThemeTile(), _AnimationTile()],
           ),
           SettingsSection(
             title: '說明',
@@ -117,6 +120,8 @@ class _GuestCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (MediaQuery.orientationOf(context) == Orientation.portrait)
+                const Center(child: ArtSceneView(ArtScene.friends, width: 132)),
               Text('訪客模式', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 4),
               const Text('目前的資料只存在這支手機。登入後會自動備份，也能邀請隊友一起規劃。'),
@@ -145,7 +150,12 @@ class _ProfileCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: Card(
-        child: Padding(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (MediaQuery.orientationOf(context) == Orientation.portrait)
+              SizedBox(height: 108, child: VignetteArt(cover: coverFor(user.email, coverCount))),
+            Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
@@ -172,6 +182,8 @@ class _ProfileCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+          ],
         ),
       ),
     );
@@ -256,6 +268,23 @@ class _ThemeTile extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AnimationTile extends ConsumerWidget {
+  const _AnimationTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final on = ref.watch(animationsSettingProvider).value ?? true;
+    void set(bool v) => ref.read(settingsStoreProvider).setBool(SettingsStore.animations, v);
+    return SettingsTile(
+      icon: Icons.animation_outlined,
+      title: '動畫',
+      subtitle: '關閉可以省電',
+      onTap: () => set(!on),
+      trailing: Switch(key: const ValueKey('animations-switch'), value: on, onChanged: set),
     );
   }
 }

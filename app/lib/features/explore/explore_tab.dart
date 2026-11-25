@@ -10,6 +10,9 @@ import '../../shared/coming_soon.dart';
 import 'domain/mountain_models.dart';
 import 'providers.dart';
 import 'ui/shops_view.dart';
+import '../../shared/brand/art/art_view.dart';
+import '../../shared/tints.dart';
+import '../trips/domain/trip_art.dart';
 import '../../../shared/brand/illustrations.dart';
 
 enum _Segment { mountains, shops }
@@ -121,29 +124,74 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
           child: results.isEmpty
               ? Center(child: Text(_onlyFavorites && favorites.isEmpty ? '還沒有收藏的山，點山岳右邊的愛心就能收藏。' : '沒有符合的山'))
               : ListView.builder(
+                  padding: const EdgeInsets.only(top: 2, bottom: 12),
                   itemCount: results.length,
-                  itemBuilder: (_, i) {
-                    final m = results[i];
-                    return ListTile(
-                      key: ValueKey('mountain-${m.id}'),
-                      onTap: () => context.push(Routes.mountain(m.id)),
-                      title: Text(m.name),
-                      subtitle: Text('${m.region}  ·  ${m.elevation} m'),
-                      trailing: Wrap(
-                        spacing: 6,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          if (m.beginnerFriendly) const _Badge('新手'),
-                          if (m.trailGrade != null) _Badge('${m.trailGrade} 級'),
-                          FavoriteHeart(mountainId: m.id, compact: true),
-                          const Icon(Icons.chevron_right),
-                        ],
-                      ),
+                  itemBuilder: (context, i) {
+                    final screen = MediaQuery.sizeOf(context);
+                    return _MountainCard(
+                      key: ValueKey('mountain-${results[i].id}'),
+                      mountain: results[i],
+                      featured: i == 0 && screen.height > screen.width,
                     );
                   },
                 ),
         ),
       ],
+    );
+  }
+}
+
+/// One mountain of the list. The featured one (the first result) carries a landscape.
+class _MountainCard extends StatelessWidget {
+  const _MountainCard({super.key, required this.mountain, required this.featured});
+  final Mountain mountain;
+  final bool featured;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final m = mountain;
+    final tint = m.beginnerFriendly ? Tint.moss : (m.category == MountainCategory.baiyue ? Tint.lake : Tint.sand);
+    final row = Row(
+      children: [
+        if (!featured) ...[
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(color: tint.of(context), borderRadius: BorderRadius.circular(16)),
+            child: Center(child: ArtIconView(m.beginnerFriendly ? ArtIcon.forest : ArtIcon.summit, size: 48)),
+          ),
+          const SizedBox(width: 14),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(m.name, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+              Text('${m.region}  ·  ${m.elevation} m', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+              if (m.beginnerFriendly || m.trailGrade != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Wrap(spacing: 6, children: [if (m.beginnerFriendly) const _Badge('新手'), if (m.trailGrade != null) _Badge('${m.trailGrade} 級')]),
+                ),
+            ],
+          ),
+        ),
+        FavoriteHeart(mountainId: m.id, compact: true),
+      ],
+    );
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      child: InkWell(
+        onTap: () => context.push(Routes.mountain(m.id)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (featured) SizedBox(height: 132, child: VignetteArt(cover: coverFor(m.id, coverCount))),
+            Padding(padding: const EdgeInsets.fromLTRB(14, 10, 8, 12), child: row),
+          ],
+        ),
+      ),
     );
   }
 }

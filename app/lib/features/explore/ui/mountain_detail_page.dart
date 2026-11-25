@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/brand/art/art_view.dart' show coverCount;
+import '../../trips/domain/trip_art.dart';
 import '../../../shared/coming_soon.dart';
 import '../../favorites/ui/favorite_heart.dart';
 import '../../weather/ui/weather_card.dart';
@@ -37,7 +39,7 @@ class MountainDetailPage extends ConsumerWidget {
             title: mountain.name,
             subtitle: [mountain.region, if (mountain.nameEn != null) mountain.nameEn!].join('  ·  '),
             trailing: '${mountain.elevation} m',
-            seed: mountain.id.hashCode,
+            seed: coverFor(mountain.id, coverCount),
           ),
           const SizedBox(height: 16),
           Wrap(

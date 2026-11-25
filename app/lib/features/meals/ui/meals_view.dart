@@ -10,6 +10,9 @@ import 'meal_form_sheet.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
 import '../../../shared/reorderable_group.dart';
+import '../../../shared/brand/art/art_view.dart' show ArtIcon, ArtIconView;
+import '../../../shared/pills.dart';
+import '../../../shared/tints.dart';
 
 /// "餐食": the person's own meal plan, one day at a time, with weight and calorie totals.
 class MealsView extends ConsumerStatefulWidget {
@@ -38,31 +41,20 @@ class _MealsViewState extends ConsumerState<MealsView> {
 
     return Column(
       children: [
-        SizedBox(
-          height: 64,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            itemCount: days.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
-            itemBuilder: (_, i) {
-              final d = days[i];
-              final date = trip.dateOfDay(d);
-              return ChoiceChip(
-                key: ValueKey('meal-day-$d'),
-                label: Text('${dayLabel(d)}  ${date.month}/${date.day}'),
-                selected: d == day,
-                onSelected: (_) => onDayChanged(d),
-              );
-            },
-          ),
+        DayBar(
+          itemCount: days.length,
+          itemBuilder: (_, i) {
+            final d = days[i];
+            return DayPill(key: ValueKey('meal-day-$d'), label: dayLabel(d), date: trip.dateOfDay(d), selected: d == day, onTap: () => onDayChanged(d));
+          },
         ),
         Card(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          margin: const EdgeInsets.fromLTRB(20, 4, 20, 0),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
+                const ArtIconView(ArtIcon.cook, size: 52),
                 Expanded(child: _Total(label: '今天', weight: totalMealWeight(today), kcal: totalCalories(today))),
                 Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
                 Expanded(child: _Total(label: '全程', weight: totalMealWeight(all), kcal: totalCalories(all))),
@@ -85,6 +77,8 @@ class _MealsViewState extends ConsumerState<MealsView> {
                       ReorderableGroupSliver(
                         key: ValueKey('meal-group-${g.type.key}'),
                         title: g.type.label,
+                        icon: g.type.index.isEven ? ArtIcon.cook : ArtIcon.water,
+                        tint: Tint.values[g.type.index % Tint.values.length],
                         trailing: formatWeight(g.entries.fold<double>(0, (sum, e) => sum + e.weight)),
                         reordering: _reordering,
                         ids: [for (final e in g.entries) e.item.id],

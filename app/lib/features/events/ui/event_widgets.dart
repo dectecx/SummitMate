@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/brand/art/art_view.dart';
+import '../../trips/domain/trip_art.dart';
 import '../../../app/router.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../favorites/ui/favorite_event_button.dart';
@@ -223,6 +225,8 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screen = MediaQuery.sizeOf(context);
+    final portrait = screen.height > screen.width;
     final muted = theme.colorScheme.onSurfaceVariant;
     final small = theme.textTheme.bodySmall?.copyWith(color: muted);
     final where = [
@@ -230,11 +234,15 @@ class EventCard extends StatelessWidget {
       formatEventDates(event.startDate, event.endDate),
     ].join('  ·  ');
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (portrait) SizedBox(height: 104, child: VignetteArt(cover: coverFor(event.id, coverCount))),
+            Padding(
+          padding: const EdgeInsets.fromLTRB(18, 8, 10, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -279,6 +287,8 @@ class EventCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+          ],
         ),
       ),
     );

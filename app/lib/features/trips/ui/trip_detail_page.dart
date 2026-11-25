@@ -5,6 +5,13 @@ import 'package:material_ui/material_ui.dart';
 import '../../../app/router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/brand/illustrations.dart';
+import '../../../shared/animations.dart';
+import '../../../shared/brand/art/art_view.dart';
+import '../../gpx/domain/elevation_profile.dart';
+import '../domain/gpx_trip.dart';
+import '../domain/trip_art.dart';
+import 'trip_header.dart';
+import '../../../shared/brush_indicator.dart';
 import '../../../shared/coming_soon.dart';
 import '../../collab/ui/discussion_view.dart';
 import '../../gear/ui/gear_form_sheet.dart';
@@ -33,7 +40,9 @@ class TripDetailPage extends ConsumerStatefulWidget {
 class _TripDetailPageState extends ConsumerState<TripDetailPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabs = TabController(length: 5, vsync: this)
-    ..addListener(() => setState(() {}));
+    ..addListener(_onTab);
+  final _scroll = GlobalKey<NestedScrollViewState>();
+  int _shownTab = 0;
   int? _day;
   bool _hadTrip = false; // the trip was shown here at least once
   int _mealDay = 1;
@@ -42,6 +51,42 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
   void dispose() {
     _tabs.dispose();
     super.dispose();
+  }
+
+  void _onTab() {
+    setState(() {});
+    if (_tabs.index == _shownTab) return;
+    _shownTab = _tabs.index;
+    if (_shownTab != 0) _collapseHeader(); // the cover belongs to the itinerary; lists need the room
+  }
+
+  void _collapseHeader() {
+    final outer = _scroll.currentState?.outerController;
+    if (outer == null || !outer.hasClients) return;
+    final end = outer.position.maxScrollExtent;
+    if (outer.offset >= end) return;
+    if (animationsOn(context, ref)) {
+      outer.animateTo(end, duration: const Duration(milliseconds: 260), curve: Curves.easeOutCubic);
+    } else {
+      outer.jumpTo(end);
+    }
+  }
+
+  static String _monthDay(DateTime d) => '${d.month}/${d.day}';
+
+  /// Only numbers that exist: the stored track when there is one, otherwise the distances typed on the nodes.
+  List<TripStat> _stats(Trip trip) {
+    final track = decodeTrack(trip.track);
+    final profile = track.length < 2 ? null : profileStats(track);
+    final typed = (ref.watch(itineraryProvider(trip.id)).value ?? const <ItineraryItem>[]).fold(0.0, (sum, i) => sum + i.distance);
+    return [
+      (value: '${trip.dayCount} 天', label: '天數'),
+      if (profile != null) ...[
+        (value: '${profile.distanceKm.toStringAsFixed(1)} km', label: '距離'),
+        (value: '${profile.ascent.round()} m', label: '爬升'),
+      ] else if (typed > 0)
+        (value: '${formatKm(typed)} km', label: '距離'),
+    ];
   }
 
   int _initialDay(Trip trip) {
@@ -82,11 +127,9 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
     final role = ref.watch(myRoleProvider(trip.id)) ?? TripRole.member;
     final day = _day ?? _initialDay(trip);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(trip.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-        actions: [
-          PopupMenuButton<String>(
+    final scheme = Theme.of(context).colorScheme;
+    final media = MediaQuery.of(context);
+    final menu = PopupMenuButton<String>(
             tooltip: '更多',
             onSelected: (v) {
               if (v == 'edit') showTripFormSheet(context, trip: trip);
@@ -110,37 +153,73 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
               if (role.canDeleteTrip)
                 const PopupMenuItem(value: 'delete', child: Text('刪除行程')),
             ],
+          );
+    final tabBar = TabBar(
+      controller: _tabs,
+      indicator: BrushTabIndicator(scheme.tertiary),
+      dividerColor: Colors.transparent,
+      labelColor: scheme.onSurface,
+      unselectedLabelColor: scheme.onSurfaceVariant,
+      labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+      unselectedLabelStyle: const TextStyle(fontSize: 15),
+      tabs: const [
+        Tab(text: '行程'),
+        Tab(text: '裝備'),
+        Tab(text: '餐食'),
+        Tab(text: '討論'),
+        Tab(text: '成員'),
+      ],
+    );
+    final header = TripHeaderDelegate(
+      cover: coverFor(trip.id, coverCount),
+      title: trip.name,
+      dates: trip.dayCount == 1 ? _monthDay(trip.start) : '${_monthDay(trip.start)} – ${_monthDay(trip.end)}',
+      stats: _stats(trip),
+      tabBar: tabBar,
+      menu: menu,
+      topPadding: media.padding.top,
+      screen: media.size,
+      textScaler: media.textScaler,
+      animate: animationsOn(context, ref),
+      brightness: scheme.brightness,
+    );
+
+    return Scaffold(
+      body: NestedScrollView(
+        key: _scroll,
+        headerSliverBuilder: (context, _) => [
+          SliverOverlapAbsorber(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+            sliver: SliverPersistentHeader(pinned: true, delegate: header),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabs,
-          tabs: const [
-            Tab(text: '行程'),
-            Tab(text: '裝備'),
-            Tab(text: '餐食'),
-            Tab(text: '討論'),
-            Tab(text: '成員'),
-          ],
+        // The pinned part of the header stays on top of the body; start the tab content below it.
+        body: Padding(
+          padding: EdgeInsets.only(top: header.minExtent),
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: TabBarView(
+              controller: _tabs,
+              children: [
+                ItineraryView(
+                  trip: trip,
+                  role: role,
+                  day: day,
+                  onDayChanged: (d) => setState(() => _day = d),
+                ),
+                GearView(tripId: trip.id),
+                MealsView(
+                  trip: trip,
+                  day: _mealDay,
+                  onDayChanged: (d) => setState(() => _mealDay = d),
+                ),
+                DiscussionView(trip: trip, role: role),
+                MembersView(trip: trip, role: role),
+              ],
+            ),
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabs,
-        children: [
-          ItineraryView(
-            trip: trip,
-            role: role,
-            day: day,
-            onDayChanged: (d) => setState(() => _day = d),
-          ),
-          GearView(tripId: trip.id),
-          MealsView(
-            trip: trip,
-            day: _mealDay,
-            onDayChanged: (d) => setState(() => _mealDay = d),
-          ),
-          DiscussionView(trip: trip, role: role),
-          MembersView(trip: trip, role: role),
-        ],
       ),
       floatingActionButton: switch (_tabs.index) {
         0 when role.canEditShared => FloatingActionButton.extended(

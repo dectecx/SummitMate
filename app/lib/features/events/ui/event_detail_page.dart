@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/brand/art/art_view.dart' show coverCount;
+import '../../trips/domain/trip_art.dart';
 import '../../../app/router.dart';
 import '../../favorites/ui/favorite_event_button.dart';
 import '../../trips/providers.dart';
@@ -339,7 +341,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   List<Widget> _header(EventDetail d) {
     final theme = Theme.of(context);
     return [
-      RidgeBanner(title: d.title, seed: d.id.hashCode.abs() % 50, height: 128),
+      RidgeBanner(title: d.title, seed: coverFor(d.id, coverCount), height: 140),
       const SizedBox(height: 14),
       EventTags(d, today: _today),
       const SizedBox(height: 14),

@@ -10,6 +10,7 @@ class SettingsStore {
   static const welcomeSeen = 'welcome_seen';
   static const seenHints = 'seen_hints';
   static const themeMode = 'theme_mode';
+  static const animations = 'animations';
 
   Future<String?> get(String key) async =>
       (await (_db.select(_db.appSettings)..where((s) => s.key.equals(key))).getSingleOrNull())?.value;

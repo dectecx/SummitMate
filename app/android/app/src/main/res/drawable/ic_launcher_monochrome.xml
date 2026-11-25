@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Themed icon: cairn and peak in a single colour. -->
+<!-- Themed icon: the cairn and the summit as one flat shape, inside the 66dp safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="1536"
-    android:viewportHeight="1536">
-    <!-- Coordinates match the 1024px artwork (assets/icon.png), which fills the visible 72dp. -->
-    <group android:translateX="256" android:translateY="256">
-        <path android:fillColor="#FFFFFF" android:pathData="M165,780a165,36 0 1,0 330,0a165,36 0 1,0 -330,0z" />
-        <path android:fillColor="#FFFFFF" android:pathData="M190,690a140,36 0 1,0 280,0a140,36 0 1,0 -280,0z" />
-        <path android:fillColor="#FFFFFF" android:pathData="M215,600a120,36 0 1,0 240,0a120,36 0 1,0 -240,0z" />
-        <path android:fillColor="#FFFFFF" android:pathData="M240,515a100,36 0 1,0 200,0a100,36 0 1,0 -200,0z" />
-        <path android:fillColor="#FFFFFF" android:pathData="M270,440a75,36 0 1,0 150,0a75,36 0 1,0 -150,0z" />
-        <path android:fillColor="#FFFFFF" android:pathData="M300,375a50,31 0 1,0 100,0a50,31 0 1,0 -100,0z" />
-        <path android:fillColor="#FFFFFF" android:pathData="M630,160L880,395L850,430L830,410L760,540V640H545L590,330L525,300Z" />
+    android:viewportWidth="600"
+    android:viewportHeight="600">
+    <!-- Coordinates match the 400 artwork of the mark, moved and pulled inwards like the colour foreground. -->
+    <group android:translateX="124" android:translateY="124" android:scaleX="0.88" android:scaleY="0.88">
+        <path android:fillColor="#FF000000" android:pathData="M66,326a72,25 0 1,0 144,0a72,25 0 1,0 -144,0z" />
+        <path android:fillColor="#FF000000" android:pathData="M88,277a54,20 0 1,0 108,0a54,20 0 1,0 -108,0z" />
+        <path android:fillColor="#FF000000" android:pathData="M95,236a39,17 0 1,0 78,0a39,17 0 1,0 -78,0z" />
+        <path android:fillColor="#FF000000" android:pathData="M115,201a25,14 0 1,0 50,0a25,14 0 1,0 -50,0z" />
+        <path android:strokeColor="#FF000000" android:strokeWidth="18" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" android:pathData="M180,214L236,148Q252,128 268,148L350,246" />
     </group>
 </vector>

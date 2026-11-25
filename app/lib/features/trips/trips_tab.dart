@@ -6,6 +6,8 @@ import '../../app/router.dart';
 import '../../core/ads/ads.dart';
 import '../../core/db/app_database.dart';
 import '../../shared/brand/illustrations.dart';
+import '../../shared/brand/art/art_view.dart';
+import 'domain/trip_art.dart';
 import '../../shared/hint_banner.dart';
 import 'domain/trip_logic.dart';
 import 'providers.dart';
@@ -101,7 +103,7 @@ class _TripList extends ConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 6),
-                child: Text(title, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, letterSpacing: 1)),
+                child: Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1)),
               ),
               for (final t in list) _TripCard(trip: t, today: today),
             ],
@@ -117,6 +119,14 @@ class _TripList extends ConsumerWidget {
             text: '登入後會自動備份行程，換手機也找得回來。',
             actionLabel: '登入',
             onAction: () => context.push(Routes.withQuery(Routes.login, {'next': Routes.trips})),
+          ),
+        if (g.ongoing.isEmpty && g.upcoming.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+            child: Text(
+              '下一座山，還有 ${g.upcoming.first.start.difference(DateTime(today.year, today.month, today.day)).inDays} 天',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
         section('進行中', g.ongoing),
         section('即將出發', g.upcoming),
@@ -141,51 +151,67 @@ class _TripCard extends ConsumerWidget {
       TripPhase.upcoming => days == 1 ? '明天出發' : '還有 $days 天',
       TripPhase.past => '已結束',
     };
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final screen = MediaQuery.sizeOf(context);
+    final past = phase == TripPhase.past;
+    // A past trip, or a screen wider than tall, gets a small picture beside the text instead of a banner.
+    final banner = !past && screen.height > screen.width;
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(trip.name, style: theme.textTheme.titleLarge?.copyWith(fontSize: banner ? 20 : 17, fontWeight: FontWeight.w700), maxLines: 2, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 2),
+        Text(trip.rangeLabel, style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            _Tag(status, highlight: phase == TripPhase.ongoing, soon: phase == TripPhase.upcoming),
+            if (trip.isSample) const _Tag('範例'),
+            if (role != null && role != TripRole.owner) _Tag(role.label),
+          ],
+        ),
+      ],
+    );
+    final art = VignetteArt(cover: coverFor(trip.id, coverCount));
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
       child: InkWell(
         onTap: () => context.push(Routes.trip(trip.id)),
         onLongPress: () => copyTrip(context, ref, trip),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              _DateTile(date: trip.start, highlight: phase == TripPhase.ongoing, faded: phase == TripPhase.past),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: banner
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: 132, child: art),
+                  Padding(padding: const EdgeInsets.fromLTRB(18, 6, 18, 16), child: details),
+                ],
+              )
+            : Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
                   children: [
-                    Text(trip.name, style: Theme.of(context).textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 4),
-                    Text(trip.rangeLabel, style: Theme.of(context).textTheme.bodyMedium),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        _Tag(status, highlight: phase == TripPhase.ongoing),
-                        if (trip.isSample) const _Tag('範例'),
-                        if (role != null && role != TripRole.owner) _Tag(role.label),
-                      ],
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: SizedBox(width: 72, height: 64, child: Opacity(opacity: past ? .7 : 1, child: art)),
                     ),
+                    const SizedBox(width: 14),
+                    Expanded(child: details),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: scheme.outline),
-            ],
-          ),
-        ),
       ),
     );
   }
 }
 
 class _Tag extends StatelessWidget {
-  const _Tag(this.text, {this.highlight = false});
+  const _Tag(this.text, {this.highlight = false, this.soon = false});
   final String text;
   final bool highlight;
+  final bool soon;
 
   @override
   Widget build(BuildContext context) {
@@ -193,37 +219,10 @@ class _Tag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: highlight ? scheme.primary : scheme.surfaceContainerHighest,
+        color: highlight ? scheme.primary : (soon ? scheme.tertiaryContainer : scheme.surfaceContainerHighest),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(text, style: TextStyle(fontSize: 12, color: highlight ? scheme.onPrimary : scheme.onSurfaceVariant)),
-    );
-  }
-}
-
-/// The start date as a small tile: month over day.
-class _DateTile extends StatelessWidget {
-  const _DateTile({required this.date, required this.highlight, required this.faded});
-  final DateTime date;
-  final bool highlight;
-  final bool faded;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final bg = highlight ? scheme.primary : (faded ? scheme.surfaceContainer : scheme.primaryContainer);
-    final fg = highlight ? scheme.onPrimary : (faded ? scheme.onSurfaceVariant : scheme.onPrimaryContainer);
-    return Container(
-      width: 52,
-      height: 56,
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('${date.month}月', style: TextStyle(fontSize: 11, color: fg, fontWeight: FontWeight.w600)),
-          Text('${date.day}', style: TextStyle(fontSize: 22, height: 1.1, color: fg, fontWeight: FontWeight.w700)),
-        ],
-      ),
+      child: Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: highlight ? scheme.onPrimary : (soon ? scheme.onTertiaryContainer : scheme.onSurfaceVariant))),
     );
   }
 }

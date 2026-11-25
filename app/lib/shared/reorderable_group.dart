@@ -1,5 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'brand/art/art_view.dart';
+import 'tints.dart';
+
 /// A titled card of rows inside a scroll view that can be put in reorder mode (the sliver form of a
 /// group card). Rows move only by their drag handle and only in reorder mode, so ordinary scrolling and
 /// tapping can never move anything by accident. Dragging near an edge scrolls the whole page.
@@ -12,10 +15,16 @@ class ReorderableGroupSliver extends StatelessWidget {
     required this.ids,
     required this.itemBuilder,
     required this.onReorder,
+    this.icon,
+    this.tint = Tint.moss,
   });
 
   final String title;
   final String? trailing;
+
+  /// The picture and pale colour of the group's header.
+  final ArtIcon? icon;
+  final Tint tint;
   final bool reordering;
 
   /// The rows' ids in their current order.
@@ -40,18 +49,21 @@ class ReorderableGroupSliver extends StatelessWidget {
       ],
     );
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       sliver: DecoratedSliver(
-        decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(16), border: Border.all(color: scheme.outlineVariant)),
+        decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(18), border: Border.all(color: scheme.outlineVariant)),
         sliver: SliverMainAxisGroup(
           slivers: [
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+              child: Container(
+                decoration: BoxDecoration(color: tint.of(context), borderRadius: const BorderRadius.vertical(top: Radius.circular(17))),
+                padding: const EdgeInsets.fromLTRB(14, 8, 16, 8),
+                constraints: const BoxConstraints(minHeight: 52),
                 child: Row(
                   children: [
-                    Expanded(child: Text(title, style: theme.textTheme.labelLarge?.copyWith(color: scheme.primary, letterSpacing: 0.5))),
-                    if (trailing != null) Text(trailing!, style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+                    if (icon != null) Padding(padding: const EdgeInsets.only(right: 8), child: ArtIconView(icon!, size: 36)),
+                    Expanded(child: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: scheme.onSurface))),
+                    if (trailing != null) Text(trailing!, style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurface)),
                   ],
                 ),
               ),

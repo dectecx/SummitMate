@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../features/events/providers.dart';
+import '../shared/animations.dart';
+import '../shared/land_nav_bar.dart';
+import '../shared/nav_glyph.dart';
 
 /// The position of the "揪團" tab, matching the order of the router's branches.
 const _eventsIndex = 1;
@@ -15,22 +18,22 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pending = ref.watch(pendingApplicationsProvider).value ?? 0;
-    Widget badged(IconData icon) => Badge.count(count: pending, isLabelVisible: pending > 0, child: Icon(icon));
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
+      bottomNavigationBar: LandNavBar(
+        selected: navigationShell.currentIndex,
+        animate: animationsOn(context, ref),
         // Tapping the current tab goes back to its first screen.
-        onDestinationSelected: (i) {
+        onSelected: (i) {
           if (i == _eventsIndex) ref.invalidate(pendingApplicationsProvider);
           navigationShell.goBranch(i, initialLocation: i == navigationShell.currentIndex);
         },
         destinations: [
-          const NavigationDestination(icon: Icon(Icons.hiking_outlined), selectedIcon: Icon(Icons.hiking), label: '行程'),
-          NavigationDestination(icon: badged(Icons.groups_outlined), selectedIcon: badged(Icons.groups), label: '揪團'),
-          const NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: '地圖'),
-          const NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore), label: '探索'),
-          const NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: '我'),
+          (glyph: NavGlyph.trips, label: '行程', badge: 0),
+          (glyph: NavGlyph.events, label: '揪團', badge: pending),
+          (glyph: NavGlyph.map, label: '地圖', badge: 0),
+          (glyph: NavGlyph.explore, label: '探索', badge: 0),
+          (glyph: NavGlyph.me, label: '我', badge: 0),
         ],
       ),
     );

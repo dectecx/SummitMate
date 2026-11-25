@@ -10,6 +10,7 @@
 | :-- | :-- |
 | [技術決策](./project/TECH_DECISIONS.md) | 前後端技術選型 |
 | [新手引導與導覽](./ui/ONBOARDING_NAVIGATION.md) | 導覽結構、歡迎頁、情境提示 |
+| [視覺設計規範](./ui/DESIGN_SYSTEM.md) | 配色、形狀、插畫、版面、動畫（草案） |
 | [裝備庫、範本與雲端分享](./architecture/GEAR_LIBRARY.md) | 個人裝備庫、範本、雲端分享（已完成） |
 | [揪團活動](./architecture/GROUP_EVENTS.md) | 第二期：揪團的規則、資料表、API |
 | [行程討論與收藏](./architecture/TRIP_COLLAB_FAVORITES.md) | 第二期：留言、投票、山岳收藏 |

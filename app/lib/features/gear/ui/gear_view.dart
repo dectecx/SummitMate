@@ -9,6 +9,9 @@ import '../domain/gear_logic.dart';
 import '../providers.dart';
 import 'gear_form_sheet.dart';
 import '../../../shared/brand/illustrations.dart';
+import '../../../shared/brand/art/art_view.dart' show ArtIcon, ArtIconView;
+import '../../../shared/animations.dart';
+import '../../../shared/tints.dart';
 
 /// "裝備": the person's own packing list for a trip, grouped by category.
 class GearView extends ConsumerStatefulWidget {
@@ -44,6 +47,8 @@ class _GearViewState extends ConsumerState<GearView> {
           ReorderableGroupSliver(
             key: ValueKey('gear-group-${g.category.key}'),
             title: g.category.label,
+            icon: _look(g.category).$1,
+            tint: _look(g.category).$2,
             trailing: formatWeight(totalWeight(g.items)),
             reordering: _reordering,
             ids: [for (final i in g.items) i.id],
@@ -56,31 +61,55 @@ class _GearViewState extends ConsumerState<GearView> {
   }
 }
 
-class _Summary extends StatelessWidget {
+/// Picture and pale colour of a category's card.
+(ArtIcon, Tint) _look(GearCategory c) => switch (c) {
+  GearCategory.sleep => (ArtIcon.sleep, Tint.moss),
+  GearCategory.cook => (ArtIcon.cook, Tint.lake),
+  GearCategory.clothing => (ArtIcon.jacket, Tint.rose),
+  GearCategory.pack => (ArtIcon.backpack, Tint.sand),
+  GearCategory.electronics => (ArtIcon.headlamp, Tint.sand),
+  GearCategory.safety => (ArtIcon.firstAid, Tint.rose),
+  GearCategory.other => (ArtIcon.compass, Tint.moss),
+};
+
+class _Summary extends ConsumerWidget {
   const _Summary({required this.items});
   final List<GearItem> items;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final animate = animationsOn(context, ref);
     final theme = Theme.of(context);
     final packed = packedCount(items);
     return Card(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Expanded(child: Text('總重量', style: theme.textTheme.bodyMedium)),
-                Text(formatWeight(totalWeight(items)), style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: theme.colorScheme.primary)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('總重量', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                      Text(formatWeight(totalWeight(items)), style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
+                      Text('已打包 $packed / ${items.length} 項', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                const ArtIconView(ArtIcon.backpack, size: 68),
               ],
             ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(value: items.isEmpty ? 0 : packed / items.length, minHeight: 8, borderRadius: BorderRadius.circular(4), backgroundColor: theme.colorScheme.surfaceContainerHigh),
-            const SizedBox(height: 8),
-            Text('已打包 $packed / ${items.length} 項', style: theme.textTheme.bodySmall),
+            const SizedBox(height: 10),
+            TweenAnimationBuilder<double>(
+              tween: Tween(end: items.isEmpty ? 0 : packed / items.length),
+              duration: Duration(milliseconds: animate ? 350 : 0),
+              curve: Curves.easeOutCubic,
+              builder: (_, value, _) => LinearProgressIndicator(value: value, minHeight: 9, borderRadius: BorderRadius.circular(5)),
+            ),
           ],
         ),
       ),

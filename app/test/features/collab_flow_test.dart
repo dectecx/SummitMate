@@ -76,6 +76,12 @@ Future<void> openDiscussion(WidgetTester tester) async {
   await tapText(tester, '討論');
 }
 
+Future<void> openPolls(WidgetTester tester) async {
+  await openDiscussion(tester);
+  await tester.tap(find.byKey(const ValueKey('discussion-polls')));
+  await settle(tester);
+}
+
 Future<void> seedMessage(
   WidgetTester tester,
   AppHarness app,
@@ -352,10 +358,25 @@ void main() {
   });
 
   group('polls', () {
+    testWidgets('the switch counts open polls and moves between the two views', (tester) async {
+      final app = await start(tester);
+      await joinTrip(tester, app, 'member');
+      await seedPoll(tester, app);
+      await openDiscussion(tester);
+      expect(find.text('投票 1'), findsOneWidget);
+      expect(find.text('早餐吃什麼'), findsNothing);
+      expect(find.widgetWithText(TextField, '寫留言'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('discussion-polls')));
+      await settle(tester);
+      expect(find.text('早餐吃什麼'), findsOneWidget);
+      expect(find.widgetWithText(TextField, '寫留言'), findsNothing);
+      await app.dispose(tester);
+    });
+
     testWidgets('a member cannot create a poll', (tester) async {
       final app = await start(tester);
       await joinTrip(tester, app, 'member');
-      await openDiscussion(tester);
+      await openPolls(tester);
       expect(find.text('建立投票'), findsNothing);
       expect(find.text('還沒有投票'), findsOneWidget);
       await app.dispose(tester);
@@ -364,7 +385,7 @@ void main() {
     testWidgets('the owner creates a poll with its settings', (tester) async {
       final app = await start(tester);
       await joinTrip(tester, app, 'guide');
-      await openDiscussion(tester);
+      await openPolls(tester);
 
       await tapText(tester, '建立投票');
       await tapText(tester, '建立');
@@ -401,7 +422,7 @@ void main() {
       (tester) async {
         final app = await start(tester);
         await joinTrip(tester, app, 'guide');
-        await openDiscussion(tester);
+        await openPolls(tester);
         await tapText(tester, '建立投票');
         await tester.enterText(find.widgetWithText(TextField, '標題'), '晚餐');
         await tester.enterText(find.widgetWithText(TextField, '選項 1'), '火鍋');
@@ -441,7 +462,7 @@ void main() {
       final app = await start(tester);
       await joinTrip(tester, app, 'member');
       await seedPoll(tester, app, votes: {'蛋餅': 'mia-id'});
-      await openDiscussion(tester);
+      await openPolls(tester);
       expect(find.text('1 票'), findsOneWidget);
       expect(find.text('Mia'), findsOneWidget);
       expect(find.byIcon(Icons.radio_button_checked), findsNothing);
@@ -481,7 +502,7 @@ void main() {
       final app = await start(tester);
       await joinTrip(tester, app, 'member');
       await seedPoll(tester, app, multiple: true);
-      await openDiscussion(tester);
+      await openPolls(tester);
       await tester.tap(find.text('蛋餅'));
       await settle(tester);
       await tester.tap(find.text('飯糰'));
@@ -499,7 +520,7 @@ void main() {
         final app = await start(tester);
         await joinTrip(tester, app, 'guide');
         await seedPoll(tester, app, blind: true, votes: {'飯糰': 'mia-id'});
-        await openDiscussion(tester);
+        await openPolls(tester);
         expect(find.textContaining('結果會在投票結束或截止後公開'), findsOneWidget);
         expect(find.textContaining(RegExp(r'\d 票')), findsNothing);
         expect(find.text('Mia'), findsNothing);
@@ -548,7 +569,7 @@ void main() {
       final app = await start(tester);
       await joinTrip(tester, app, 'member');
       await seedPoll(tester, app, deadline: '2026-05-09T00:00:00Z');
-      await openDiscussion(tester);
+      await openPolls(tester);
       expect(find.text('已截止'), findsOneWidget);
       await tester.tap(find.text('蛋餅'));
       await settle(tester);
@@ -565,7 +586,7 @@ void main() {
         final app = await start(tester);
         await joinTrip(tester, app, 'member');
         await seedPoll(tester, app);
-        await openDiscussion(tester);
+        await openPolls(tester);
         expect(find.text('新增選項'), findsNothing);
         expect(find.byTooltip('刪除選項'), findsNothing);
         await app.dispose(tester);
@@ -573,7 +594,7 @@ void main() {
         final app2 = await start(tester);
         await joinTrip(tester, app2, 'member');
         await seedPoll(tester, app2, addOption: true);
-        await openDiscussion(tester);
+        await openPolls(tester);
         expect(
           find.byTooltip('刪除選項'),
           findsNothing,
@@ -599,7 +620,7 @@ void main() {
       final app = await start(tester);
       await joinTrip(tester, app, 'guide');
       await seedPoll(tester, app, options: ['蛋餅', '飯糰', '燒餅']);
-      await openDiscussion(tester);
+      await openPolls(tester);
       expect(find.byTooltip('刪除選項'), findsNWidgets(3));
       await tester.tap(find.byTooltip('刪除選項').last);
       await settle(tester);

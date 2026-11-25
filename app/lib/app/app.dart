@@ -6,6 +6,7 @@ import '../core/providers.dart';
 import '../core/settings/app_settings.dart';
 import '../dev/dev_config.dart';
 import '../dev/dev_tools_overlay.dart';
+import '../shared/animations.dart';
 import '../shared/brand/splash_overlay.dart';
 import 'router.dart';
 import 'theme.dart';
@@ -50,7 +51,7 @@ class _SummitMateAppState extends ConsumerState<SummitMateApp> {
       builder: (context, child) {
         var app = child ?? const SizedBox.shrink();
         if (ref.watch(devToolsVisibleProvider)) app = DevToolsOverlay(navigatorKey: _router.routerDelegate.navigatorKey, child: app);
-        return SplashOverlay(enabled: ref.watch(splashEnabledProvider), child: app);
+        return SplashOverlay(enabled: ref.watch(splashEnabledProvider), animate: ref.watch(animationsSettingProvider).value ?? true, child: app);
       },
     );
   }

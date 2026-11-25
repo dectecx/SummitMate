@@ -11,9 +11,12 @@ final splashEnabledProvider = Provider<bool>((ref) => true);
 /// Plays the SummitMate mark over the first screen when the app starts, then fades away.
 /// The first screen is already built underneath, so nothing waits for the animation; a tap skips it.
 class SplashOverlay extends StatefulWidget {
-  const SplashOverlay({super.key, required this.child, this.enabled = true});
+  const SplashOverlay({super.key, required this.child, this.enabled = true, this.animate = true});
   final Widget child;
   final bool enabled;
+
+  /// Off (the "動畫" switch): the finished mark shows briefly instead of playing in.
+  final bool animate;
 
   @override
   State<SplashOverlay> createState() => _SplashOverlayState();
@@ -32,6 +35,23 @@ class _SplashOverlayState extends State<SplashOverlay> with TickerProviderStateM
       return;
     }
     _run();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _stillIfAsked();
+  }
+
+  @override
+  void didUpdateWidget(SplashOverlay old) {
+    super.didUpdateWidget(old);
+    _stillIfAsked(); // the stored switch arrives a moment after the first frame
+  }
+
+  void _stillIfAsked() {
+    if (_done || (widget.animate && !(MediaQuery.maybeDisableAnimationsOf(context) ?? false))) return;
+    if (_play.value < 1) _play.forward(from: 1);
   }
 
   Future<void> _run() async {
@@ -56,6 +76,10 @@ class _SplashOverlayState extends State<SplashOverlay> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     if (_done) return widget.child;
+    // the same paper colours as the native launch screen, so the start does not flash
+    final dark = MediaQuery.maybePlatformBrightnessOf(context) == Brightness.dark;
+    final paper = dark ? const Color(0xFF141C1D) : const Color(0xFFF1EDE2);
+    final ink = dark ? const Color(0xFFECE4D3) : const Color(0xFF3D342D);
     return Stack(
       textDirection: TextDirection.ltr,
       children: [
@@ -67,10 +91,8 @@ class _SplashOverlayState extends State<SplashOverlay> with TickerProviderStateM
               key: const ValueKey('splash'),
               behavior: HitTestBehavior.opaque,
               onTap: _skip,
-              child: DecoratedBox(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF0B6E92), Color(0xFF04436A)]),
-                ),
+              child: ColoredBox(
+                color: paper,
                 child: Center(
                   child: AnimatedBuilder(
                     animation: _play,
@@ -83,12 +105,12 @@ class _SplashOverlayState extends State<SplashOverlay> with TickerProviderStateM
                           const SizedBox(height: 24),
                           Opacity(
                             opacity: Curves.easeIn.transform(((t - 0.7) / 0.3).clamp(0, 1)),
-                            child: const Text('SummitMate', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w600, letterSpacing: 1.5, decoration: TextDecoration.none)),
+                            child: Text('SummitMate', style: TextStyle(color: ink, fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: 1.5, decoration: TextDecoration.none)),
                           ),
                           const SizedBox(height: 6),
                           Opacity(
                             opacity: Curves.easeIn.transform(((t - 0.8) / 0.2).clamp(0, 1)),
-                            child: const Text('山友', style: TextStyle(color: Color(0xCCFFFFFF), fontSize: 16, decoration: TextDecoration.none)),
+                            child: Text('山友', style: TextStyle(color: ink.withValues(alpha: .8), fontSize: 16, decoration: TextDecoration.none)),
                           ),
                         ],
                       );
