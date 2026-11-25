@@ -30,7 +30,7 @@ class DevDataFactory {
     ('北大武山', 3092, '屏東泰武', 22.6256, 120.7756),
     ('鳶嘴稍來', 2100, '南投仁愛', 24.05, 121.24),
   ];
-  static const _suffix = ['兩天一夜', '三天兩夜', '單日行程', '四天三夜'];
+  static const _suffix = ['單日行程', '兩天一夜', '三天兩夜']; // by number of days
   static const _gear = [
     ('羽絨睡袋', 'sleep', 900.0),
     ('睡墊', 'sleep', 450.0),
@@ -64,8 +64,8 @@ class DevDataFactory {
   /// A random trip with an itinerary, a packing list and meals. Returns its id.
   Future<({String id, String summary})> randomTrip() async {
     final (place, altitude, _, lat, lng) = _pick(_places);
-    final name = '$place${_pick(_suffix)}';
-    final days = 1 + _random.nextInt(3);
+    final days = 1 + _random.nextInt(_suffix.length);
+    final name = '$place${_suffix[days - 1]}';
     final start = DateTime.now().add(Duration(days: 3 + _random.nextInt(60)));
     final trips = _ref.read(tripRepositoryProvider);
     final id = await trips.create(

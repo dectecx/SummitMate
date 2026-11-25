@@ -31,7 +31,7 @@ class _DevToolsOverlayState extends State<DevToolsOverlay> {
   Future<void> _showPanel() async {
     final context = widget.navigatorKey.currentContext;
     if (context == null || _open) return;
-    _open = true;
+    setState(() => _open = true); // the button hides while the panel is up
     // The trip the person has open (a /trips/<id> screen), so the panel adds gear and meals to it.
     final path = GoRouter.of(context).routeInformationProvider.value.uri.path;
     final openTrip = RegExp(r'^/trips/([^/]+)').firstMatch(path)?.group(1);
@@ -45,7 +45,7 @@ class _DevToolsOverlayState extends State<DevToolsOverlay> {
       ),
       builder: (_) => DevPanel(openTripId: openTrip),
     );
-    _open = false;
+    if (mounted) setState(() => _open = false);
   }
 
   @override
@@ -54,7 +54,7 @@ class _DevToolsOverlayState extends State<DevToolsOverlay> {
     return Stack(
       children: [
         widget.child,
-        Positioned(
+        if (!_open) Positioned(
           left: _position.dx,
           top: _position.dy,
           child: GestureDetector(
