@@ -144,7 +144,9 @@ class TemplateDetailPage extends ConsumerWidget {
 
   Future<void> _applyToATrip(BuildContext context, WidgetRef ref, List<SetItem> items) async {
     final messenger = ScaffoldMessenger.of(context);
-    final trips = ref.read(tripsProvider).value ?? const <Trip>[];
+    // Read the database: the shared stream pauses while the trips tab is out of view, so its value can be stale.
+    final trips = await ref.read(tripRepositoryProvider).watchAll().first;
+    if (!context.mounted) return;
     if (trips.isEmpty) {
       messenger.showSnackBar(const SnackBar(content: Text('還沒有行程可以套用。')));
       return;

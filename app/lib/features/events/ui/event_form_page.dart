@@ -330,6 +330,7 @@ class _EventFormState extends ConsumerState<_EventForm> {
               decoration: const InputDecoration(
                 labelText: '隊員私密留言（選填）',
                 helperText: '只有你和通過的隊員看得到，例如集合時間與聯絡方式',
+                helperMaxLines: 2,
                 alignLabelWithHint: true,
               ),
             ),

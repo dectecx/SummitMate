@@ -23,7 +23,7 @@ class TripOfflineHint extends ConsumerWidget {
 
     return Card(
       key: const ValueKey('trip-offline-hint'),
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

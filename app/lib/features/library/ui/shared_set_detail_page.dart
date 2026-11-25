@@ -86,7 +86,9 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
 
   Future<void> _addToTrip(SharedSetDetail d) async {
     final messenger = ScaffoldMessenger.of(context);
-    final trips = ref.read(tripsProvider).value ?? const <Trip>[];
+    // Read the database: the shared stream pauses while the trips tab is out of view, so its value can be stale.
+    final trips = await ref.read(tripRepositoryProvider).watchAll().first;
+    if (!mounted) return;
     if (trips.isEmpty) {
       messenger.showSnackBar(const SnackBar(content: Text('還沒有行程可以加入。')));
       return;

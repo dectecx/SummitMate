@@ -120,6 +120,20 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('applying a template offers a trip added after the trips tab went out of view', (tester) async {
+    final app = await start(tester);
+    final id = await act(tester, () => app.container.read(templateRepositoryProvider).create(title: '夏季兩天', items: const []));
+    await settle(tester);
+    await tapText(tester, '我');
+    final tripId = await trip(tester, app, '後來的行程');
+    await tapText(tester, '我的範本');
+    await tapText(tester, '夏季兩天');
+    await tester.tap(find.byKey(const ValueKey('template-apply')));
+    await settle(tester);
+    expect(find.byKey(ValueKey('apply-trip-$tripId')), findsOneWidget, reason: 'template $id');
+    await app.dispose(tester);
+  });
+
   testWidgets('the templates page lists templates, shows the content, renames and deletes', (tester) async {
     final app = await start(tester);
     final id = await act(tester, () => app.container.read(templateRepositoryProvider).create(title: '夏季兩天', items: const []));
