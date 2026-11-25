@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/router.dart';
+import '../../../shared/brand/illustrations.dart';
 import '../../trips/providers.dart';
 import '../data/events_api.dart';
 import '../providers.dart';
@@ -87,7 +88,6 @@ class _EventsViewState extends ConsumerState<EventsView> {
   Widget build(BuildContext context) {
     // Signing in or out changes what the lists contain.
     ref.listen(eventsSignedInProvider, (_, _) => _load(reset: true));
-    final theme = Theme.of(context);
     final today = () {
       final n = ref.read(clockProvider)();
       return DateTime(n.year, n.month, n.day);
@@ -120,10 +120,10 @@ class _EventsViewState extends ConsumerState<EventsView> {
           ),
         ),
         SizedBox(
-          height: 56,
+          height: 60,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             children: [
               for (final s in EventScope.values)
                 Padding(
@@ -146,20 +146,15 @@ class _EventsViewState extends ConsumerState<EventsView> {
               padding: const EdgeInsets.only(bottom: 88),
               children: [
                 if (locked)
-                  Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        Text('登入後使用', style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 4),
-                        Text('登入後才看得到你參加和主辦的揪團。', textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
-                        const SizedBox(height: 12),
-                        FilledButton(
-                          key: const ValueKey('events-signin'),
-                          onPressed: () => context.push(Routes.withQuery(Routes.login, {'next': Routes.explore})),
-                          child: const Text('登入'),
-                        ),
-                      ],
+                  _EmptyState(
+                    illustration: Illustration.friends,
+                    title: '登入後使用',
+                    message: '登入後才看得到你參加和主辦的揪團。',
+                    action: FilledButton(
+                      key: const ValueKey('events-signin'),
+                      style: FilledButton.styleFrom(minimumSize: const Size(160, 48)),
+                      onPressed: () => context.push(Routes.withQuery(Routes.login, {'next': Routes.explore})),
+                      child: const Text('登入'),
                     ),
                   )
                 else if (_error != null)
@@ -168,13 +163,9 @@ class _EventsViewState extends ConsumerState<EventsView> {
                     onRetry: () => _load(reset: _items.isEmpty),
                   )
                 else if (!_loading && _items.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(
-                      _search.text.trim().isEmpty ? '目前沒有揪團。' : '沒有符合的揪團。',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                  _EmptyState(
+                    illustration: _search.text.trim().isEmpty ? Illustration.trip : Illustration.search,
+                    message: _search.text.trim().isEmpty ? '目前沒有揪團。' : '沒有符合的揪團。',
                   ),
                 if (!locked)
                   for (final e in _items)
@@ -198,6 +189,38 @@ class _EventsViewState extends ConsumerState<EventsView> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.illustration, this.title, required this.message, this.action});
+  final Illustration illustration;
+  final String? title;
+  final String message;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 40, 32, 32),
+      child: Column(
+        children: [
+          IllustrationView(illustration, width: 150),
+          const SizedBox(height: 16),
+          if (title != null) ...[
+            Text(title!, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+          ],
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant, height: 1.5),
+          ),
+          if (action != null) ...[const SizedBox(height: 20), action!],
+        ],
+      ),
     );
   }
 }

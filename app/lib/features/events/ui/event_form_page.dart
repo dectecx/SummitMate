@@ -227,8 +227,9 @@ class _EventFormState extends ConsumerState<_EventForm> {
       body: Form(
         key: _form,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [
+            const SectionCaption('基本資料', padding: EdgeInsets.fromLTRB(4, 8, 4, 8)),
             TextFormField(
               key: const ValueKey('event-title'),
               controller: _title,
@@ -238,10 +239,11 @@ class _EventFormState extends ConsumerState<_EventForm> {
               decoration: const InputDecoration(labelText: '標題', hintText: '例如：嘉明湖三日（5 到 200 字）'),
             ),
             const SizedBox(height: 8),
-            Text('分類', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 6),
+            Text('分類', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
                 for (final c in EventCategory.values)
                   ChoiceChip(
@@ -259,7 +261,7 @@ class _EventFormState extends ConsumerState<_EventForm> {
               maxLength: 200,
               decoration: const InputDecoration(labelText: '地點', hintText: '例如：台東海端'),
             ),
-            const SizedBox(height: 8),
+            const SectionCaption('日期'),
             InkWell(
               key: const ValueKey('event-start'),
               onTap: _pickStart,
@@ -287,7 +289,7 @@ class _EventFormState extends ConsumerState<_EventForm> {
                 child: Text(_end == null ? '未設定（單日）' : formatDate(_end!)),
               ),
             ),
-            const SizedBox(height: 16),
+            const SectionCaption('人數與審核'),
             TextFormField(
               key: const ValueKey('event-max'),
               controller: _max,
@@ -298,15 +300,18 @@ class _EventFormState extends ConsumerState<_EventForm> {
                 helperText: '$maxMembersMin 到 $maxMembersMax 人，不含主辦人',
               ),
             ),
-            SwitchListTile(
-              key: const ValueKey('event-approval'),
-              contentPadding: EdgeInsets.zero,
-              title: const Text('需要主辦人審核'),
-              subtitle: Text(_approval ? '申請後由你決定是否通過' : '申請後直接加入，額滿為止'),
-              value: _approval,
-              onChanged: (v) => setState(() => _approval = v),
+            const SizedBox(height: 4),
+            Card(
+              child: SwitchListTile(
+                key: const ValueKey('event-approval'),
+                shape: const RoundedRectangleBorder(),
+                title: const Text('需要主辦人審核'),
+                subtitle: Text(_approval ? '申請後由你決定是否通過' : '申請後直接加入，額滿為止'),
+                value: _approval,
+                onChanged: (v) => setState(() => _approval = v),
+              ),
             ),
-            const SizedBox(height: 8),
+            const SectionCaption('內容'),
             TextFormField(
               key: const ValueKey('event-description'),
               controller: _description,
@@ -328,7 +333,7 @@ class _EventFormState extends ConsumerState<_EventForm> {
                 alignLabelWithHint: true,
               ),
             ),
-            const SizedBox(height: 8),
+            const SectionCaption('行程'),
             InkWell(
               key: const ValueKey('event-link'),
               onTap: _pickTrip,
@@ -353,17 +358,22 @@ class _EventFormState extends ConsumerState<_EventForm> {
               ),
             ),
             if (_editing && _linkedTripId != null && !_pickedNewTrip && linkedTrip != null)
-              SwitchListTile(
-                key: const ValueKey('event-resend'),
-                contentPadding: EdgeInsets.zero,
-                title: const Text('用目前的行程內容更新路線預覽'),
-                value: _resend,
-                onChanged: (v) => setState(() => _resend = v),
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Card(
+                  child: SwitchListTile(
+                    key: const ValueKey('event-resend'),
+                    shape: const RoundedRectangleBorder(),
+                    title: const Text('用目前的行程內容更新路線預覽'),
+                    value: _resend,
+                    onChanged: (v) => setState(() => _resend = v),
+                  ),
+                ),
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             FilledButton(
               key: const ValueKey('event-submit'),
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
               onPressed: _busy ? null : _submit,
               child: Text(_editing ? '儲存' : '建立揪團'),
             ),
@@ -398,6 +408,7 @@ class _TripPicker extends ConsumerWidget {
           for (final t in owned)
             ListTile(
               key: ValueKey('link-trip-${t.id}'),
+              leading: const IconTile(Icons.hiking),
               title: Text(t.name),
               subtitle: Text(t.rangeLabel),
               onTap: () => Navigator.pop(context, t),

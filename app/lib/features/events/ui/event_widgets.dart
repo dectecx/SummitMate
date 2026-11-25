@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/router.dart';
+import '../../../shared/brand/illustrations.dart';
 import '../../favorites/ui/favorite_event_button.dart';
 import '../../trips/providers.dart';
 import '../data/events_api.dart';
@@ -142,8 +143,9 @@ class PersonLine extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         CircleAvatar(
-          radius: 12,
-          child: Text(person.avatar.isEmpty ? '🙂' : person.avatar, style: const TextStyle(fontSize: 14)),
+          radius: 14,
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+          child: Text(person.avatar.isEmpty ? '🙂' : person.avatar, style: const TextStyle(fontSize: 15)),
         ),
         const SizedBox(width: 8),
         Flexible(
@@ -163,14 +165,18 @@ class _Tag extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: warn ? scheme.errorContainer : scheme.secondaryContainer,
+        color: warn ? scheme.tertiaryContainer : scheme.secondaryContainer,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 12, color: warn ? scheme.onErrorContainer : scheme.onSecondaryContainer),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: warn ? scheme.onTertiaryContainer : scheme.onSecondaryContainer,
+        ),
       ),
     );
   }
@@ -215,49 +221,59 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
+    final small = theme.textTheme.bodySmall?.copyWith(color: muted);
+    final where = [
+      if (event.location.isNotEmpty) event.location,
+      formatEventDates(event.startDate, event.endDate),
+    ].join('  ·  ');
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(child: EventTags(event, today: today)),
                   FavoriteEventButton(eventId: event.id, compact: true),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(event.title, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 4),
-              Text(
-                [
-                  if (event.location.isNotEmpty) event.location,
-                  formatEventDates(event.startDate, event.endDate),
-                ].join('  ·  '),
-                style: theme.textTheme.bodyMedium,
+              Padding(
+                padding: const EdgeInsets.only(right: 8, top: 2),
+                child: Text(
+                  event.title,
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(child: PersonLine(event.host, style: theme.textTheme.bodySmall)),
-                  const Icon(Icons.group_outlined, size: 16),
-                  const SizedBox(width: 4),
-                  Text(peopleLabel(event.approvedCount, event.maxMembers), style: theme.textTheme.bodySmall),
-                  const SizedBox(width: 12),
-                  Icon(event.liked ? Icons.favorite : Icons.favorite_border, size: 16),
-                  const SizedBox(width: 4),
-                  Text('${event.likeCount}', style: theme.textTheme.bodySmall),
-                  const SizedBox(width: 12),
-                  const Icon(Icons.chat_bubble_outline, size: 16),
-                  const SizedBox(width: 4),
-                  Text('${event.commentCount}', style: theme.textTheme.bodySmall),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(right: 8, top: 4),
+                child: Text(where, style: theme.textTheme.bodyMedium?.copyWith(color: muted)),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 8, top: 12),
+                child: Row(
+                  children: [
+                    Expanded(child: PersonLine(event.host, style: small)),
+                    Icon(Icons.group_outlined, size: 16, color: muted),
+                    const SizedBox(width: 4),
+                    Text(peopleLabel(event.approvedCount, event.maxMembers), style: small),
+                    const SizedBox(width: 12),
+                    Icon(event.liked ? Icons.favorite : Icons.favorite_border, size: 16, color: muted),
+                    const SizedBox(width: 4),
+                    Text('${event.likeCount}', style: small),
+                    const SizedBox(width: 12),
+                    Icon(Icons.chat_bubble_outline, size: 16, color: muted),
+                    const SizedBox(width: 4),
+                    Text('${event.commentCount}', style: small),
+                  ],
+                ),
               ),
             ],
           ),
@@ -275,16 +291,66 @@ class RetryMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(text, textAlign: TextAlign.center),
-          const SizedBox(height: 12),
-          OutlinedButton(onPressed: onRetry, child: const Text('重試')),
+          const IllustrationView(Illustration.search, width: 140),
+          const SizedBox(height: 16),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant, height: 1.5),
+          ),
+          const SizedBox(height: 20),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(minimumSize: const Size(140, 48)),
+            onPressed: onRetry,
+            child: const Text('重試'),
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// A small caption above a group, like the section titles of the "我" screen.
+class SectionCaption extends StatelessWidget {
+  const SectionCaption(this.text, {super.key, this.padding = const EdgeInsets.fromLTRB(4, 20, 4, 8)});
+  final String text;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: padding,
+      child: Text(
+        text,
+        style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant, letterSpacing: 1),
+      ),
+    );
+  }
+}
+
+/// An icon in a soft rounded tile, the leading mark of fact rows.
+class IconTile extends StatelessWidget {
+  const IconTile(this.icon, {super.key});
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, size: 20, color: scheme.primary),
     );
   }
 }

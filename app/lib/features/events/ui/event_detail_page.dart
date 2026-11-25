@@ -9,6 +9,7 @@ import '../data/events_api.dart';
 import '../domain/event_logic.dart';
 import '../providers.dart';
 import 'event_widgets.dart';
+import '../../../shared/brand/ridge_banner.dart';
 import '../../../shared/link_text.dart';
 import '../../friends/ui/add_friend_button.dart';
 
@@ -287,7 +288,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(d.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        actions: [FavoriteEventButton(eventId: d.id), _menu(d)],
+        actions: [
+          FavoriteEventButton(eventId: d.id),
+          _menu(d),
+        ],
       ),
       bottomNavigationBar: _bottomBar(d, action),
       body: RefreshIndicator(
@@ -335,21 +339,41 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   List<Widget> _header(EventDetail d) {
     final theme = Theme.of(context);
     return [
+      RidgeBanner(title: d.title, seed: d.id.hashCode.abs() % 50, height: 128),
+      const SizedBox(height: 14),
       EventTags(d, today: _today),
-      const SizedBox(height: 8),
-      Text(d.title, style: theme.textTheme.headlineSmall),
-      const SizedBox(height: 8),
-      Row(children: [Flexible(child: PersonLine(d.host, style: theme.textTheme.bodyMedium)), AddFriendButton(userId: d.host.id, name: d.host.displayName)]),
-      const SizedBox(height: 12),
-      _InfoRow(Icons.calendar_month_outlined, formatEventDates(d.startDate, d.endDate)),
-      if (d.location.isNotEmpty) _InfoRow(Icons.place_outlined, d.location),
-      _InfoRow(
-        Icons.group_outlined,
-        '${peopleLabel(d.approvedCount, d.maxMembers)}  ·  ${d.approvalRequired ? '需主辦人審核' : '免審核，直接加入'}',
+      const SizedBox(height: 14),
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Column(
+            children: [
+              _InfoRow(Icons.calendar_month_outlined, formatEventDates(d.startDate, d.endDate)),
+              if (d.location.isNotEmpty) _InfoRow(Icons.place_outlined, d.location),
+              _InfoRow(
+                Icons.group_outlined,
+                '${peopleLabel(d.approvedCount, d.maxMembers)}  ·  ${d.approvalRequired ? '需主辦人審核' : '免審核，直接加入'}',
+              ),
+              _InfoRow(
+                Icons.flag_outlined,
+                null,
+                child: Row(
+                  children: [
+                    Flexible(child: PersonLine(d.host, style: theme.textTheme.bodyMedium)),
+                    AddFriendButton(userId: d.host.id, name: d.host.displayName),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       if (d.description.isNotEmpty) ...[
-        const SizedBox(height: 12),
-        LinkText(d.description, style: theme.textTheme.bodyLarge),
+        const SectionCaption('說明'),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: LinkText(d.description, style: theme.textTheme.bodyLarge?.copyWith(height: 1.6)),
+        ),
       ],
     ];
   }
@@ -359,85 +383,118 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final snap = d.tripSnapshot;
     final hasPrivate = (d.privateMessage ?? '').isNotEmpty && !d.privateMessageLocked;
     return [
-      const SizedBox(height: 8),
+      const SizedBox(height: 12),
       Row(
         children: [
           TextButton.icon(
             key: const ValueKey('event-like'),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(64, 44),
+              foregroundColor: theme.colorScheme.onSurfaceVariant,
+            ),
             onPressed: _busy ? null : () => _toggleLike(d),
-            icon: Icon(d.liked ? Icons.favorite : Icons.favorite_border),
+            icon: Icon(
+              d.liked ? Icons.favorite : Icons.favorite_border,
+              color: d.liked ? theme.colorScheme.tertiary : null,
+            ),
             label: Text('${d.likeCount}'),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.chat_bubble_outline, size: 18),
+          Icon(Icons.chat_bubble_outline, size: 18, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 6),
-          Text('${d.commentCount}'),
+          Text('${d.commentCount}', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
         ],
       ),
       if (d.myStatus == ApplicationStatus.rejected && !d.isHost)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Card(
+            key: const ValueKey('event-rejected'),
+            color: theme.colorScheme.tertiaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '主辦人沒有通過你的申請',
+                    style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onTertiaryContainer),
+                  ),
+                  if (d.myRejectionReason != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '原因：${d.myRejectionReason}',
+                        style: TextStyle(color: theme.colorScheme.onTertiaryContainer),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      if (snap != null) ...[const SectionCaption('行程路線'), _SnapshotCard(snap)],
+      if (hasPrivate) ...[
+        const SectionCaption('隊員專屬'),
         Card(
-          key: const ValueKey('event-rejected'),
-          color: theme.colorScheme.errorContainer,
+          key: const ValueKey('event-private'),
           child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '主辦人沒有通過你的申請',
-                  style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onErrorContainer),
+                const IconTile(Icons.lock_open_outlined),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('隊員專屬留言', style: theme.textTheme.titleSmall),
+                      const SizedBox(height: 4),
+                      LinkText(d.privateMessage!),
+                    ],
+                  ),
                 ),
-                if (d.myRejectionReason != null)
-                  Text('原因：${d.myRejectionReason}', style: TextStyle(color: theme.colorScheme.onErrorContainer)),
               ],
             ),
           ),
         ),
-      if (snap != null) _SnapshotCard(snap),
-      if (hasPrivate)
-        Card(
-          key: const ValueKey('event-private'),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.lock_open_outlined, size: 18),
-                    const SizedBox(width: 8),
-                    Text('隊員專屬留言', style: theme.textTheme.titleSmall),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                LinkText(d.privateMessage!),
-              ],
-            ),
-          ),
-        )
-      else if (d.privateMessageLocked)
+      ] else if (d.privateMessageLocked) ...[
+        const SizedBox(height: 12),
         Card(
           key: const ValueKey('event-private-locked'),
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.lock_outline, size: 18),
-                const SizedBox(width: 8),
+                const IconTile(Icons.lock_outline),
+                const SizedBox(width: 12),
                 Expanded(child: Text('隊員專屬留言：通過申請後才看得到', style: theme.textTheme.bodyMedium)),
               ],
             ),
           ),
         ),
-      const SizedBox(height: 16),
-      Text('留言（${d.commentCount}）', style: theme.textTheme.titleMedium),
-      const SizedBox(height: 8),
+      ],
+      SectionCaption('留言（${d.commentCount}）'),
       if (_comments.isEmpty && !_commentsLoading)
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text('還沒有留言。', style: theme.textTheme.bodyMedium),
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+          child: Text('還沒有留言。', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         ),
-      for (final c in _comments) _commentTile(c, d),
+      if (_comments.isNotEmpty)
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+            child: Column(
+              children: [
+                for (var i = 0; i < _comments.length; i++) ...[
+                  if (i > 0) Divider(height: 1, color: theme.colorScheme.outlineVariant),
+                  _commentTile(_comments[i], d),
+                ],
+              ],
+            ),
+          ),
+        ),
       if (_commentsLoading)
         const Padding(
           padding: EdgeInsets.all(12),
@@ -452,7 +509,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             child: const Text('載入更多留言'),
           ),
         ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 12),
       if (signedIn)
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,7 +552,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final theme = Theme.of(context);
     return Padding(
       key: ValueKey('comment-${c.id}'),
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -503,7 +560,12 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [Flexible(child: PersonLine(c.user, style: theme.textTheme.labelLarge)), AddFriendButton(userId: c.user.id, name: c.user.displayName)]),
+                Row(
+                  children: [
+                    Flexible(child: PersonLine(c.user, style: theme.textTheme.labelLarge)),
+                    AddFriendButton(userId: c.user.id, name: c.user.displayName),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 LinkText(c.body),
               ],
@@ -531,37 +593,48 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   Widget _bottomBar(EventDetail d, BottomAction a) {
     final onTap = a.enabled && !_busy ? () => _onBottom(d, a) : null;
     final tonal = a.kind == EventAction.pending || a.kind == EventAction.approved;
-    final style = FilledButton.styleFrom(minimumSize: const Size.fromHeight(48));
+    final style = FilledButton.styleFrom(minimumSize: const Size.fromHeight(52));
     final hint = switch (a.kind) {
       EventAction.pending => '等待主辦人審核，點按鈕可以取消申請',
       EventAction.approved => '點按鈕可以退出這個揪團',
       _ => null,
     };
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (hint != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(hint, style: Theme.of(context).textTheme.bodySmall),
-              ),
-            tonal
-                ? FilledButton.tonal(
-                    key: const ValueKey('event-action'),
-                    style: style,
-                    onPressed: onTap,
-                    child: Text(a.label),
-                  )
-                : FilledButton(
-                    key: const ValueKey('event-action'),
-                    style: style,
-                    onPressed: onTap,
-                    child: Text(a.label),
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        border: Border(top: BorderSide(color: scheme.outlineVariant)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hint != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    hint,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
                   ),
-          ],
+                ),
+              tonal
+                  ? FilledButton.tonal(
+                      key: const ValueKey('event-action'),
+                      style: style,
+                      onPressed: onTap,
+                      child: Text(a.label),
+                    )
+                  : FilledButton(
+                      key: const ValueKey('event-action'),
+                      style: style,
+                      onPressed: onTap,
+                      child: Text(a.label),
+                    ),
+            ],
+          ),
         ),
       ),
     );
@@ -569,19 +642,20 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow(this.icon, this.text);
+  const _InfoRow(this.icon, this.text, {this.child});
   final IconData icon;
-  final String text;
+  final String? text;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text)),
+          IconTile(icon),
+          const SizedBox(width: 12),
+          Expanded(child: child ?? Text(text!, style: Theme.of(context).textTheme.bodyLarge)),
         ],
       ),
     );
@@ -596,36 +670,52 @@ class _SnapshotCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final days = snapshotByDay(snapshot);
     return Card(
       key: const ValueKey('event-snapshot'),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('行程路線', style: theme.textTheme.titleSmall),
-            const SizedBox(height: 2),
-            Text(
-              '${snapshot.name}  ·  ${formatEventDates(snapshot.startDate, snapshot.endDate)}',
-              style: theme.textTheme.bodySmall,
-            ),
+            Text(snapshot.name, style: theme.textTheme.titleSmall),
             if (days.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text('還沒有節點。', style: theme.textTheme.bodyMedium),
               ),
             for (final e in days.entries) ...[
-              const SizedBox(height: 10),
-              Text('D${e.key}', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary)),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(color: scheme.secondaryContainer, borderRadius: BorderRadius.circular(10)),
+                child: Text(
+                  'D${e.key}',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: scheme.onSecondaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
               for (final i in e.value)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      SizedBox(width: 52, child: Text(i.time ?? '––:––', style: theme.textTheme.bodySmall)),
+                      SizedBox(
+                        width: 56,
+                        child: Text(
+                          i.time ?? '––:––',
+                          style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
+                      ),
                       Expanded(child: Text(i.name)),
-                      if (i.altitude > 0) Text('${i.altitude} m', style: theme.textTheme.bodySmall),
+                      if (i.altitude > 0)
+                        Text(
+                          '${i.altitude} m',
+                          style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
                     ],
                   ),
                 ),

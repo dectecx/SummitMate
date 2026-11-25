@@ -127,69 +127,123 @@ class _ApplicationsPageState extends ConsumerState<ApplicationsPage> {
         onRefresh: () => _load(silent: true),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 32),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text(
-                '${e.title}\n已通過 ${peopleLabel(e.approvedCount, e.maxMembers)}',
-                style: theme.textTheme.titleMedium,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-              child: Text('待審核（${pending.length}）', style: theme.textTheme.titleSmall),
-            ),
-            if (pending.isEmpty) const Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 8), child: Text('沒有待審核的申請。')),
-            for (final a in pending)
-              Card(
-                key: ValueKey('app-${a.id}'),
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(children: [Flexible(child: PersonLine(a.user, style: theme.textTheme.titleSmall)), AddFriendButton(userId: a.user.id, name: a.user.displayName)]),
-                      if (a.message.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text(a.message)),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const IconTile(Icons.groups_outlined),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(minimumSize: const Size(88, 44)),
-                            key: ValueKey('reject-${a.id}'),
-                            onPressed: _busy ? null : () => _reject(a),
-                            child: const Text('拒絕'),
+                          Text(
+                            e.title,
+                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(width: 8),
-                          FilledButton(
-                            style: FilledButton.styleFrom(minimumSize: const Size(88, 44)),
-                            key: ValueKey('approve-${a.id}'),
-                            onPressed: _busy ? null : () => _approve(a),
-                            child: const Text('通過'),
+                          const SizedBox(height: 2),
+                          Text(
+                            '已通過 ${peopleLabel(e.approvedCount, e.maxMembers)}',
+                            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SectionCaption('待審核（${pending.length}）'),
+            if (pending.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+                child: Text(
+                  '沒有待審核的申請。',
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ),
+            for (final a in pending)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Card(
+                  key: ValueKey('app-${a.id}'),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(child: PersonLine(a.user, style: theme.textTheme.titleSmall)),
+                            AddFriendButton(userId: a.user.id, name: a.user.displayName),
+                          ],
+                        ),
+                        if (a.message.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(a.message, style: theme.textTheme.bodyMedium?.copyWith(height: 1.5)),
+                          ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(96, 44)),
+                              key: ValueKey('reject-${a.id}'),
+                              onPressed: _busy ? null : () => _reject(a),
+                              child: const Text('拒絕'),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              style: FilledButton.styleFrom(minimumSize: const Size(96, 44)),
+                              key: ValueKey('approve-${a.id}'),
+                              onPressed: _busy ? null : () => _approve(a),
+                              child: const Text('通過'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-              child: Text('已通過（${approved.length}）', style: theme.textTheme.titleSmall),
-            ),
-            if (approved.isEmpty) const Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 8), child: Text('還沒有成員。')),
-            for (final a in approved)
-              ListTile(
-                key: ValueKey('app-${a.id}'),
-                title: PersonLine(a.user),
-                subtitle: a.message.isEmpty ? null : Text(a.message),
-                trailing: TextButton(
-                  style: TextButton.styleFrom(minimumSize: const Size(88, 44)),
-                  key: ValueKey('remove-${a.id}'),
-                  onPressed: _busy ? null : () => _remove(a),
-                  child: const Text('移除成員'),
+            SectionCaption('已通過（${approved.length}）'),
+            if (approved.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+                child: Text(
+                  '還沒有成員。',
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              )
+            else
+              Card(
+                child: Column(
+                  children: [
+                    for (var i = 0; i < approved.length; i++) ...[
+                      if (i > 0) Divider(height: 1, indent: 16, endIndent: 16, color: theme.colorScheme.outlineVariant),
+                      ListTile(
+                        key: ValueKey('app-${approved[i].id}'),
+                        shape: const RoundedRectangleBorder(),
+                        title: PersonLine(approved[i].user, style: theme.textTheme.titleSmall),
+                        subtitle: approved[i].message.isEmpty ? null : Text(approved[i].message),
+                        trailing: TextButton(
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(88, 44),
+                            foregroundColor: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          key: ValueKey('remove-${approved[i].id}'),
+                          onPressed: _busy ? null : () => _remove(approved[i]),
+                          child: const Text('移除成員'),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
           ],
