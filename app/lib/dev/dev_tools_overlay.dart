@@ -25,7 +25,7 @@ class DevToolsOverlay extends StatefulWidget {
 }
 
 class _DevToolsOverlayState extends State<DevToolsOverlay> {
-  Offset _position = const Offset(8, 120);
+  Offset _position = const Offset(0, 430); // low on the left edge, away from titles and buttons
   bool _open = false;
 
   Future<void> _showPanel() async {

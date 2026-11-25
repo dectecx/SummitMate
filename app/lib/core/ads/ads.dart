@@ -66,9 +66,16 @@ class _AdMobBannerState extends State<AdMobBanner> {
   Widget build(BuildContext context) {
     final ad = _ad;
     if (ad == null || !_loaded) return const SizedBox.shrink();
-    return SafeArea(
-      top: false,
-      child: SizedBox(width: ad.size.width.toDouble(), height: ad.size.height.toDouble(), child: AdWidget(ad: ad)),
+    // The fixed-size banner is centred on a surface-coloured strip; without it the sides show black.
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      child: SafeArea(
+        top: false,
+        child: Center(
+          heightFactor: 1,
+          child: SizedBox(width: ad.size.width.toDouble(), height: ad.size.height.toDouble(), child: AdWidget(ad: ad)),
+        ),
+      ),
     );
   }
 }

@@ -242,6 +242,7 @@ class _ThemeTile extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: SegmentedButton<ThemeMode>(
+            expandedInsets: EdgeInsets.zero,
             showSelectedIcon: false,
             segments: const [
               ButtonSegment(value: ThemeMode.system, label: Text('跟隨系統')),
