@@ -26,7 +26,7 @@ class TripsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final trips = ref.watch(tripsProvider);
-    return PageAccents(banner: const AdBannerSlot(), child: Scaffold(
+    return PageAccents(child: Scaffold(
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -169,7 +169,14 @@ class _TripListState extends ConsumerState<_TripList> {
         ],
       ),
     );
-    Widget card(Trip t, {bool hero = false}) => hero && tall ? _HeroCard(trip: t, today: today) : _TripRow(trip: t, today: today);
+    // the ad goes after the second trip card on screen, or after the only one
+    final visible = g.ongoing.length + g.upcoming.length + (showPast ? g.past.length : 0);
+    final adAfter = visible < 2 ? visible : 2;
+    var cards = 0;
+    List<Widget> card(Trip t, {bool hero = false}) => [
+      hero && tall ? _HeroCard(trip: t, today: today) : _TripRow(trip: t, today: today),
+      if (++cards == adAfter) const AdBannerSlot(key: ValueKey('ad-slot')),
+    ];
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 24),
@@ -182,10 +189,10 @@ class _TripListState extends ConsumerState<_TripList> {
             actionLabel: '登入',
             onAction: () => context.push(Routes.withQuery(Routes.login, {'next': Routes.trips})),
           ),
-        if (g.ongoing.isNotEmpty) ...[caption('進行中'), for (final t in g.ongoing) card(t, hero: true)],
+        if (g.ongoing.isNotEmpty) ...[caption('進行中'), for (final t in g.ongoing) ...card(t, hero: true)],
         if (g.upcoming.isNotEmpty) ...[
           caption('即將出發'),
-          for (final (i, t) in g.upcoming.indexed) card(t, hero: i == 0 && g.ongoing.isEmpty),
+          for (final (i, t) in g.upcoming.indexed) ...card(t, hero: i == 0 && g.ongoing.isEmpty),
         ],
         if (g.past.isNotEmpty) ...[
           caption(
@@ -199,7 +206,7 @@ class _TripListState extends ConsumerState<_TripList> {
                   ),
           ),
           if (showPast)
-            for (final t in g.past) card(t),
+            for (final t in g.past) ...card(t),
         ],
       ],
     );

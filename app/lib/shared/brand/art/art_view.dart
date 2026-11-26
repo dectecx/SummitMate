@@ -4,7 +4,6 @@ import 'art_data.g.dart';
 import 'art_model.dart';
 import 'art_palette.dart';
 
-export 'art_model.dart' show ArtScene;
 
 /// The app's mark on its 400 x 400 artwork. [progress] 0..1 plays it in: the sky appears, the sun and the summit
 /// rise, the ground slides in, then the stones stack up one by one.
@@ -34,40 +33,6 @@ class MarkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(MarkPainter old) => old.progress != progress;
-}
-
-/// The picture of an empty screen, 4:3.
-class ArtSceneView extends StatelessWidget {
-  const ArtSceneView(this.scene, {super.key, this.width = 168});
-  final ArtScene scene;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-    child: RepaintBoundary(
-      child: CustomPaint(
-        size: Size(width, width * .75),
-        painter: _ScenePainter(scene, ArtPalette.object(Theme.of(context).colorScheme), Theme.of(context).brightness),
-      ),
-    ),
-  );
-}
-
-class _ScenePainter extends CustomPainter {
-  const _ScenePainter(this.scene, this.palette, this.brightness);
-  final ArtScene scene;
-  final ArtPalette palette;
-  final Brightness brightness;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.scale(size.width / 160);
-    canvas.translate(80, 60);
-    _paintDrawing(canvas, artScenes[scene]!, palette);
-  }
-
-  @override
-  bool shouldRepaint(_ScenePainter old) => old.scene != scene || old.brightness != brightness;
 }
 
 Path _path(List<double> p, {required bool close}) {

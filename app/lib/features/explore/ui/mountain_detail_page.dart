@@ -31,7 +31,7 @@ class MountainDetailPage extends ConsumerWidget {
     }
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(mountain.name), actions: [FavoriteHeart(mountainId: mountain.id)]),
+      appBar: AppBar(actions: [FavoriteHeart(mountainId: mountain.id)]),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/brand/illustrations.dart';
 import '../../../app/router.dart';
 import '../../../core/auth/auth_api.dart';
 import '../../../core/auth/auth_state.dart';
@@ -75,6 +76,21 @@ class MembersView extends ConsumerWidget {
             ),
           ),
         ),
+        if (signedIn && canInvite(role) && lines.length < 2)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 28, 32, 0),
+            child: Column(
+              children: [
+                const IllustrationView(Illustration.friends, width: 150),
+                const SizedBox(height: 8),
+                Text(
+                  '邀請隊友一起看行程、討論和投票',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
         if (signedIn && role != TripRole.owner && lines.any((l) => l.isMe))
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),

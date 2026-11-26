@@ -183,7 +183,7 @@ class _Forecast extends StatelessWidget {
                 width: 92,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: inTrip ? scheme.primaryContainer : scheme.surfaceContainerHighest,
+                  color: inTrip ? scheme.primaryContainer : scheme.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(

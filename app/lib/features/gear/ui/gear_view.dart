@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'gear_icons.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/coming_soon.dart';
 import '../../../shared/reorderable_group.dart';
@@ -46,7 +47,7 @@ class _GearViewState extends ConsumerState<GearView> {
           ReorderableGroupSliver(
             key: ValueKey('gear-group-${g.category.key}'),
             title: g.category.label,
-            icon: _iconOf(g.category),
+            icon: gearIcon(g.category),
             trailing: formatWeight(totalWeight(g.items)),
             reordering: _reordering,
             ids: [for (final i in g.items) i.id],
@@ -58,16 +59,6 @@ class _GearViewState extends ConsumerState<GearView> {
     );
   }
 }
-
-IconData _iconOf(GearCategory c) => switch (c) {
-  GearCategory.sleep => Icons.bed_outlined,
-  GearCategory.cook => Icons.outdoor_grill_outlined,
-  GearCategory.clothing => Icons.checkroom_outlined,
-  GearCategory.pack => Icons.backpack_outlined,
-  GearCategory.electronics => Icons.flashlight_on_outlined,
-  GearCategory.safety => Icons.medical_services_outlined,
-  GearCategory.other => Icons.category_outlined,
-};
 
 class _Summary extends ConsumerWidget {
   const _Summary({required this.items});

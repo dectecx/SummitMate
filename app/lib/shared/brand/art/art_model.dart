@@ -41,9 +41,6 @@ enum ArtColor {
   bloomDark,
 }
 
-/// The pictures of empty screens and the help.
-enum ArtScene { trip, gear, meal, chat, map, friends, shop, search, help, star }
-
 /// One paint step: filled polygons, stroked lines, or a soft blot of pigment.
 class ArtOp {
   const ArtOp(this.color, {this.rings = const [], this.bloom, this.stroke = 0, this.alpha = 1, this.clip = -1});

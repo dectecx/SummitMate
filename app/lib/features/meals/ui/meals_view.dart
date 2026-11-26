@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'meal_icons.dart';
 import '../../../core/db/app_database.dart';
 import '../../gear/domain/gear_logic.dart';
 import '../../trips/domain/trip_logic.dart';
@@ -76,18 +77,19 @@ class _MealsViewState extends ConsumerState<MealsView> {
                       ReorderableGroupSliver(
                         key: ValueKey('meal-group-${g.type.key}'),
                         title: g.type.label,
-                        icon: Icons.restaurant_outlined,
+                        icon: mealIcon(g.type),
                         trailing: formatWeight(g.entries.fold<double>(0, (sum, e) => sum + e.weight)),
                         reordering: _reordering,
                         ids: [for (final e in g.entries) e.item.id],
                         onReorder: (ids) => ref.read(mealRepositoryProvider).reorder(ids),
                         itemBuilder: (_, i) {
                           final e = g.entries[i];
+                          final detail = [if (e.item.quantity > 1) '× ${e.item.quantity}', if (e.item.note.isNotEmpty) e.item.note].join('  ·  ');
                           return ListTile(
                             shape: const RoundedRectangleBorder(),
                             onTap: _reordering ? null : () => showMealFormSheet(context, tripId: trip.id, dayIndex: day, entry: e),
                             title: Text(e.item.name.isEmpty ? '（未命名）' : e.item.name),
-                            subtitle: Text([if (e.item.quantity > 1) '× ${e.item.quantity}', if (e.item.note.isNotEmpty) e.item.note].join('  ·  ')),
+                            subtitle: detail.isEmpty ? null : Text(detail),
                             trailing: _reordering
                                 ? ReorderHandle(index: i)
                                 : Column(
@@ -120,7 +122,7 @@ class _Total extends StatelessWidget {
       children: [
         Text(label, style: theme.textTheme.bodySmall),
         const SizedBox(height: 4),
-        Text(formatWeight(weight), style: theme.textTheme.titleMedium),
+        Text(formatWeight(weight), style: theme.textTheme.headlineSmall?.copyWith(color: theme.colorScheme.onSurface)),
         Text(formatKcal(kcal), style: theme.textTheme.bodySmall),
       ],
     );

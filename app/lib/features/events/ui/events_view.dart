@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/ads/ads.dart';
 import '../../../app/router.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../trips/providers.dart';
@@ -187,8 +188,10 @@ class _EventsViewState extends ConsumerState<EventsView> {
                     message: _search.text.trim().isEmpty ? '目前沒有揪團。' : '沒有符合的揪團。',
                   ),
                 if (!locked)
-                  for (final e in _items)
+                  for (final (i, e) in _items.indexed) ...[
                     EventCard(key: ValueKey('event-${e.id}'), event: e, today: today, onTap: () => _open(e)),
+                    if (widget.active && i == (_items.length < 2 ? 0 : 1)) const AdBannerSlot(key: ValueKey('ad-slot')),
+                  ],
                 if (_loading)
                   const Padding(
                     padding: EdgeInsets.all(24),

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/ads/ads.dart';
 import '../../../shared/coming_soon.dart';
 import '../../../shared/open_link.dart';
 import '../domain/shop_models.dart';
@@ -89,13 +90,18 @@ class _ShopsViewState extends ConsumerState<ShopsView> {
               ? const Center(child: Text('沒有符合的店家'))
               : ListView.builder(
                   padding: const EdgeInsets.only(bottom: 16),
-                  itemCount: results.length + 1,
-                  itemBuilder: (_, i) => i == results.length
-                      ? Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                          child: Text('只收錄 Google 評價 4.0 星以上的店家；營業時間與電話可能變動，出發前請先確認。', style: theme.textTheme.bodySmall),
-                        )
-                      : ShopCard(shop: results[i]),
+                  itemCount: results.length + 2, // the ad and the closing note
+                  itemBuilder: (_, index) {
+                    final adAt = results.length < 3 ? results.length : 3;
+                    if (index == adAt) return const AdBannerSlot(key: ValueKey('ad-slot'));
+                    final i = index < adAt ? index : index - 1;
+                    return i == results.length
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            child: Text('只收錄 Google 評價 4.0 星以上的店家；營業時間與電話可能變動，出發前請先確認。', style: theme.textTheme.bodySmall),
+                          )
+                        : ShopCard(shop: results[i]);
+                  },
                 ),
         ),
       ],

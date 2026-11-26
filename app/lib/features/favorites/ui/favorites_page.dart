@@ -67,7 +67,7 @@ class _MountainFavorites extends ConsumerWidget {
             for (final m in starred)
               SettingsTile(
                 key: ValueKey('favorite-${m.id}'),
-                icon: Icons.terrain,
+                icon: Icons.terrain_outlined,
                 title: m.name,
                 subtitle: '${m.region}  ·  ${m.elevation} m',
                 trailing: FavoriteHeart(mountainId: m.id),

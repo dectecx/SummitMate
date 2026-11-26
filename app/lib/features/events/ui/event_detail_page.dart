@@ -289,7 +289,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final action = bottomActionFor(d, signedIn: signedIn, today: _today);
     return Scaffold(
       appBar: AppBar(
-        title: Text(d.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
           FavoriteEventButton(eventId: d.id),
           _menu(d),

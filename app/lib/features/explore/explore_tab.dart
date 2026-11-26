@@ -41,7 +41,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
 
   @override
   Widget build(BuildContext context) {
-    return PageAccents(banner: const AdBannerSlot(), child: Scaffold(
+    return PageAccents(child: Scaffold(
       appBar: pageBar(context, '探索'),
       body: Column(
         children: [
@@ -126,8 +126,11 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
               ? Center(child: Text(_onlyFavorites && favorites.isEmpty ? '還沒有收藏的山，點山岳右邊的愛心就能收藏。' : '沒有符合的山'))
               : ListView.builder(
                   padding: const EdgeInsets.only(top: 2, bottom: 12),
-                  itemCount: results.length,
-                  itemBuilder: (context, i) {
+                  itemCount: results.length + 1, // one extra place for the ad
+                  itemBuilder: (context, index) {
+                    final adAt = results.length < 3 ? results.length : 3;
+                    if (index == adAt) return const AdBannerSlot(key: ValueKey('ad-slot'));
+                    final i = index < adAt ? index : index - 1;
                     final screen = MediaQuery.sizeOf(context);
                     return _MountainCard(
                       key: ValueKey('mountain-${results[i].id}'),

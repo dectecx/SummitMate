@@ -3,13 +3,10 @@ import 'package:material_ui/material_ui.dart';
 /// The quiet decoration behind the top-level pages: a watercolour wash in two corners and two small plant
 /// sprigs (`tool/art/accents.py`). It stays put while the page scrolls. A screen wider than tall gets none.
 class PageAccents extends StatelessWidget {
-  const PageAccents({super.key, required this.child, this.banner});
+  const PageAccents({super.key, required this.child});
 
   /// The page's [Scaffold]; its background and app bar become transparent here.
   final Widget child;
-
-  /// The ad banner under the page. Kept outside the decorated area, so it never covers a sprig.
-  final Widget? banner;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +36,7 @@ class PageAccents extends StatelessWidget {
         gaplessPlayback: true,
       ),
     );
-    final page = ColoredBox(
+    return ColoredBox(
       color: theme.colorScheme.surface,
       child: Stack(
         fit: StackFit.expand,
@@ -70,13 +67,5 @@ class PageAccents extends StatelessWidget {
         ],
       ),
     );
-    return banner == null
-        ? page
-        : Column(
-            children: [
-              Expanded(child: page),
-              banner!,
-            ],
-          );
   }
 }

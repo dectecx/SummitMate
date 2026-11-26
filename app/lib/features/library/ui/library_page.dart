@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../meals/ui/meal_icons.dart';
+import '../../gear/ui/gear_icons.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
@@ -83,7 +85,7 @@ class _ItemList extends ConsumerWidget {
             for (final i in items)
               SettingsTile(
                 key: ValueKey('library-${i.id}'),
-                icon: isGear ? Icons.backpack_outlined : Icons.restaurant_outlined,
+                icon: isGear ? gearIcon(GearCategory.fromKey(i.category)) : mealIcon(MealType.fromKey(i.category)),
                 title: i.name,
                 subtitle: isGear
                     ? '${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}'

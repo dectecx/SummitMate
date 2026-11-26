@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/page_accents.dart';
 import '../../../shared/page_bar.dart';
-import '../../../core/ads/ads.dart';
 import '../data/events_api.dart';
 import '../providers.dart';
 import 'event_widgets.dart';
@@ -28,7 +27,7 @@ class _EventsTabState extends ConsumerState<EventsTab> {
   @override
   Widget build(BuildContext context) {
     final pending = ref.watch(pendingApplicationsProvider).value ?? 0;
-    return PageAccents(banner: const AdBannerSlot(), child: Scaffold(
+    return PageAccents(child: Scaffold(
       appBar: pageBar(context, '揪團'),
       floatingActionButton: FloatingActionButton.extended(
         key: const ValueKey('events-create'),
