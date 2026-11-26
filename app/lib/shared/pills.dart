@@ -17,11 +17,8 @@ class DayPill extends StatelessWidget {
       button: true,
       selected: selected,
       child: Material(
-        color: selected ? scheme.primary : scheme.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant),
-        ),
+        color: selected ? scheme.primary : scheme.primaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,

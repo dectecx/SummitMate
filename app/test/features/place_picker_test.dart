@@ -191,6 +191,9 @@ void main() {
     });
     await settle(tester);
 
+    await tester.tap(find.byKey(const ValueKey('toggle-past'))); // past trips are folded away
+    await settle(tester);
+
     for (final name in ['沒有山頭', '已經結束']) {
       await tapText(tester, name);
       expect(find.byKey(const ValueKey('trip-offline-hint')), findsNothing, reason: name);

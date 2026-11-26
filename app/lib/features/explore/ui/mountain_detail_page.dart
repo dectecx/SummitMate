@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/brand/art/art_view.dart' show coverCount;
+import '../../../shared/brand/cover_image.dart';
 import '../../trips/domain/trip_art.dart';
 import '../../../shared/coming_soon.dart';
 import '../../favorites/ui/favorite_heart.dart';

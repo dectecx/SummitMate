@@ -1,3 +1,6 @@
+import '../../shared/page_accents.dart';
+import '../../shared/page_bar.dart';
+import '../../shared/brand/cover_image.dart';
 import '../favorites/providers.dart';
 import '../favorites/ui/favorite_heart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,8 +13,7 @@ import '../../shared/coming_soon.dart';
 import 'domain/mountain_models.dart';
 import 'providers.dart';
 import 'ui/shops_view.dart';
-import '../../shared/brand/art/art_view.dart';
-import '../../shared/tints.dart';
+import '../../shared/icon_badge.dart';
 import '../trips/domain/trip_art.dart';
 import '../../../shared/brand/illustrations.dart';
 
@@ -39,9 +41,8 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('探索')),
-      bottomNavigationBar: const AdBannerSlot(),
+    return PageAccents(banner: const AdBannerSlot(), child: Scaffold(
+      appBar: pageBar(context, '探索'),
       body: Column(
         children: [
           Padding(
@@ -63,7 +64,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _mountains() {
@@ -151,16 +152,10 @@ class _MountainCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final m = mountain;
-    final tint = m.beginnerFriendly ? Tint.moss : (m.category == MountainCategory.baiyue ? Tint.lake : Tint.sand);
     final row = Row(
       children: [
         if (!featured) ...[
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(color: tint.of(context), borderRadius: BorderRadius.circular(16)),
-            child: Center(child: ArtIconView(m.beginnerFriendly ? ArtIcon.forest : ArtIcon.summit, size: 48)),
-          ),
+          IconBadge(m.beginnerFriendly ? Icons.forest_outlined : Icons.terrain_outlined, size: 56),
           const SizedBox(width: 14),
         ],
         Expanded(
@@ -187,7 +182,7 @@ class _MountainCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (featured) SizedBox(height: 132, child: VignetteArt(cover: coverFor(m.id, coverCount))),
+            if (featured) SizedBox(height: 132, child: CoverImage(cover: coverFor(m.id, coverCount))),
             Padding(padding: const EdgeInsets.fromLTRB(14, 10, 8, 12), child: row),
           ],
         ),

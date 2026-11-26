@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:summitmate/shared/land_nav_bar.dart';
 import 'package:summitmate/core/providers.dart';
 import 'package:summitmate/core/sync/local_store.dart';
 import 'package:summitmate/core/sync/sync_entity.dart';
@@ -40,7 +39,7 @@ void main() {
     await settle(tester);
     expect(find.text('訪客模式'), findsOneWidget, reason: 'clearing the data must not switch tabs by itself');
 
-    await tester.tap(find.descendant(of: find.byType(LandNavBar), matching: find.text('行程')));
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('行程')));
     await settle(tester);
     expect(find.textContaining('找不到這個行程'), findsNothing);
     expect(find.text('還沒有行程'), findsOneWidget);
@@ -166,6 +165,10 @@ void main() {
     expect(find.text('即將出發'), findsOneWidget);
     expect(find.text('過去的行程'), findsOneWidget);
     expect(find.text('明天出發'), findsOneWidget);
+    expect(find.text('去年的'), findsNothing, reason: 'past trips are folded away');
+    await tester.tap(find.byKey(const ValueKey('toggle-past')));
+    await settle(tester);
+    expect(find.text('去年的'), findsOneWidget);
     expect(find.text('已結束'), findsOneWidget);
     await app.dispose(tester);
   });

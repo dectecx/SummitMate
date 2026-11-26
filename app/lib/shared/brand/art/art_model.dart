@@ -41,9 +41,6 @@ enum ArtColor {
   bloomDark,
 }
 
-/// The small pictures.
-enum ArtIcon { map, tent, summit, water, sleep, cook, jacket, backpack, headlamp, firstAid, compass, forest }
-
 /// The pictures of empty screens and the help.
 enum ArtScene { trip, gear, meal, chat, map, friends, shop, search, help, star }
 

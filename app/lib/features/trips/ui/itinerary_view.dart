@@ -6,8 +6,6 @@ import '../../../core/db/app_database.dart';
 import '../../../shared/hint_banner.dart';
 import '../domain/trip_logic.dart';
 import '../domain/trip_art.dart';
-import '../../../shared/brand/art/art_view.dart';
-import 'timeline_rail.dart';
 import '../../../shared/pills.dart';
 import '../providers.dart';
 import '../../gpx/domain/elevation_profile.dart';
@@ -68,7 +66,6 @@ class ItineraryView extends ConsumerWidget {
                   _ItemTile(
                     item: dayItems[i],
                     cumulativeKm: cumulative[i],
-                    index: i,
                     first: i == 0,
                     last: i == dayItems.length - 1,
                     role: role,
@@ -83,10 +80,9 @@ class ItineraryView extends ConsumerWidget {
 }
 
 class _ItemTile extends ConsumerWidget {
-  const _ItemTile({required this.item, required this.cumulativeKm, required this.index, required this.first, required this.last, required this.role, required this.trip});
+  const _ItemTile({required this.item, required this.cumulativeKm, required this.first, required this.last, required this.role, required this.trip});
   final ItineraryItem item;
   final double cumulativeKm;
-  final int index;
   final bool first;
   final bool last;
   final TripRole role;
@@ -101,71 +97,76 @@ class _ItemTile extends ConsumerWidget {
       if (item.altitude > 0) '${item.altitude} m',
       if (cumulativeKm > 0) '累計 ${formatKm(cumulativeKm)} km',
     ];
-    final art = artIconFor(item.name);
     final muted = theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: 58,
-            child: Padding(
-              padding: const EdgeInsets.only(top: TimelineRail.dotY - 9, left: 14),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(formatMinutes(item.estMinutes) ?? '––:––', style: muted),
-                ),
-              ),
-            ),
-          ),
-          TimelineRail(index: index, first: first, last: last, arrived: arrived),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 5, 20, 5),
-              child: Material(
-                color: scheme.surfaceContainerLowest,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: scheme.outlineVariant)),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () => showItemFormSheet(context, trip: trip, item: item, readOnly: !role.canEditShared),
+    // the nodes of a day share one white sheet: rounded where it begins and ends
+    final radius = BorderRadius.vertical(top: Radius.circular(first ? 20 : 0), bottom: Radius.circular(last ? 20 : 0));
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Material(
+        color: scheme.surfaceContainerLowest,
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => showItemFormSheet(context, trip: trip, item: item, readOnly: !role.canEditShared),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 58,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 10, 4, 10),
-                    child: Row(
+                    padding: const EdgeInsets.only(left: 14, top: 21),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: FittedBox(fit: BoxFit.scaleDown, child: Text(formatMinutes(item.estMinutes) ?? '––:––', style: muted)),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 36,
+                  child: Column(
+                    children: [
+                      Container(width: 2, height: 12, color: first ? Colors.transparent : scheme.primaryContainer),
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(color: arrived ? scheme.primary : scheme.primaryContainer, shape: BoxShape.circle),
+                        child: Icon(nodeIconFor(item.name), size: 18, color: arrived ? scheme.onPrimary : scheme.primary),
+                      ),
+                      Expanded(child: Container(width: 2, color: last ? Colors.transparent : scheme.primaryContainer)),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 4, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(item.name.isEmpty ? '（未命名）' : item.name, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: scheme.onSurface)),
-                              if (facts.isNotEmpty) Text(facts.join('  ·  '), style: muted),
-                              if (item.note.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: LinkText(item.note, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium)),
-                              if (arrived) Padding(padding: const EdgeInsets.only(top: 4), child: Text('已抵達 ${_clock(item.checkedInAt!)}', style: theme.textTheme.bodySmall?.copyWith(color: scheme.primary))),
-                            ],
-                          ),
-                        ),
-                        if (art != null) Padding(padding: const EdgeInsets.only(left: 4), child: ArtIconView(art)),
-                        if (role.canEditShared)
-                          IconButton(
-                            tooltip: arrived ? '取消抵達' : '標記已抵達',
-                            icon: Icon(arrived ? Icons.check_circle : Icons.radio_button_unchecked, color: scheme.primary),
-                            onPressed: () => ref.read(itineraryRepositoryProvider).update(
-                              item.id,
-                              checkedInAt: Value(arrived ? null : ref.read(clockProvider)().toUtc()),
-                            ),
-                          )
-                        else
-                          const SizedBox(width: 10),
+                        Text(item.name.isEmpty ? '（未命名）' : item.name, style: theme.textTheme.titleMedium?.copyWith(color: scheme.onSurface)),
+                        if (facts.isNotEmpty) Text(facts.join('  ·  '), style: muted),
+                        if (item.note.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: LinkText(item.note, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium)),
+                        if (arrived) Padding(padding: const EdgeInsets.only(top: 4), child: Text('已抵達 ${_clock(item.checkedInAt!)}', style: theme.textTheme.bodySmall?.copyWith(color: scheme.primary))),
                       ],
                     ),
                   ),
                 ),
-              ),
+                if (role.canEditShared)
+                  IconButton(
+                    tooltip: arrived ? '取消抵達' : '標記已抵達',
+                    icon: Icon(arrived ? Icons.check_circle : Icons.circle_outlined, color: arrived ? scheme.primary : scheme.outline),
+                    onPressed: () => ref.read(itineraryRepositoryProvider).update(
+                      item.id,
+                      checkedInAt: Value(arrived ? null : ref.read(clockProvider)().toUtc()),
+                    ),
+                  )
+                else
+                  const SizedBox(width: 10),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

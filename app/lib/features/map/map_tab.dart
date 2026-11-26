@@ -5,8 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/icon_badge.dart';
+import '../../shared/brand/cover_image.dart';
 import '../../app/router.dart';
-import '../../shared/brand/art/art_view.dart';
 import '../trips/domain/trip_art.dart';
 import 'ui/map_markers.dart';
 import '../../shared/open_link.dart';
@@ -271,7 +272,7 @@ class _MapTabState extends ConsumerState<MapTab> {
             for (final p in near)
               ListTile(
                 key: ValueKey('near-${p.id}'),
-                leading: const ArtIconView(ArtIcon.summit, size: 44),
+                leading: const IconBadge(Icons.terrain_outlined),
                 title: Text(p.name),
                 subtitle: Text('${p.region}  ·  ${p.elevation} m'),
                 trailing: const Icon(Icons.chevron_right),
@@ -302,7 +303,7 @@ class _MapTabState extends ConsumerState<MapTab> {
                 padding: const EdgeInsets.only(bottom: 14),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
-                  child: SizedBox(height: 120, child: CoverArt(cover: coverFor(m.id, coverCount))),
+                  child: SizedBox(height: 120, child: CoverImage(cover: coverFor(m.id, coverCount))),
                 ),
               ),
             Text(m.name, style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),

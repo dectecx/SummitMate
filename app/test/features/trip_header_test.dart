@@ -4,7 +4,7 @@ import 'package:summitmate/core/providers.dart';
 import 'package:summitmate/core/settings/app_settings.dart';
 import 'package:summitmate/features/trips/domain/trip_art.dart';
 import 'package:summitmate/features/trips/providers.dart';
-import 'package:summitmate/shared/brand/art/art_view.dart';
+import 'package:summitmate/shared/brand/cover_image.dart';
 
 import 'harness.dart';
 
@@ -16,12 +16,12 @@ void main() {
     expect({for (var i = 0; i < 40; i++) coverFor('trip-$i', coverCount)}, hasLength(coverCount));
   });
 
-  test('node pictures follow the name', () {
-    expect(artIconFor('向陽登山口'), ArtIcon.map);
-    expect(artIconFor('向陽山屋'), ArtIcon.tent);
-    expect(artIconFor('黑水塘'), ArtIcon.water);
-    expect(artIconFor('雪山東峰'), ArtIcon.summit);
-    expect(artIconFor('集合'), isNull);
+  test('node icons follow the name', () {
+    expect(nodeIconFor('向陽登山口'), Icons.flag_outlined);
+    expect(nodeIconFor('向陽山屋'), Icons.cottage_outlined);
+    expect(nodeIconFor('黑水塘'), Icons.water_drop_outlined);
+    expect(nodeIconFor('雪山東峰'), Icons.terrain_outlined);
+    expect(nodeIconFor('集合'), Icons.place_outlined);
   });
 
   Future<AppHarness> openTrip(WidgetTester tester, {bool animations = true}) async {
@@ -52,8 +52,8 @@ void main() {
   testWidgets('the cover and card show on opening, then wash out under a pinned title and tabs', (tester) async {
     final app = await openTrip(tester);
     final card = find.byKey(const ValueKey('trip-info-card'));
-    expect(find.byType(CoverArt), findsOneWidget);
-    expect(opacityOf(tester, find.byType(CoverArt)), 1);
+    expect(find.byType(CoverImage), findsOneWidget);
+    expect(opacityOf(tester, find.byType(CoverImage)), 1);
     expect(opacityOf(tester, card), 1);
     expect(find.text('3 天'), findsOneWidget);
     expect(find.text('12 km'), findsOneWidget, reason: 'distances typed on the nodes');
@@ -61,7 +61,7 @@ void main() {
 
     await tester.drag(find.byType(TabBarView), const Offset(0, -600));
     await settle(tester);
-    expect(opacityOf(tester, find.byType(CoverArt)), closeTo(.25, .01));
+    expect(opacityOf(tester, find.byType(CoverImage)), 0);
     expect(opacityOf(tester, card), 0);
     expect(tester.getTopLeft(find.byType(TabBar)).dy, lessThan(110));
     expect(find.byType(BackButton), findsOneWidget);
@@ -82,7 +82,7 @@ void main() {
     final app = await openTrip(tester, animations: false);
     await tester.drag(find.byType(TabBarView), const Offset(0, -90));
     await settle(tester);
-    expect(opacityOf(tester, find.byType(CoverArt)), anyOf(1, closeTo(.25, .001)));
+    expect(opacityOf(tester, find.byType(CoverImage)), anyOf(0, 1));
     await app.dispose(tester);
   });
 
@@ -107,7 +107,7 @@ void main() {
     addTearDown(tester.platformDispatcher.clearAllTestValues);
     final app = await openTrip(tester);
     expect(tester.takeException(), isNull);
-    await tester.drag(find.byType(CoverArt), const Offset(0, -500));
+    await tester.drag(find.byType(CoverImage), const Offset(0, -500));
     await settle(tester);
     expect(tester.takeException(), isNull);
     await app.dispose(tester);

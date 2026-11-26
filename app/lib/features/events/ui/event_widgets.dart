@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/brand/art/art_view.dart';
+import '../../../shared/brand/cover_image.dart';
 import '../../trips/domain/trip_art.dart';
 import '../../../app/router.dart';
 import '../../../shared/brand/illustrations.dart';
@@ -240,7 +240,7 @@ class EventCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (portrait) SizedBox(height: 104, child: VignetteArt(cover: coverFor(event.id, coverCount))),
+            if (portrait) SizedBox(height: 104, child: CoverImage(cover: coverFor(event.id, coverCount))),
             Padding(
           padding: const EdgeInsets.fromLTRB(18, 8, 10, 14),
           child: Column(

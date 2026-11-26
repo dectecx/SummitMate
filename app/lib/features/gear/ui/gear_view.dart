@@ -9,9 +9,8 @@ import '../domain/gear_logic.dart';
 import '../providers.dart';
 import 'gear_form_sheet.dart';
 import '../../../shared/brand/illustrations.dart';
-import '../../../shared/brand/art/art_view.dart' show ArtIcon, ArtIconView;
 import '../../../shared/animations.dart';
-import '../../../shared/tints.dart';
+import '../../../shared/icon_badge.dart';
 
 /// "裝備": the person's own packing list for a trip, grouped by category.
 class GearView extends ConsumerStatefulWidget {
@@ -47,8 +46,7 @@ class _GearViewState extends ConsumerState<GearView> {
           ReorderableGroupSliver(
             key: ValueKey('gear-group-${g.category.key}'),
             title: g.category.label,
-            icon: _look(g.category).$1,
-            tint: _look(g.category).$2,
+            icon: _iconOf(g.category),
             trailing: formatWeight(totalWeight(g.items)),
             reordering: _reordering,
             ids: [for (final i in g.items) i.id],
@@ -61,15 +59,14 @@ class _GearViewState extends ConsumerState<GearView> {
   }
 }
 
-/// Picture and pale colour of a category's card.
-(ArtIcon, Tint) _look(GearCategory c) => switch (c) {
-  GearCategory.sleep => (ArtIcon.sleep, Tint.moss),
-  GearCategory.cook => (ArtIcon.cook, Tint.lake),
-  GearCategory.clothing => (ArtIcon.jacket, Tint.rose),
-  GearCategory.pack => (ArtIcon.backpack, Tint.sand),
-  GearCategory.electronics => (ArtIcon.headlamp, Tint.sand),
-  GearCategory.safety => (ArtIcon.firstAid, Tint.rose),
-  GearCategory.other => (ArtIcon.compass, Tint.moss),
+IconData _iconOf(GearCategory c) => switch (c) {
+  GearCategory.sleep => Icons.bed_outlined,
+  GearCategory.cook => Icons.outdoor_grill_outlined,
+  GearCategory.clothing => Icons.checkroom_outlined,
+  GearCategory.pack => Icons.backpack_outlined,
+  GearCategory.electronics => Icons.flashlight_on_outlined,
+  GearCategory.safety => Icons.medical_services_outlined,
+  GearCategory.other => Icons.category_outlined,
 };
 
 class _Summary extends ConsumerWidget {
@@ -100,7 +97,7 @@ class _Summary extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const ArtIconView(ArtIcon.backpack, size: 68),
+                const IconBadge(Icons.backpack_outlined, size: 56),
               ],
             ),
             const SizedBox(height: 10),

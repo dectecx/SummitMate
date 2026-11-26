@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:summitmate/shared/land_nav_bar.dart';
 import 'package:summitmate/core/auth/auth_state.dart';
 import 'package:summitmate/core/providers.dart';
 import 'package:summitmate/core/settings/app_settings.dart';
@@ -16,13 +15,13 @@ void main() {
       final app = await AppHarness.start(tester);
       expect(find.text('山友 SummitMate'), findsOneWidget);
       expect(find.text('開始使用'), findsOneWidget);
-      expect(find.byType(LandNavBar), findsNothing);
+      expect(find.byType(NavigationBar), findsNothing);
 
       await tapText(tester, '開始使用');
 
-      expect(find.byType(LandNavBar), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
       for (final label in ['行程', '揪團', '地圖', '探索', '我']) {
-        expect(find.descendant(of: find.byType(LandNavBar), matching: find.text(label)), findsOneWidget);
+        expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsOneWidget);
       }
       expect(await real(tester, () => app.container.read(settingsStoreProvider).getBool(SettingsStore.welcomeSeen)), isTrue);
       expect(app.container.read(authRepositoryProvider).state, isA<Guest>());
@@ -32,7 +31,7 @@ void main() {
     testWidgets('later launches skip the welcome page', (tester) async {
       final app = await AppHarness.start(tester, welcomeSeen: true);
       expect(find.text('開始使用'), findsNothing);
-      expect(find.byType(LandNavBar), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
       await app.dispose(tester);
     });
   });
@@ -73,7 +72,7 @@ void main() {
       await enter(tester, '密碼', 'Passw0rd1');
       await tapText(tester, '登入');
 
-      expect(find.byType(LandNavBar), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
       expect(await real(tester, () => app.container.read(settingsStoreProvider).getBool(SettingsStore.welcomeSeen)), isTrue);
       await tapText(tester, '我');
       expect(find.text('Alice'), findsOneWidget);
@@ -117,7 +116,7 @@ void main() {
 
       await tester.enterText(find.byType(TextField), app.api.lastCode);
       await tapText(tester, '驗證並登入');
-      expect(find.byType(LandNavBar), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
       expect(app.container.read(authRepositoryProvider).state, isA<SignedIn>());
       await app.dispose(tester);
     });

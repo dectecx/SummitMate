@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:summitmate/shared/land_nav_bar.dart';
 import 'package:summitmate/features/events/data/events_api.dart';
 import 'package:summitmate/features/explore/providers.dart';
 
@@ -47,7 +46,7 @@ void main() {
     ]);
     final app = await startEvents(tester, api, signedIn: true);
     await settle(tester);
-    final navBadge = find.descendant(of: find.byType(LandNavBar), matching: find.text('2'));
+    final navBadge = find.descendant(of: find.byType(NavigationBar), matching: find.text('2'));
     expect(navBadge, findsOneWidget, reason: 'seen without opening the tab');
 
     await openEvents(tester);

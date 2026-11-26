@@ -28,19 +28,20 @@ class HintBanner extends ConsumerWidget {
     if (seen == null || seen.contains(hintId)) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
     return Card(
-      color: scheme.secondaryContainer,
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      color: scheme.primaryContainer,
+      elevation: 0,
+      margin: const EdgeInsets.fromLTRB(20, 4, 20, 8),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         child: Row(
           children: [
-            Icon(icon, color: scheme.onSecondaryContainer),
+            Icon(icon, color: scheme.onPrimaryContainer),
             const SizedBox(width: 12),
-            Expanded(child: Text(text, style: TextStyle(color: scheme.onSecondaryContainer))),
+            Expanded(child: Text(text, style: TextStyle(color: scheme.onPrimaryContainer))),
             if (actionLabel != null) TextButton(onPressed: onAction, child: Text(actionLabel!)),
             IconButton(
               tooltip: '知道了',
-              icon: Icon(Icons.close, color: scheme.onSecondaryContainer),
+              icon: Icon(Icons.close, color: scheme.onPrimaryContainer),
               onPressed: () => ref.read(settingsStoreProvider).markHintSeen(hintId),
             ),
           ],

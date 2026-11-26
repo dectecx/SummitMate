@@ -8,11 +8,8 @@ paint them itself (no SVG package) and colour them per theme. Colours are named 
 """
 import math
 import os
-import random
 import re
-import struct
 import sys
-import zlib
 import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -26,8 +23,6 @@ ROLES = ["ink", "paper", "card", "snow", "rock", "rockShade", "sage", "forest", 
          "peakShade", "hillBack", "hillFront", "pine", "pineShade", "wood", "metal", "ground", "meadowFar", "meadow"]
 C = {name: f"#0000{i + 1:02x}" for i, name in enumerate(ROLES)}
 BY_HEX = {v: k for k, v in C.items()}
-
-GRAIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "art", "grain.png")
 
 W = 3.2
 INK = C["ink"]
@@ -93,91 +88,9 @@ def hill(d, fill):
     return blob(d, C[fill]) + path(d.split(" V")[0], w=2.4)
 
 
-# ------------------------------------------------------------------ covers (390 x 380, the page starts under y=380)
-
-def sky():
-    return (f'<rect x="0" y="0" width="390" height="380" fill="{C["skyTop"]}"/>'
-            + hd.wash("M-20 130 C80 96 170 150 260 120 C320 100 380 130 410 118 V390 H-20 Z", C["skyMid"], .85)
-            + hd.wash("M-20 190 C90 168 200 214 410 176 V390 H-20 Z", C["skyLow"], .7))
-
-
-def day_sky():
-    return sun(86, 114, 24) + cloud(262, 80, .75) + cloud(44, 172, .5) + bird(176, 90, .8) + bird(200, 106, .55)
-
-
-def night_sky():
-    moon = path("M96 118 C128 126 132 166 100 180 C84 186 70 180 62 171 C90 168 112 146 96 118 Z", C["glow"])
-    star = "M0 -11 Q2 -2 11 0 Q2 2 0 11 Q-2 2 -11 0 Q-2 -2 0 -11 Z"
-    stars = "".join(at(x, y, blob(star, C["glow"]), s) for x, y, s in
-                    [(40, 112, .6), (150, 106, .8), (188, 138, .45), (300, 100, .6), (348, 146, .9), (128, 150, .4)])
-    dots = "".join(circle(x, y, 1.8, C["snow"], None) for x, y in
-                   [(30, 156), (120, 96), (210, 92), (318, 132), (368, 100), (172, 168)])
-    return at(0, -32, moon + stars + dots)  # clear of the raised landforms
-
-
-def paper_edge():
-    return blob("M-4 364 C60 350 120 368 200 356 C270 346 330 362 394 352 V390 H-4 Z", C["paper"])
-
-
-def cover_peak():
-    peak = "M70 330 L226 158 Q240 142 256 158 L400 306 V390 H70 Z"
-    o = [hill("M-8 244 L52 188 L92 216 L142 176 L190 220 V390 H-8 Z", "rangeFar"),
-         blob(peak, C["peak"]), blob("M240 150 Q250 150 256 158 L400 306 V390 H318 L262 232 Z", C["peakShade"]),
-         blob("M196 191 L226 158 Q240 142 256 158 L292 195 L270 186 L254 208 L238 182 L220 204 L210 188 Z", C["snow"]),
-         path("M196 191 L210 188 L220 204 L238 182 L254 208 L270 186 L292 195", w=2.2),
-         path("M70 330 L226 158 Q240 142 256 158 L400 306", w=2.6),
-         hill("M-8 282 C50 240 108 262 160 292 C220 326 300 270 398 284 V390 H-8 Z", "hillBack"),
-         hill("M-8 336 C70 300 150 340 232 322 C300 306 350 322 398 312 V390 H-8 Z", "hillFront")]
-    o += [pine(x, y, s) for x, y, s in [(24, 312, .9), (52, 322, .6), (330, 306, .75), (362, 298, 1.05)]]
-    return "".join(o)
-
-
-def raised(dy, body):
-    """Moves a scene's subject up so the info card does not hide it; the ground below stays filled."""
-    return at(0, -dy, body)
-
-
-def cover_lake():
-    o = [hill("M-8 214 L70 124 L116 170 L180 106 L246 176 L300 136 L398 218 V390 H-8 Z", "rangeFar"),
-         blob("M158 128 L180 106 L204 131 L192 128 L182 142 L170 126 Z", C["snow"]),
-         path("M158 128 L170 126 L182 142 L192 128 L204 131", w=2.2),
-         hill("M-8 218 C60 192 130 226 200 208 C270 192 330 218 398 202 V390 H-8 Z", "hillBack")]
-    water = "M52 236 C110 216 270 214 340 234 C384 250 300 262 318 276 C322 300 190 296 128 292 C62 296 80 272 44 266 C6 258 8 246 52 236 Z"
-    o.append(path(water, C["lake"]))
-    o += [path(f"M{x} {y} h{n}", w=2.2) for x, y, n in [(92, 246, 28), (128, 246, 8), (196, 258, 40), (160, 274, 20), (250, 242, 20)]]
-    o += [pine(x, y, s) for x, y, s in [(26, 230, 1.0), (56, 226, .66), (340, 220, .74), (368, 228, 1.05)]]
-    o.append(hill("M-8 332 C80 306 170 346 250 322 C310 306 360 322 398 314 V390 H-8 Z", "hillFront"))
-    return "".join(o)
-
-
-def cover_hut():
-    back = [hill("M-8 262 C30 180 100 160 160 200 C200 130 300 128 340 200 C362 184 384 200 398 224 V390 H-8 Z", "rangeFar"),
-            hill("M-8 300 C70 264 150 300 220 286 C290 270 340 290 398 278 V390 H-8 Z", "hillBack")]
-    house = [blob("M150 232 H262 V292 H150 Z", C["wood"]), blob("M234 232 H262 V292 H234 Z", C["tentShade"]),
-             path("M150 232 V292 H262 V232"), path("M234 190 V166 H250 V204", C["metal"]),
-             path("M132 238 L198 180 Q206 174 214 180 L282 238 Z", C["accent"]),
-             path("M164 224 L186 205", C["snow"], C["snow"], 2.4),
-             path("M195 292 V260 Q209 246 223 260 V292", C["wood"]),
-             path("M161 252 H183 V272 H161 Z", C["glow"]), path("M172 252 V272 M161 262 H183", w=2.2),
-             path("M234 252 H253 V272 H234 Z", C["glow"]), path("M244 252 V272 M234 262 H253", w=2.2),
-             path("M242 158 C236 150 252 148 246 140", w=2.6),
-             pine(62, 276, 1.15), pine(104, 284, .75), tree(322, 276, .95, "tent"), tree(358, 282, .66, "accent"),
-             path("M206 296 C196 312 232 320 214 336 C202 346 216 352 208 360", w=2.8, dash="9 9")]
-    front = hill("M-8 346 C80 322 180 362 260 340 C320 326 364 340 398 332 V390 H-8 Z", "hillFront")
-    return raised(36, "".join(back + house)) + front
-
-
-def cover_forest():
-    o = [hill("M-8 196 C50 150 90 192 140 170 C190 148 220 110 262 128 C310 148 330 184 398 156 V390 H-8 Z", "rangeFar"),
-         hill("M-8 232 C60 210 110 174 170 206 C230 240 300 192 398 210 V390 H-8 Z", "hillBack")]
-    o += [pine(x, y, s) for x, y, s in [(34, 234, .7), (66, 244, .95), (98, 238, .6), (290, 230, .65), (322, 240, .95), (356, 232, .75)]]
-    o.append(hill("M-8 282 C80 248 170 290 250 266 C310 250 360 266 398 258 V390 H-8 Z", "hillFront"))
-    o.append(path("M150 330 C190 306 160 284 206 272 C236 262 224 244 252 232", stroke=C["snow"], w=3.2, dash="8 9"))
-    o += [pine(x, y, s) for x, y, s in [(20, 296, 1.05), (58, 312, .8), (336, 292, .85), (372, 286, 1.15)]]
-    return "".join(o)
-
-
-COVERS = {"peak": cover_peak, "lake": cover_lake, "hut": cover_hut, "forest": cover_forest}
+def hill(d, fill):
+    """A filled landform whose ink follows only its ridge (the part before the first V)."""
+    return blob(d, C[fill]) + path(d.split(" V")[0], w=2.4)
 
 
 # ------------------------------------------------------------------ small pictures (-40..40 on both axes)
@@ -344,95 +257,6 @@ def scene_star():
 
 SCENES = {"trip": scene_trip, "gear": scene_gear, "meal": scene_meal, "chat": scene_chat, "map": scene_map,
           "friends": scene_friends, "shop": scene_shop, "search": scene_search, "help": scene_help, "star": scene_star}
-
-
-# ------------------------------------------------------------------ card vignettes: a small scene with air around it
-# 390 x 150, the ground line at y = 126; shown whole on a pale tint
-
-def vignette(subject):
-    return (subject + path("M92 126 H252 M263 126 H300", w=2.8) + path("M112 137 h22 M236 140 h30 M152 142 h8", C["wood"], C["wood"], 1.8))
-
-
-def vignette_day():
-    return sun(300, 40, 13) + cloud(84, 36, .55) + cloud(248, 20, .34) + bird(252, 56, .45)
-
-
-def vignette_night():
-    moon = path("M296 24 C316 28 320 52 300 61 C291 65 282 63 277 58 C294 56 308 43 296 24 Z", C["glow"])
-    star = "M0 -11 Q2 -2 11 0 Q2 2 0 11 Q-2 2 -11 0 Q-2 -2 0 -11 Z"
-    return moon + "".join(at(x, y, blob(star, C["glow"]), s) for x, y, s in
-                          [(84, 34, .45), (120, 58, .3), (248, 22, .4), (320, 74, .28)])
-
-
-def small_pines(*spots):
-    return "".join(pine(x, y, s) for x, y, s in spots)
-
-
-def vignette_peak():
-    far = "M110 126 L152 78 L176 104 L214 66 L286 126 Z"
-    peak = "M140 126 L190 52 Q198 42 206 52 L256 126 Z"
-    return vignette(blob(far, C["rangeFar"]) + path(far, w=2) + blob(peak, C["rock"]) + blob("M198 47 Q203 47 206 52 L256 126 H224 L200 84 Z", C["rockShade"])
-                    + blob("M176 73 L190 52 Q198 42 206 52 L220 73 L210 68 L203 79 L194 66 L185 77 L181 70 Z", C["snow"])
-                    + path("M176 73 L181 70 L185 77 L194 66 L203 79 L210 68 L220 73", w=1.8) + path(peak, w=2.6)
-                    + small_pines((112, 121, .55), (132, 123, .38), (268, 120, .62)))
-
-
-def vignette_lake():
-    far = "M118 118 L160 66 L184 94 L214 54 L272 118 Z"
-    water = "M140 128 C170 118 234 118 262 127 C280 134 244 138 250 143 C252 152 190 150 164 148 C138 150 148 140 132 137 C116 134 122 130 140 128 Z"
-    return vignette(blob(far, C["rock"]) + blob("M199 75 L214 54 L230 74 L221 71 L214 80 L207 70 Z", C["snow"]) + path(far, w=2.4)
-                    + path(water, C["lake"], w=2.4) + path("M168 134 h20 M214 140 h26", w=1.8)
-                    + small_pines((108, 121, .7), (130, 123, .46), (264, 121, .54), (286, 119, .72)))
-
-
-def vignette_hut():
-    back = "M112 126 C130 82 164 76 190 98 C210 62 252 66 280 126 Z"
-    return vignette(blob(back, C["rangeFar"]) + path(back, w=2)
-                    + path("M168 96 H224 V126 H168 Z", C["wood"], w=2.6) + path("M156 100 L192 70 Q196 67 200 70 L236 100 Z", C["accent"], w=2.6)
-                    + path("M190 126 V111 Q196 104 202 111 V126", C["tentShade"], w=2)
-                    + path("M174 106 H185 V117 H174 Z M208 106 H219 V117 H208 Z", C["glow"], w=1.8)
-                    + small_pines((124, 121, .62), (144, 123, .42)) + tree(258, 120, .5, "tent") + tree(280, 123, .34, "accent"))
-
-
-def vignette_forest():
-    far = "M108 126 C132 88 164 106 188 92 C214 74 244 88 286 126 Z"
-    return vignette(blob(far, C["sage"]) + path(far, w=2.2)
-                    + small_pines((128, 118, .72), (152, 121, 1.0), (176, 122, .62), (218, 120, .86), (242, 122, .56), (264, 118, .76))
-                    + path("M184 150 C214 140 180 134 198 126", stroke=C["wood"], w=2.2, dash="5 6"))
-
-
-VIGNETTES = [vignette_peak, vignette_lake, vignette_hut, vignette_forest, vignette_day, vignette_night]
-
-
-# ------------------------------------------------------------------ the page behind every screen
-# sky: 390 x 320, hung from the top; hills: 390 x 130, standing on the bottom edge
-
-def page_sky():
-    return (hd.wash("M-20 -20 H410 V150 C320 190 250 130 170 166 C100 194 40 150 -20 176 Z", C["skyTop"], .7)
-            + hd.wash("M-20 130 C80 100 160 180 260 140 C320 118 370 156 410 130 V280 C320 310 230 250 140 292 C80 316 30 280 -20 298 Z",
-                      C["skyMid"], .5))
-
-
-def page_sky_day():
-    return sun(330, 132, 18) + cloud(222, 120, .5) + cloud(356, 186, .38) + bird(268, 160, .55)
-
-
-def page_sky_night():
-    moon = path("M322 108 C346 114 350 142 324 154 C312 159 300 156 294 150 C316 146 334 130 322 108 Z", C["glow"])
-    star = "M0 -11 Q2 -2 11 0 Q2 2 0 11 Q-2 2 -11 0 Q-2 -2 0 -11 Z"
-    stars = "".join(at(x, y, blob(star, C["glow"]), s) for x, y, s in
-                    [(230, 112, .5), (266, 160, .35), (362, 190, .6), (184, 134, .3)])
-    return moon + stars
-
-
-def page_hills():
-    far = hill("M-8 62 C50 24 110 70 170 46 C240 20 300 64 398 30 V140 H-8 Z", "meadowFar")
-    near = hill("M-8 100 C70 70 150 110 230 88 C300 70 350 94 398 80 V140 H-8 Z", "meadow")
-    trees = "".join(pine(x, y, s) for x, y, s in [(24, 100, .72), (48, 106, .5), (318, 86, .55), (346, 90, .85), (372, 94, .62)])
-    return far + near + trees
-
-
-PAGE = [page_sky, page_sky_day, page_sky_night, page_hills]
 
 
 # ------------------------------------------------------------------ the mark: a trail cairn before the summit
@@ -639,45 +463,16 @@ def draw(fn):
     return Drawing().bake(fn())
 
 
-def write_grain(size=192):
-    """A tile of paper grain: transparent, with scattered faint specks. The app tints and repeats it."""
-    rng = random.Random(7)
-    rows = b""
-    for _ in range(size):
-        rows += b"\0" + b"".join(bytes((255, 255, 255, rng.choice((0, 0, 0, 0, 0, 40, 70, 120)) if rng.random() < .6 else 0))
-                                 for _ in range(size))
-
-    def chunk(kind, data):
-        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
-
-    png = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0))
-           + chunk(b"IDAT", zlib.compress(rows, 9)) + chunk(b"IEND", b""))
-    os.makedirs(os.path.dirname(GRAIN), exist_ok=True)
-    with open(GRAIN, "wb") as f:
-        f.write(png)
-
-
 def main():
     hd.CALM = .5
-    parts = [("_sky", sky), ("_daySky", day_sky), ("_nightSky", night_sky), ("_paperEdge", paper_edge)]
-    parts += [(f"_cover{k.title()}", fn) for k, fn in COVERS.items()]
-    parts += [(f"_icon{k[0].upper()}{k[1:]}", fn) for k, fn in ICONS.items()]
+    parts = []
     parts += [(f"_scene{k.title()}", fn) for k, fn in SCENES.items()]
     parts += [(f"_{fn.__name__.replace('_s', 'S').replace('_p', 'P').replace('_g', 'G')}", fn) for fn in MARK]
-    parts += [("_" + "".join(w if i == 0 else w.title() for i, w in enumerate(fn.__name__.split("_"))), fn) for fn in PAGE]
-    parts += [("_" + "".join(w if i == 0 else w.title() for i, w in enumerate(fn.__name__.split("_"))), fn) for fn in VIGNETTES]
     out = ["// GENERATED by tool/art/generate.py - do not edit.", "// dart format off", "// ignore_for_file: type=lint", "",
            "import 'art_model.dart';", ""]
     out += [dart(name, draw(fn)) for name, fn in parts]
-    out.append("const artSky = _sky;\nconst artDaySky = _daySky;\nconst artNightSky = _nightSky;\nconst artPaperEdge = _paperEdge;")
-    out.append("const artCovers = [" + ", ".join(f"_cover{k.title()}" for k in COVERS) + "];")
-    out.append("const artIcons = {" + ", ".join(f"ArtIcon.{k}: _icon{k[0].upper()}{k[1:]}" for k in ICONS) + "};")
     out.append("const artScenes = {" + ", ".join(f"ArtScene.{k}: _scene{k.title()}" for k in SCENES) + "};")
     out.append("const artMark = [_markSky, _markSun, _markPeak, _markGround, _markStone1, _markStone2, _markStone3, _markStone4];")
-    out.append("const artPageSky = _pageSky;\nconst artPageSkyDay = _pageSkyDay;\nconst artPageSkyNight = _pageSkyNight;\nconst artPageHills = _pageHills;")
-    out.append("const artVignettes = [_vignettePeak, _vignetteLake, _vignetteHut, _vignetteForest];")
-    out.append("const artVignetteDay = _vignetteDay;\nconst artVignetteNight = _vignetteNight;")
-    write_grain()
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(out) + "\n")

@@ -51,7 +51,7 @@ class DayWeatherStrip extends ConsumerWidget {
     final today = plan.where((p) => p.day == day);
     if (today.isEmpty || today.first.query == null) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
       child: _DayWeatherRow(day: today.first),
     );
   }
@@ -82,8 +82,8 @@ class _DayWeatherRow extends ConsumerWidget {
     return Container(
       key: ValueKey('weather-day-${day.day}'),
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(16), border: Border.all(color: scheme.outlineVariant)),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(20)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

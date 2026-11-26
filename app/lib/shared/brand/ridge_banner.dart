@@ -1,6 +1,6 @@
+import 'cover_image.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'art/art_view.dart';
 
 /// The head of a detail screen: a landscape with the title under it. [seed] picks the scene, so different
 /// mountains and events do not all look the same. A screen wider than tall shows the text only.
@@ -26,7 +26,7 @@ class RidgeBanner extends StatelessWidget {
           if (screen.height > screen.width)
             SizedBox(
               height: height,
-              child: CoverArt(cover: seed.abs() % coverCount),
+              child: CoverImage(cover: seed.abs() % coverCount),
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),

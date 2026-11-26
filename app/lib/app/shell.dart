@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../features/events/providers.dart';
 import '../shared/animations.dart';
-import '../shared/land_nav_bar.dart';
 import '../shared/nav_glyph.dart';
 
 /// The position of the "揪團" tab, matching the order of the router's branches.
@@ -18,23 +17,28 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pending = ref.watch(pendingApplicationsProvider).value ?? 0;
+    Widget badged(Widget icon) => Badge.count(count: pending, isLabelVisible: pending > 0, child: icon);
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: LandNavBar(
-        selected: navigationShell.currentIndex,
-        animate: animationsOn(context, ref),
-        // Tapping the current tab goes back to its first screen.
-        onSelected: (i) {
-          if (i == _eventsIndex) ref.invalidate(pendingApplicationsProvider);
-          navigationShell.goBranch(i, initialLocation: i == navigationShell.currentIndex);
-        },
-        destinations: [
-          (glyph: NavGlyph.trips, label: '行程', badge: 0),
-          (glyph: NavGlyph.events, label: '揪團', badge: pending),
-          (glyph: NavGlyph.map, label: '地圖', badge: 0),
-          (glyph: NavGlyph.explore, label: '探索', badge: 0),
-          (glyph: NavGlyph.me, label: '我', badge: 0),
-        ],
+      bottomNavigationBar: DecoratedBox(
+        position: DecorationPosition.foreground,
+        decoration: BoxDecoration(border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant))),
+        child: NavigationBar(
+          selectedIndex: navigationShell.currentIndex,
+          animationDuration: animationsOn(context, ref) ? null : Duration.zero,
+          // Tapping the current tab goes back to its first screen.
+          onDestinationSelected: (i) {
+            if (i == _eventsIndex) ref.invalidate(pendingApplicationsProvider);
+            navigationShell.goBranch(i, initialLocation: i == navigationShell.currentIndex);
+          },
+          destinations: [
+            const NavigationDestination(icon: NavGlyphIcon(NavGlyph.trips), label: '行程'),
+            NavigationDestination(icon: badged(const NavGlyphIcon(NavGlyph.events)), label: '揪團'),
+            const NavigationDestination(icon: NavGlyphIcon(NavGlyph.map), label: '地圖'),
+            const NavigationDestination(icon: NavGlyphIcon(NavGlyph.explore), label: '探索'),
+            const NavigationDestination(icon: NavGlyphIcon(NavGlyph.me), label: '我'),
+          ],
+        ),
       ),
     );
   }

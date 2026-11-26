@@ -10,9 +10,8 @@ import 'meal_form_sheet.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
 import '../../../shared/reorderable_group.dart';
-import '../../../shared/brand/art/art_view.dart' show ArtIcon, ArtIconView;
 import '../../../shared/pills.dart';
-import '../../../shared/tints.dart';
+import '../../../shared/icon_badge.dart';
 
 /// "餐食": the person's own meal plan, one day at a time, with weight and calorie totals.
 class MealsView extends ConsumerStatefulWidget {
@@ -54,7 +53,7 @@ class _MealsViewState extends ConsumerState<MealsView> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const ArtIconView(ArtIcon.cook, size: 52),
+                const IconBadge(Icons.restaurant_outlined, size: 48),
                 Expanded(child: _Total(label: '今天', weight: totalMealWeight(today), kcal: totalCalories(today))),
                 Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
                 Expanded(child: _Total(label: '全程', weight: totalMealWeight(all), kcal: totalCalories(all))),
@@ -77,8 +76,7 @@ class _MealsViewState extends ConsumerState<MealsView> {
                       ReorderableGroupSliver(
                         key: ValueKey('meal-group-${g.type.key}'),
                         title: g.type.label,
-                        icon: g.type.index.isEven ? ArtIcon.cook : ArtIcon.water,
-                        tint: Tint.values[g.type.index % Tint.values.length],
+                        icon: Icons.restaurant_outlined,
                         trailing: formatWeight(g.entries.fold<double>(0, (sum, e) => sum + e.weight)),
                         reordering: _reordering,
                         ids: [for (final e in g.entries) e.item.id],

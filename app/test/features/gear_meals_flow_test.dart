@@ -22,6 +22,9 @@ Future<AppHarness> startWithTrip(WidgetTester tester) async {
 
 void main() {
   testWidgets('gear can be dragged into order by its handle, only in reorder mode', (tester) async {
+    tester.view.physicalSize = const Size(800, 1000); // room below the rows, so the drag does not auto-scroll
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final app = await startWithTrip(tester);
     await tapText(tester, '裝備');
     for (final name in ['甲', '乙']) {

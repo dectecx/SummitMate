@@ -87,7 +87,9 @@ flutter:
 
   assets:
     - assets/rudy/style_template.json
-    - assets/art/grain.png
+    - assets/covers/
+    - assets/accents/
+    - assets/fonts/OFL.txt
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -99,6 +101,11 @@ flutter:
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
+
+  fonts:
+    - family: Huninn
+      fonts:
+        - asset: assets/fonts/Huninn-Regular.ttf
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

@@ -2,16 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/brand/cover_image.dart';
 import '../../../app/router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/animations.dart';
-import '../../../shared/brand/art/art_view.dart';
 import '../../gpx/domain/elevation_profile.dart';
 import '../domain/gpx_trip.dart';
 import '../domain/trip_art.dart';
 import 'trip_header.dart';
-import '../../../shared/brush_indicator.dart';
 import '../../../shared/coming_soon.dart';
 import '../../collab/ui/discussion_view.dart';
 import '../../gear/ui/gear_form_sheet.dart';
@@ -156,10 +155,6 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
           );
     final tabBar = TabBar(
       controller: _tabs,
-      indicator: BrushTabIndicator(scheme.tertiary),
-      dividerColor: Colors.transparent,
-      labelColor: scheme.onSurface,
-      unselectedLabelColor: scheme.onSurfaceVariant,
       labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       unselectedLabelStyle: const TextStyle(fontSize: 15),
       tabs: const [
@@ -171,6 +166,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
       ],
     );
     final header = TripHeaderDelegate(
+      tripId: trip.id,
       cover: coverFor(trip.id, coverCount),
       title: trip.name,
       dates: trip.dayCount == 1 ? _monthDay(trip.start) : '${_monthDay(trip.start)} – ${_monthDay(trip.end)}',

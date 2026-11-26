@@ -1,14 +1,15 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../shared/brush_indicator.dart';
-import '../shared/page_transitions.dart';
 
-/// The "松林" palette of docs/ui/DESIGN_SYSTEM.md: pine teal for selection, coral for the one main action,
-/// moss and sand for quiet highlights, all on warm paper.
-/// Material 3, light and dark, large touch targets (used one-handed, outdoors), rounded shapes, flat cards.
+/// The palette of docs/ui/DESIGN_SYSTEM.md: warm off-white paper, white cards, a deep pine for selection and one
+/// burnt orange for the main action. Titles are set in Huninn, everything else in the system font.
+/// Material 3, light and dark, large touch targets (used one-handed, outdoors), rounded shapes.
 abstract final class AppTheme {
-  static const _seed = Color(0xFF2B6863);
+  static const _seed = Color(0xFF214E45);
+
+  /// Titles; Huninn has one weight, so none is asked for.
+  static const _title = TextStyle(fontFamily: 'Huninn', fontWeight: FontWeight.w400);
 
   static ThemeData light() => _build(Brightness.light);
   static ThemeData dark() => _build(Brightness.dark);
@@ -17,26 +18,26 @@ abstract final class AppTheme {
     final base = ColorScheme.fromSeed(seedColor: _seed, brightness: brightness);
     final scheme = brightness == Brightness.light
         ? base.copyWith(
-            primary: const Color(0xFF2B6863),
+            primary: const Color(0xFF214E45),
             onPrimary: Colors.white,
-            primaryContainer: const Color(0xFFCFE0CD),
-            onPrimaryContainer: const Color(0xFF173B37),
-            secondaryContainer: const Color(0xFFE1E9D6), // moss
+            primaryContainer: const Color(0xFFE3ECE8),
+            onPrimaryContainer: const Color(0xFF17372F),
+            secondaryContainer: const Color(0xFFE9EDE2), // moss
             onSecondaryContainer: const Color(0xFF2A3826),
-            tertiary: const Color(0xFFB4503D), // coral
+            tertiary: const Color(0xFFB9532F), // coral
             onTertiary: Colors.white,
-            tertiaryContainer: const Color(0xFFF4E4CF), // sand
+            tertiaryContainer: const Color(0xFFF7E7DD), // sand
             onTertiaryContainer: const Color(0xFF4A2A0C),
-            surface: const Color(0xFFF1EDE2), // paper
-            surfaceContainerLowest: const Color(0xFFFFFDF8),
-            surfaceContainerLow: const Color(0xFFF6F2E8),
-            surfaceContainer: const Color(0xFFECE7DA),
-            surfaceContainerHigh: const Color(0xFFE6E0D1),
-            surfaceContainerHighest: const Color(0xFFE0D9C8),
-            onSurface: const Color(0xFF3D342D),
-            onSurfaceVariant: const Color(0xFF6C6055),
-            outline: const Color(0xFF8F8273),
-            outlineVariant: const Color(0xFFE4DCCB),
+            surface: const Color(0xFFF6F4EF), // paper
+            surfaceContainerLowest: const Color(0xFFFFFFFF),
+            surfaceContainerLow: const Color(0xFFFBFAF7),
+            surfaceContainer: const Color(0xFFF0EEE8),
+            surfaceContainerHigh: const Color(0xFFEBE8E1),
+            surfaceContainerHighest: const Color(0xFFE5E2DA),
+            onSurface: const Color(0xFF1D2A27),
+            onSurfaceVariant: const Color(0xFF5E6A66),
+            outline: const Color(0xFF848E8A),
+            outlineVariant: const Color(0xFFE8E4DA),
           )
         : base.copyWith(
             primary: const Color(0xFF8FCAC2),
@@ -66,22 +67,20 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       visualDensity: VisualDensity.standard,
-      // the paper and landscape come from the page transition, behind every scaffold
-      scaffoldBackgroundColor: Colors.transparent,
-      pageTransitionsTheme: BackdropTransitionsBuilder.theme(),
+      scaffoldBackgroundColor: scheme.surface,
+      textTheme: const TextTheme(headlineMedium: _title, headlineSmall: _title, titleLarge: _title, titleMedium: _title),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
-        // a transparent bar cannot tell how dark the page is, so say it
+        backgroundColor: scheme.surface,
         systemOverlayStyle: brightness == Brightness.light ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: text.titleLarge?.copyWith(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: 1, color: scheme.onSurface),
+        titleTextStyle: text.titleLarge?.merge(_title).copyWith(fontSize: 24, color: scheme.onSurface),
       ),
       cardTheme: CardThemeData(
-        elevation: 3,
+        elevation: 2,
         color: scheme.surfaceContainerLowest,
-        shadowColor: const Color(0x55503C23),
+        shadowColor: const Color(0x33192823),
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -115,10 +114,27 @@ abstract final class AppTheme {
         ),
       ),
       tabBarTheme: TabBarThemeData(
-        indicator: BrushTabIndicator(scheme.tertiary),
-        dividerColor: Colors.transparent,
+        indicator: UnderlineTabIndicator(borderSide: BorderSide(color: scheme.primary, width: 3), borderRadius: BorderRadius.circular(2)),
+        indicatorSize: TabBarIndicatorSize.label,
+        dividerColor: scheme.outlineVariant,
         labelColor: scheme.onSurface,
         unselectedLabelColor: scheme.onSurfaceVariant,
+      ),
+      // docked at the bottom: white, with a pale capsule behind the current place
+      navigationBarTheme: NavigationBarThemeData(
+        height: 68,
+        elevation: 0,
+        backgroundColor: scheme.surfaceContainerLowest,
+        indicatorColor: scheme.primaryContainer,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: WidgetStateProperty.resolveWith((s) => IconThemeData(size: 24, color: s.contains(WidgetState.selected) ? scheme.primary : scheme.onSurfaceVariant)),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (s) => TextStyle(
+            fontSize: 12,
+            fontWeight: s.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
+            color: s.contains(WidgetState.selected) ? scheme.primary : scheme.onSurfaceVariant,
+          ),
+        ),
       ),
       checkboxTheme: CheckboxThemeData(shape: const CircleBorder(), side: BorderSide(color: scheme.outline, width: 1.8)),
       progressIndicatorTheme: ProgressIndicatorThemeData(linearTrackColor: scheme.surfaceContainerHighest),

@@ -2,13 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/brand/cover_image.dart';
 import '../../app/router.dart';
 import '../../core/providers.dart';
 import '../../core/settings/app_settings.dart';
 import '../../shared/animations.dart';
-import '../../shared/brand/art/art_view.dart';
 import '../../shared/brand/summit_logo.dart';
-import '../../shared/tints.dart';
+import '../../shared/icon_badge.dart';
 
 /// Shown once, on first launch. One screen, two buttons, no carousel and nothing to skip.
 class WelcomePage extends ConsumerWidget {
@@ -39,7 +39,7 @@ class WelcomePage extends ConsumerWidget {
                         opacity: t,
                         child: Transform.translate(offset: Offset(0, 18 * (1 - t)), child: child),
                       ),
-                      child: SizedBox(height: screen.height * .4, child: const CoverArt(cover: 0)),
+                      child: SizedBox(height: screen.height * .4, child: const CoverImage(cover: 0)),
                     )
                   else
                     SizedBox(height: MediaQuery.paddingOf(context).top + 24),
@@ -61,9 +61,9 @@ class WelcomePage extends ConsumerWidget {
                           style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                         const SizedBox(height: 22),
-                        const _Point(icon: ArtIcon.compass, tint: Tint.lake, text: '沒有訊號也能查看與修改'),
-                        const _Point(icon: ArtIcon.backpack, tint: Tint.moss, text: '行程、裝備、糧食一次規劃'),
-                        const _Point(icon: ArtIcon.tent, tint: Tint.sand, text: '登入後自動備份，換手機不怕'),
+                        const _Point(icon: Icons.explore_outlined, text: '沒有訊號也能查看與修改'),
+                        const _Point(icon: Icons.backpack_outlined, text: '行程、裝備、糧食一次規劃'),
+                        const _Point(icon: Icons.cloud_sync_outlined, text: '登入後自動備份，換手機不怕'),
                       ],
                     ),
                   ),
@@ -105,9 +105,8 @@ class WelcomePage extends ConsumerWidget {
 }
 
 class _Point extends StatelessWidget {
-  const _Point({required this.icon, required this.tint, required this.text});
-  final ArtIcon icon;
-  final Tint tint;
+  const _Point({required this.icon, required this.text});
+  final IconData icon;
   final String text;
 
   @override
@@ -115,12 +114,7 @@ class _Point extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(color: tint.of(context), borderRadius: BorderRadius.circular(14)),
-          child: Center(child: ArtIconView(icon, size: 40)),
-        ),
+        IconBadge(icon),
         const SizedBox(width: 16),
         Expanded(child: Text(text, style: Theme.of(context).textTheme.bodyLarge)),
       ],
