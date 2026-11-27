@@ -51,7 +51,7 @@ void main() {
     await t.tap(find.byKey(const ValueKey('near-xueshan-main')));
     await pumpUntil(t, find.text('天氣預報'));
     expect(find.text('雪山'), findsWidgets, reason: 'its own mountain page opened');
-    await t.pageBack();
+    await t.tap(find.byTooltip('返回'));
     await t.pumpAndSettle();
     await t.tap(find.text('地圖'));
     await t.pumpAndSettle();

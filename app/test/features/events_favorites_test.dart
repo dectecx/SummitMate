@@ -17,7 +17,7 @@ void main() {
     expect(rows.map((r) => [r.kind, r.targetId]), [['group_event', 'e1']]);
     expect((await real(tester, () => app.db.select(app.db.outbox).get())).length, 1);
 
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
     await tapText(tester, '我');
     await tapText(tester, '我的收藏');

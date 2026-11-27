@@ -44,6 +44,10 @@ class _SummitMateAppState extends ConsumerState<SummitMateApp> {
     return MaterialApp.router(
       title: '山友 SummitMate',
       debugShowCheckedModeBanner: false,
+      // The app is written in Traditional Chinese only, so the built-in parts (date and time pickers, the licence
+      // page, tooltips) use it too, whatever language the phone is set to.
+      supportedLocales: const [Locale('zh', 'TW')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,

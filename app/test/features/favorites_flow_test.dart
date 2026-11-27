@@ -52,7 +52,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('fav-xueshan-main')));
     await settle(tester);
     expect((await real(tester, () => app.db.select(app.db.favorites).get())).single.targetId, 'xueshan-main');
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
 
     await tapText(tester, '我');

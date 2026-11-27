@@ -118,6 +118,9 @@ Future<void> tapText(WidgetTester tester, String text) async {
   await settle(tester);
 }
 
+/// Taps the app bar's back button. `tester.pageBack` only looks for the English tooltip.
+Future<void> goBack(WidgetTester tester) => tester.tap(find.byTooltip('返回'));
+
 Future<void> enter(WidgetTester tester, String label, String value) async {
   await tester.enterText(find.widgetWithText(TextFormField, label), value);
 }

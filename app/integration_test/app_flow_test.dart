@@ -54,7 +54,7 @@ void main() {
     await tester.enterText(find.widgetWithText(TextFormField, '名稱'), '向陽山屋');
     await tapAndSettle(tester, find.text('新增'));
     expect(find.text('向陽山屋'), findsOneWidget);
-    await tester.pageBack();
+    await tester.tap(find.byTooltip('返回'));
     await tester.pumpAndSettle();
     expect(find.text('整合測試行程'), findsOneWidget);
 

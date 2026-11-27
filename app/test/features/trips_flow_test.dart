@@ -75,7 +75,7 @@ void main() {
     expect(find.text('2850 m  ·  累計 4.3 km'), findsOneWidget);
     expect(find.text('2700 m  ·  累計 2.1 km'), findsOneWidget);
 
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
     expect(find.text('範例'), findsOneWidget);
     expect(find.text('即將出發'), findsOneWidget);
@@ -176,7 +176,7 @@ void main() {
   testWidgets('a guest is told once that signing in backs up their trips', (tester) async {
     final app = await start(tester);
     await createTrip(tester, '我的行程');
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
 
     expect(find.text('登入後會自動備份行程，換手機也找得回來。'), findsOneWidget);

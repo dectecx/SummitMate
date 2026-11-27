@@ -49,7 +49,7 @@ void main() {
     await settle(tester);
 
     // The library page lists it and the item can be edited.
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
     await tapText(tester, '我');
     await tapText(tester, '我的裝備庫');
@@ -73,7 +73,7 @@ void main() {
     final rows = await real(tester, () => app.db.select(app.db.libraryItems).get());
     expect(rows.map((r) => [r.kind, r.name, r.calories]), [['meal', '燕麥粥', 300.0]]);
 
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
     await tapText(tester, '我');
     await tapText(tester, '我的裝備庫');
@@ -104,7 +104,7 @@ void main() {
     await tapText(tester, '儲存');
     expect(find.textContaining('已存成範本'), findsOneWidget);
     expect((await real(tester, () => app.db.select(app.db.templates).get())).single.title, '來源行程');
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
 
     await tapText(tester, '目標行程');

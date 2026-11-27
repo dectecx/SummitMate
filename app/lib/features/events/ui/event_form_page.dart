@@ -175,7 +175,12 @@ class _EventFormState extends ConsumerState<_EventForm> {
   }
 
   Future<void> _submit() async {
-    if (!_form.currentState!.validate()) return;
+    final invalid = _form.currentState!.validateGranularly();
+    if (invalid.isNotEmpty) {
+      // The first one may be far above the button: bring it into view.
+      await Scrollable.ensureVisible(invalid.first.context, alignment: .1);
+      return;
+    }
     final dateError = validateEventDates(_start, _end);
     if (dateError != null) return setState(() => _dateError = dateError);
     final max = int.parse(_max.text.trim());
@@ -224,161 +229,165 @@ class _EventFormState extends ConsumerState<_EventForm> {
     final linkedTrip = _linkedTripId == null ? null : trips.where((t) => t.id == _linkedTripId).firstOrNull;
     return Scaffold(
       appBar: AppBar(title: Text(_editing ? '編輯揪團' : '建立揪團')),
+      // Not a lazy list: every field has to stay mounted for the form to check it.
       body: Form(
         key: _form,
-        child: ListView(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-          children: [
-            const SectionCaption('基本資料', padding: EdgeInsets.fromLTRB(4, 8, 4, 8)),
-            TextFormField(
-              key: const ValueKey('event-title'),
-              controller: _title,
-              maxLength: titleMax,
-              textInputAction: TextInputAction.next,
-              validator: validateTitle,
-              decoration: const InputDecoration(labelText: '標題', hintText: '例如：嘉明湖三日（5 到 200 字）'),
-            ),
-            const SizedBox(height: 8),
-            Text('分類', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final c in EventCategory.values)
-                  ChoiceChip(
-                    key: ValueKey('event-category-${c.name}'),
-                    label: Text(c.label),
-                    selected: _category == c,
-                    onSelected: (_) => setState(() => _category = c),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              key: const ValueKey('event-location'),
-              controller: _location,
-              maxLength: 200,
-              decoration: const InputDecoration(labelText: '地點', hintText: '例如：台東海端'),
-            ),
-            const SectionCaption('日期'),
-            InkWell(
-              key: const ValueKey('event-start'),
-              onTap: _pickStart,
-              child: InputDecorator(
-                decoration: const InputDecoration(labelText: '出發日期', suffixIcon: Icon(Icons.calendar_month_outlined)),
-                child: Text(formatDate(_start)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SectionCaption('基本資料', padding: EdgeInsets.fromLTRB(4, 8, 4, 8)),
+              TextFormField(
+                key: const ValueKey('event-title'),
+                controller: _title,
+                maxLength: titleMax,
+                textInputAction: TextInputAction.next,
+                validator: validateTitle,
+                decoration: const InputDecoration(labelText: '標題', hintText: '例如：嘉明湖三日（5 到 200 字）'),
               ),
-            ),
-            const SizedBox(height: 12),
-            InkWell(
-              key: const ValueKey('event-end'),
-              onTap: _pickEnd,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: '結束日期（選填）',
-                  errorText: _dateError,
-                  suffixIcon: _end == null
-                      ? const Icon(Icons.calendar_month_outlined)
-                      : IconButton(
-                          tooltip: '清除結束日期',
-                          icon: const Icon(Icons.close),
-                          onPressed: () => setState(() => _end = null),
-                        ),
+              const SizedBox(height: 8),
+              Text('分類', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final c in EventCategory.values)
+                    ChoiceChip(
+                      key: ValueKey('event-category-${c.name}'),
+                      label: Text(c.label),
+                      selected: _category == c,
+                      onSelected: (_) => setState(() => _category = c),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const ValueKey('event-location'),
+                controller: _location,
+                maxLength: 200,
+                decoration: const InputDecoration(labelText: '地點', hintText: '例如：台東海端'),
+              ),
+              const SectionCaption('日期'),
+              InkWell(
+                key: const ValueKey('event-start'),
+                onTap: _pickStart,
+                child: InputDecorator(
+                  decoration: const InputDecoration(labelText: '出發日期', suffixIcon: Icon(Icons.calendar_month_outlined)),
+                  child: Text(formatDate(_start)),
                 ),
-                child: Text(_end == null ? '未設定（單日）' : formatDate(_end!)),
               ),
-            ),
-            const SectionCaption('人數與審核'),
-            TextFormField(
-              key: const ValueKey('event-max'),
-              controller: _max,
-              keyboardType: TextInputType.number,
-              validator: validateMaxMembers,
-              decoration: const InputDecoration(
-                labelText: '人數上限',
-                helperText: '$maxMembersMin 到 $maxMembersMax 人，不含主辦人',
+              const SizedBox(height: 12),
+              InkWell(
+                key: const ValueKey('event-end'),
+                onTap: _pickEnd,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: '結束日期（選填）',
+                    errorText: _dateError,
+                    suffixIcon: _end == null
+                        ? const Icon(Icons.calendar_month_outlined)
+                        : IconButton(
+                            tooltip: '清除結束日期',
+                            icon: const Icon(Icons.close),
+                            onPressed: () => setState(() => _end = null),
+                          ),
+                  ),
+                  child: Text(_end == null ? '未設定（單日）' : formatDate(_end!)),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Card(
-              child: SwitchListTile(
-                key: const ValueKey('event-approval'),
-                shape: const RoundedRectangleBorder(),
-                title: const Text('需要主辦人審核'),
-                subtitle: Text(_approval ? '申請後由你決定是否通過' : '申請後直接加入，額滿為止'),
-                value: _approval,
-                onChanged: (v) => setState(() => _approval = v),
+              const SectionCaption('人數與審核'),
+              TextFormField(
+                key: const ValueKey('event-max'),
+                controller: _max,
+                keyboardType: TextInputType.number,
+                validator: validateMaxMembers,
+                decoration: const InputDecoration(
+                  labelText: '人數上限',
+                  helperText: '$maxMembersMin 到 $maxMembersMax 人，不含主辦人',
+                ),
               ),
-            ),
-            const SectionCaption('內容'),
-            TextFormField(
-              key: const ValueKey('event-description'),
-              controller: _description,
-              maxLength: 4000,
-              minLines: 3,
-              maxLines: 8,
-              decoration: const InputDecoration(labelText: '說明', alignLabelWithHint: true),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              key: const ValueKey('event-private-message'),
-              controller: _private,
-              maxLength: 2000,
-              minLines: 2,
-              maxLines: 6,
-              decoration: const InputDecoration(
-                labelText: '隊員私密留言（選填）',
-                helperText: '只有你和通過的隊員看得到，例如集合時間與聯絡方式',
-                helperMaxLines: 2,
-                alignLabelWithHint: true,
+              const SizedBox(height: 4),
+              Card(
+                child: SwitchListTile(
+                  key: const ValueKey('event-approval'),
+                  shape: const RoundedRectangleBorder(),
+                  title: const Text('需要主辦人審核'),
+                  subtitle: Text(_approval ? '申請後由你決定是否通過' : '申請後直接加入，額滿為止'),
+                  value: _approval,
+                  onChanged: (v) => setState(() => _approval = v),
+                ),
               ),
-            ),
-            const SectionCaption('行程'),
-            InkWell(
-              key: const ValueKey('event-link'),
-              onTap: _pickTrip,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: '連結現有行程（選填）',
-                  helperText: '只能連結你是團長的行程；通過的人會自動加入行程成員，也會附上路線預覽',
+              const SectionCaption('內容'),
+              TextFormField(
+                key: const ValueKey('event-description'),
+                controller: _description,
+                maxLength: 4000,
+                minLines: 3,
+                maxLines: 8,
+                decoration: const InputDecoration(labelText: '說明', alignLabelWithHint: true),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                key: const ValueKey('event-private-message'),
+                controller: _private,
+                maxLength: 2000,
+                minLines: 2,
+                maxLines: 6,
+                decoration: const InputDecoration(
+                  labelText: '隊員私密留言（選填）',
+                  helperText: '只有你和通過的隊員看得到，例如集合時間與聯絡方式',
                   helperMaxLines: 2,
-                  suffixIcon: _linkedTripId == null || (_editing && !_pickedNewTrip)
-                      ? const Icon(Icons.link)
-                      : IconButton(
-                          tooltip: '清除連結',
-                          icon: const Icon(Icons.close),
-                          onPressed: () => setState(() {
-                            _linkedTripId = widget.initial?.linkedTripId;
-                            _pickedNewTrip = false;
-                            _resend = false;
-                          }),
-                        ),
+                  alignLabelWithHint: true,
                 ),
-                child: Text(_linkedTripId == null ? '未連結' : (linkedTrip?.name ?? '已連結的行程（不在這支手機上）')),
               ),
-            ),
-            if (_editing && _linkedTripId != null && !_pickedNewTrip && linkedTrip != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Card(
-                  child: SwitchListTile(
-                    key: const ValueKey('event-resend'),
-                    shape: const RoundedRectangleBorder(),
-                    title: const Text('用目前的行程內容更新路線預覽'),
-                    value: _resend,
-                    onChanged: (v) => setState(() => _resend = v),
+              const SectionCaption('行程'),
+              InkWell(
+                key: const ValueKey('event-link'),
+                onTap: _pickTrip,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: '連結現有行程（選填）',
+                    helperText: '只能連結你是團長的行程；通過的人會自動加入行程成員，也會附上路線預覽',
+                    helperMaxLines: 2,
+                    suffixIcon: _linkedTripId == null || (_editing && !_pickedNewTrip)
+                        ? const Icon(Icons.link)
+                        : IconButton(
+                            tooltip: '清除連結',
+                            icon: const Icon(Icons.close),
+                            onPressed: () => setState(() {
+                              _linkedTripId = widget.initial?.linkedTripId;
+                              _pickedNewTrip = false;
+                              _resend = false;
+                            }),
+                          ),
+                  ),
+                  child: Text(_linkedTripId == null ? '未連結' : (linkedTrip?.name ?? '已連結的行程（不在這支手機上）')),
+                ),
+              ),
+              if (_editing && _linkedTripId != null && !_pickedNewTrip && linkedTrip != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Card(
+                    child: SwitchListTile(
+                      key: const ValueKey('event-resend'),
+                      shape: const RoundedRectangleBorder(),
+                      title: const Text('用目前的行程內容更新路線預覽'),
+                      value: _resend,
+                      onChanged: (v) => setState(() => _resend = v),
+                    ),
                   ),
                 ),
+              const SizedBox(height: 28),
+              FilledButton(
+                key: const ValueKey('event-submit'),
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                onPressed: _busy ? null : _submit,
+                child: Text(_editing ? '儲存' : '建立揪團'),
               ),
-            const SizedBox(height: 28),
-            FilledButton(
-              key: const ValueKey('event-submit'),
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-              onPressed: _busy ? null : _submit,
-              child: Text(_editing ? '儲存' : '建立揪團'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

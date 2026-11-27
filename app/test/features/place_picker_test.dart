@@ -197,7 +197,7 @@ void main() {
     for (final name in ['沒有山頭', '已經結束']) {
       await tapText(tester, name);
       expect(find.byKey(const ValueKey('trip-offline-hint')), findsNothing, reason: name);
-      await tester.pageBack();
+      await goBack(tester);
       await settle(tester);
     }
 
@@ -234,7 +234,7 @@ void main() {
     expect(find.byType(ActionChip), findsNothing);
     await tester.tap(find.byKey(const ValueKey('sheet-close'))); // swiping or tapping outside no longer closes it
     await settle(tester);
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
 
     await tapText(tester, '玉山新');

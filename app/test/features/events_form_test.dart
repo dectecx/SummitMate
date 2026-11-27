@@ -53,6 +53,17 @@ void main() {
       await app.dispose(tester);
     });
 
+    testWidgets('on a phone screen, fields scrolled out of sight are still checked and shown', (tester) async {
+      final api = FakeEventsApi();
+      final app = await openCreate(tester, api);
+      tester.view.physicalSize = const Size(400, 700);
+      await settle(tester);
+      await submit(tester); // scrolls to the bottom first, leaving the title far above
+      expect(api.created, isEmpty);
+      expect(find.text('標題至少 5 個字').hitTestable(), findsOneWidget, reason: 'the form scrolls back to the error');
+      await app.dispose(tester);
+    });
+
     testWidgets('a valid form creates the event and opens it', (tester) async {
       final api = FakeEventsApi();
       final app = await openCreate(tester, api);
@@ -93,12 +104,12 @@ void main() {
       await tester.tap(field('event-start'));
       await settle(tester);
       await tester.tap(find.text('25'));
-      await tapText(tester, 'OK');
+      await tapText(tester, '確定');
       expect(find.text('2026-11-25'), findsOneWidget);
       await tester.tap(field('event-end'));
       await settle(tester);
       await tester.tap(find.text('27'));
-      await tapText(tester, 'OK');
+      await tapText(tester, '確定');
       expect(find.text('2026-11-27'), findsOneWidget);
       await submit(tester);
       expect((api.created.single.startDate, api.created.single.endDate), ('2026-11-25', '2026-11-27'));

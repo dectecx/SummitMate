@@ -251,7 +251,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('events-create')));
     await settle(tester);
     expect(find.byKey(const ValueKey('event-title')), findsOneWidget);
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
 
     await tester.tap(card('e1'));
