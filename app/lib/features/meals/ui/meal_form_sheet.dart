@@ -83,13 +83,13 @@ class _MealFormSheetState extends ConsumerState<MealFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(editing ? '編輯餐點' : '新增餐點（D${widget.dayIndex}）', style: Theme.of(context).textTheme.titleLarge),
+              Text(editing ? '編輯餐食' : '新增餐食（D${widget.dayIndex}）', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _name,
                 autofocus: !editing,
                 textInputAction: TextInputAction.next,
-                validator: (v) => (v ?? '').trim().isEmpty ? '請輸入餐點名稱' : null,
+                validator: (v) => (v ?? '').trim().isEmpty ? '請輸入餐食名稱' : null,
                 decoration: const InputDecoration(labelText: '名稱', hintText: '例如：燕麥粥'),
               ),
               if (!editing)
@@ -155,7 +155,7 @@ class _MealFormSheetState extends ConsumerState<MealFormSheet> {
                 TextButton(
                   onPressed: _delete,
                   style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-                  child: const Text('刪除餐點'),
+                  child: const Text('刪除餐食'),
                 ),
             ],
           ),

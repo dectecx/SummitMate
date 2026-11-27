@@ -184,4 +184,4 @@ class _SetListState extends ConsumerState<_SetList> with AutomaticKeepAliveClien
 }
 
 String summaryText(SharedSetSummary s) =>
-    '裝備 ${s.gearCount} 件  ·  餐點 ${s.mealCount} 項  ·  ${(s.totalWeight / 1000).toStringAsFixed(1)} kg';
+    '裝備 ${s.gearCount} 件  ·  餐食 ${s.mealCount} 項  ·  ${(s.totalWeight / 1000).toStringAsFixed(1)} kg';

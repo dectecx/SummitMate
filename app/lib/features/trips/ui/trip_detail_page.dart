@@ -234,7 +234,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
           onPressed: () =>
               showMealFormSheet(context, tripId: trip.id, dayIndex: _mealDay),
           icon: const Icon(Icons.add),
-          label: const Text('新增餐點'),
+          label: const Text('新增餐食'),
         ),
         _ => null,
       },

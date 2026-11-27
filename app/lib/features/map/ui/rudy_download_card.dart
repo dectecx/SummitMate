@@ -121,12 +121,24 @@ class RudyDownloadCard extends ConsumerWidget {
             const SizedBox(height: 8),
             body,
             const SizedBox(height: 8),
-            Text(rudyAttribution, style: theme.textTheme.labelSmall),
-            TextButton.icon(
-              key: const ValueKey('rudy-home-link'),
-              onPressed: () => ref.read(linkOpenerProvider)(Uri.parse(rudyHomeUrl)),
-              icon: const Icon(Icons.open_in_new, size: 16),
-              label: const Text('魯地圖官網 rudymap.tw'),
+            // The credit is long: folded away until asked for.
+            ExpansionTile(
+              key: const ValueKey('rudy-credit'),
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              title: Text('資料來源與授權', style: theme.textTheme.bodySmall),
+              children: [
+                Text(rudyAttribution, style: theme.textTheme.labelSmall),
+                TextButton.icon(
+                  key: const ValueKey('rudy-home-link'),
+                  onPressed: () => ref.read(linkOpenerProvider)(Uri.parse(rudyHomeUrl)),
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: const Text('魯地圖官網 rudymap.tw'),
+                ),
+              ],
             ),
           ],
         ),

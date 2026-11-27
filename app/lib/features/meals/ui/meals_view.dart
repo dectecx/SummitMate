@@ -64,7 +64,7 @@ class _MealsViewState extends ConsumerState<MealsView> {
         ),
         Expanded(
           child: groups.isEmpty
-              ? const ComingSoon(illustration: Illustration.meal, message: '這一天還沒有餐點。這份計畫只有你看得到，按右下角新增。')
+              ? const ComingSoon(illustration: Illustration.meal, message: '這一天還沒有餐食。這份計畫只有你看得到，按右下角新增。')
               : CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(

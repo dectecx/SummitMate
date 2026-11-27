@@ -117,9 +117,9 @@ void main() {
 
     test('pending and approved people see their state and can still leave when it is closed or full', () {
       final p = of(ev('1', 'x' * 5, mine: ApplicationStatus.pending, status: EventStatus.closed));
-      expect((p.kind, p.label, p.enabled), (EventAction.pending, '審核中', true));
+      expect((p.kind, p.label, p.enabled), (EventAction.pending, '取消申請', true));
       final ok = of(ev('1', 'x' * 5, mine: ApplicationStatus.approved, approved: 8, start: '2026-01-01'));
-      expect((ok.kind, ok.label), (EventAction.approved, '已加入'));
+      expect((ok.kind, ok.label), (EventAction.approved, '退出揪團'));
     });
 
     test('a rejected or withdrawn application can be sent again', () {

@@ -343,7 +343,31 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       RidgeBanner(title: d.title, seed: coverFor(d.id, coverCount), height: 140),
       const SizedBox(height: 14),
       EventTags(d, today: _today),
-      const SizedBox(height: 14),
+      const SizedBox(height: 4),
+      Row(
+        children: [
+          TextButton.icon(
+            key: const ValueKey('event-like'),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(64, 44),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              foregroundColor: theme.colorScheme.onSurfaceVariant,
+            ),
+            onPressed: _busy ? null : () => _toggleLike(d),
+            icon: Icon(
+              d.liked ? Icons.favorite : Icons.favorite_border,
+              size: 18,
+              color: d.liked ? theme.colorScheme.tertiary : null,
+            ),
+            label: Text('喜歡 ${d.likeCount}'),
+          ),
+          const SizedBox(width: 16),
+          Icon(Icons.chat_bubble_outline, size: 18, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Text('留言 ${d.commentCount}', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        ],
+      ),
+      const SizedBox(height: 4),
       Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -384,28 +408,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final snap = d.tripSnapshot;
     final hasPrivate = (d.privateMessage ?? '').isNotEmpty && !d.privateMessageLocked;
     return [
-      const SizedBox(height: 12),
-      Row(
-        children: [
-          TextButton.icon(
-            key: const ValueKey('event-like'),
-            style: TextButton.styleFrom(
-              minimumSize: const Size(64, 44),
-              foregroundColor: theme.colorScheme.onSurfaceVariant,
-            ),
-            onPressed: _busy ? null : () => _toggleLike(d),
-            icon: Icon(
-              d.liked ? Icons.favorite : Icons.favorite_border,
-              color: d.liked ? theme.colorScheme.tertiary : null,
-            ),
-            label: Text('${d.likeCount}'),
-          ),
-          const SizedBox(width: 8),
-          Icon(Icons.chat_bubble_outline, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 6),
-          Text('${d.commentCount}', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
-        ],
-      ),
       if (d.myStatus == ApplicationStatus.rejected && !d.isHost)
         Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -593,13 +595,8 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   Widget _bottomBar(EventDetail d, BottomAction a) {
     final onTap = a.enabled && !_busy ? () => _onBottom(d, a) : null;
-    final tonal = a.kind == EventAction.pending || a.kind == EventAction.approved;
+    final undo = a.status != null; // leaving is never the loud button
     final style = FilledButton.styleFrom(minimumSize: const Size.fromHeight(52));
-    final hint = switch (a.kind) {
-      EventAction.pending => '等待主辦人審核，點按鈕可以取消申請',
-      EventAction.approved => '點按鈕可以退出這個揪團',
-      _ => null,
-    };
     final scheme = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -612,19 +609,22 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (hint != null)
+              if (a.status case final status?)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    hint,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(a.kind == EventAction.pending ? Icons.hourglass_top : Icons.check_circle_outline, size: 18, color: scheme.primary),
+                      const SizedBox(width: 6),
+                      Flexible(child: Text(status, key: const ValueKey('event-status'), style: Theme.of(context).textTheme.titleSmall)),
+                    ],
                   ),
                 ),
-              tonal
-                  ? FilledButton.tonal(
+              undo
+                  ? OutlinedButton(
                       key: const ValueKey('event-action'),
-                      style: style,
+                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
                       onPressed: onTap,
                       child: Text(a.label),
                     )

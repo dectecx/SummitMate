@@ -136,6 +136,8 @@ abstract final class AppTheme {
           ),
         ),
       ),
+      // The default range colour is too pale on paper to show which days are picked.
+      datePickerTheme: DatePickerThemeData(rangeSelectionBackgroundColor: scheme.primary.withValues(alpha: brightness == Brightness.dark ? .45 : .24)),
       checkboxTheme: CheckboxThemeData(shape: const CircleBorder(), side: BorderSide(color: scheme.outline, width: 1.8)),
       progressIndicatorTheme: ProgressIndicatorThemeData(linearTrackColor: scheme.surfaceContainerHighest),
       listTileTheme: ListTileThemeData(shape: round(14)),

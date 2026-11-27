@@ -55,10 +55,15 @@ bool isFull(EventSummary e) => e.approvedCount >= e.maxMembers;
 enum EventAction { host, signIn, apply, reapply, pending, approved, closed, full, expired, cancelled }
 
 class BottomAction {
-  const BottomAction(this.kind, this.label, {this.enabled = true});
+  const BottomAction(this.kind, this.label, {this.enabled = true, this.status});
   final EventAction kind;
+
+  /// What the button does.
   final String label;
   final bool enabled;
+
+  /// Where the person stands, shown above the button when the button undoes it.
+  final String? status;
 
   @override
   String toString() => 'BottomAction($kind, $label, $enabled)';
@@ -71,9 +76,9 @@ BottomAction bottomActionFor(EventSummary e, {required bool signedIn, required D
   if (signedIn) {
     switch (e.myStatus) {
       case ApplicationStatus.approved:
-        return const BottomAction(EventAction.approved, '已加入');
+        return const BottomAction(EventAction.approved, '退出揪團', status: '你已加入這個揪團');
       case ApplicationStatus.pending:
-        return const BottomAction(EventAction.pending, '審核中');
+        return const BottomAction(EventAction.pending, '取消申請', status: '審核中，等主辦人回覆');
       case ApplicationStatus.rejected || ApplicationStatus.cancelled || null:
         break;
     }

@@ -41,7 +41,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
           controller: _tabs,
           tabs: const [
             Tab(text: '裝備'),
-            Tab(text: '食物'),
+            Tab(text: '餐食'),
           ],
         ),
       ),
@@ -56,7 +56,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
         key: const ValueKey('library-add'),
         onPressed: () => showLibraryItemSheet(context, kind: _kind),
         icon: const Icon(Icons.add),
-        label: Text(_kind == 'gear' ? '新增裝備' : '新增食物'),
+        label: Text(_kind == 'gear' ? '新增裝備' : '新增餐食'),
       ),
     );
   }
@@ -73,7 +73,7 @@ class _ItemList extends ConsumerWidget {
     if (items.isEmpty) {
       return ComingSoon(
         illustration: isGear ? Illustration.gear : Illustration.meal,
-        message: isGear ? '還沒有裝備。在行程裡新增裝備時，會自動記在這裡，下次輸入名稱就能直接選。' : '還沒有常用食物。在行程裡新增餐點時，會自動記在這裡，下次輸入名稱就能直接選。',
+        message: isGear ? '還沒有裝備。在行程裡新增裝備時，會自動記在這裡，下次輸入名稱就能直接選。' : '還沒有常用餐食。在行程裡新增餐食時，會自動記在這裡，下次輸入名稱就能直接選。',
       );
     }
     return ListView(

@@ -55,7 +55,11 @@ void main() {
 
       expect(find.byKey(const ValueKey('rudy-card')), findsOneWidget);
       expect(find.byKey(const ValueKey('rudy-use')), findsNothing, reason: 'nothing to use before it is downloaded');
+      await tester.tap(find.byKey(const ValueKey('rudy-credit')));
+      await settle(tester);
       expect(find.textContaining('rudymap.tw'), findsWidgets, reason: 'the author is credited with the link');
+      await tester.tap(find.byKey(const ValueKey('rudy-credit')));
+      await settle(tester);
 
       await tester.tap(find.byKey(const ValueKey('rudy-download')));
       await settle(tester);
@@ -124,8 +128,11 @@ void main() {
       await settle(tester);
       expect(app.container.read(mapSourceProvider), MapSource.rudy);
       expect(find.byKey(fakeRudyMapKey), findsOneWidget);
-      expect(find.textContaining('魯地圖 Rudy Map'), findsOneWidget, reason: 'the required credit is on the map');
+      await tester.tap(find.byTooltip('地圖資料來源'));
+      await settle(tester);
+      expect(find.textContaining('魯地圖 Rudy Map'), findsOneWidget, reason: 'the required credit is one tap away');
       expect(find.textContaining('內政部國土測繪中心（政府資料'), findsNothing);
+      await tapText(tester, '關閉');
 
       await tester.tap(find.byTooltip('放大'));
       await tester.tap(find.byTooltip('我的位置'));
@@ -146,6 +153,8 @@ void main() {
       await tapText(tester, '地圖');
       await settle(tester);
       expect(find.byKey(fakeRudyMapKey), findsNothing, reason: 'chosen but not installed: fall back instead of a blank map');
+      await tester.tap(find.byTooltip('地圖資料來源'));
+      await settle(tester);
       expect(find.textContaining('內政部國土測繪中心'), findsOneWidget);
       await app.dispose(tester);
     });

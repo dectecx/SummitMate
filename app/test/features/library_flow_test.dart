@@ -63,10 +63,10 @@ void main() {
 
   testWidgets('food is remembered separately, and the library page can add an item by hand', (tester) async {
     final app = await start(tester);
-    await trip(tester, app, '食物庫');
-    await tapText(tester, '食物庫');
+    await trip(tester, app, '餐食庫');
+    await tapText(tester, '餐食庫');
     await tapText(tester, '餐食');
-    await tapText(tester, '新增餐點');
+    await tapText(tester, '新增餐食');
     await enter(tester, '名稱', '燕麥粥');
     await enter(tester, '單份熱量', '300');
     await tapText(tester, '新增');
@@ -77,7 +77,7 @@ void main() {
     await settle(tester);
     await tapText(tester, '我');
     await tapText(tester, '我的裝備庫');
-    await tapText(tester, '食物');
+    await tapText(tester, '餐食');
     expect(find.text('燕麥粥'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('library-add')));
     await settle(tester);
@@ -114,7 +114,7 @@ void main() {
     final templateId = (await real(tester, () => app.db.select(app.db.templates).getSingle())).id;
     await tester.tap(find.byKey(ValueKey('apply-$templateId')));
     await settleUntil(tester, find.textContaining('已加入'));
-    expect(find.textContaining('已加入 裝備 1 件、餐點 1 項'), findsOneWidget);
+    expect(find.textContaining('已加入 裝備 1 件、餐食 1 項'), findsOneWidget);
     final gear = await real(tester, () => app.db.select(app.db.gearItems).get());
     expect(gear.map((g) => [g.name, g.tripId]), containsAll([['睡袋', a], ['睡袋', isNot(a)]]));
     await app.dispose(tester);

@@ -70,7 +70,7 @@ class _CopyDialogState extends State<_CopyDialog> {
             child: InputDecorator(decoration: const InputDecoration(labelText: '出發日期', suffixIcon: Icon(Icons.calendar_month_outlined)), child: Text(formatDate(_start))),
           ),
           const SizedBox(height: 12),
-          Text('會複製節點、主要山頭、軌跡，以及你自己的裝備與餐點；不複製成員。', style: Theme.of(context).textTheme.bodySmall),
+          Text('會複製節點、主要山頭、軌跡，以及你自己的裝備與餐食；不複製成員。', style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
       actions: [

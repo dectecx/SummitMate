@@ -24,7 +24,7 @@ class TemplatesPage extends ConsumerWidget {
       body: templates.isEmpty
           ? const ComingSoon(
               illustration: Illustration.gear,
-              message: '還沒有範本。\n在行程右上角選「存成範本」，就能把這個行程的裝備與餐點存起來，之後套用到別的行程。',
+              message: '還沒有範本。\n在行程右上角選「存成範本」，就能把這個行程的裝備與餐食存起來，之後套用到別的行程。',
             )
           : ListView(
               padding: const EdgeInsets.only(bottom: 32),

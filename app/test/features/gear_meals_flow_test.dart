@@ -106,9 +106,9 @@ void main() {
   testWidgets('meals: add per day, totals, switch day, edit and delete', (tester) async {
     final app = await startWithTrip(tester);
     await tapText(tester, '餐食');
-    expect(find.textContaining('這一天還沒有餐點'), findsOneWidget);
+    expect(find.textContaining('這一天還沒有餐食'), findsOneWidget);
 
-    await tapText(tester, '新增餐點');
+    await tapText(tester, '新增餐食');
     await enter(tester, '名稱', '飯糰');
     await enter(tester, '單份重量', '180');
     await enter(tester, '單份熱量', '320');
@@ -124,7 +124,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('meal-day-2')));
     await settle(tester);
     expect(find.text('飯糰'), findsNothing);
-    expect(find.textContaining('這一天還沒有餐點'), findsOneWidget);
+    expect(find.textContaining('這一天還沒有餐食'), findsOneWidget);
     expect(find.text('640 kcal'), findsOneWidget, reason: 'only the whole-trip total');
 
     await tester.tap(find.byKey(const ValueKey('meal-day-1')));
@@ -135,7 +135,7 @@ void main() {
     expect(find.text('鮪魚飯糰'), findsOneWidget);
 
     await tapText(tester, '鮪魚飯糰');
-    await tapText(tester, '刪除餐點');
+    await tapText(tester, '刪除餐食');
     expect(find.text('鮪魚飯糰'), findsNothing);
     await app.dispose(tester);
   });
@@ -159,7 +159,7 @@ void main() {
     expect(find.text('我的睡袋'), findsOneWidget);
 
     await tapText(tester, '餐食');
-    await tapText(tester, '新增餐點');
+    await tapText(tester, '新增餐食');
     await enter(tester, '名稱', '我的午餐');
     await tapText(tester, '新增');
     expect(find.text('我的午餐'), findsOneWidget);

@@ -23,6 +23,9 @@ import 'providers.dart';
 /// NLSC (內政部國土測繪中心) open-data e-map with contour lines, online only. Note the z/y/x order.
 const _nlscTileUrl = 'https://wmts.nlsc.gov.tw/wmts/EMAP5_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}';
 
+/// The credit the NLSC licence asks for.
+const nlscAttribution = '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）';
+
 /// "地圖": the topographic map with the mountains, the person's position; the Rudy Map when it is installed.
 class MapTab extends ConsumerStatefulWidget {
   const MapTab({super.key});
@@ -158,31 +161,23 @@ class _MapTabState extends ConsumerState<MapTab> {
                 ),
               ),
             ),
-            // Credit required by the data licence. It wraps (never overflows) and leaves room for the buttons.
+            // Credit required by the data licence, one tap away so it does not cover the map.
             Positioned(
-              left: 8,
-              bottom: 8,
-              right: 72,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerLowest.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(12),
+              left: 12,
+              bottom: 12,
+              child: IconButton(
+                key: const ValueKey('map-attribution'),
+                tooltip: '地圖資料來源',
+                style: IconButton.styleFrom(
+                  backgroundColor: scheme.surfaceContainerLowest.withValues(alpha: 0.9),
+                  foregroundColor: scheme.onSurfaceVariant,
+                  minimumSize: const Size(44, 44),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: InkWell(
-                    key: const ValueKey('map-attribution'),
-                    onTap: () =>
-                        ref.read(linkOpenerProvider)(Uri.parse(_usingRudy ? rudyHomeUrl : 'https://maps.nlsc.gov.tw')),
-                    child: Text(
-                      _usingRudy ? rudyAttribution : '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(decoration: TextDecoration.underline),
-                    ),
-                  ),
-                ),
+                onPressed: _showCredit,
+                icon: const Icon(Icons.info_outline, size: 20),
               ),
             ),
-            // One control group so the buttons can never overlap each other or the attribution.
+            // One control group so the buttons can never overlap each other or the info button.
             Positioned(
               right: 12,
               bottom: 32,
@@ -231,6 +226,25 @@ class _MapTabState extends ConsumerState<MapTab> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCredit() {
+    final rudy = _usingRudy;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('地圖資料來源'),
+        content: Text(rudy ? rudyAttribution : nlscAttribution),
+        actions: [
+          TextButton(
+            key: const ValueKey('map-attribution-link'),
+            onPressed: () => ref.read(linkOpenerProvider)(Uri.parse(rudy ? rudyHomeUrl : 'https://maps.nlsc.gov.tw')),
+            child: const Text('開啟網站'),
+          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('關閉')),
+        ],
       ),
     );
   }

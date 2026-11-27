@@ -60,7 +60,7 @@ void main() {
       );
     }
 
-    testWidgets('the map has one control group, the attribution, and shows the mountains', (tester) async {
+    testWidgets('the map has one control group, keeps the credit behind a button, and shows the mountains', (tester) async {
       final app = await start(tester);
       await tapText(tester, '地圖');
       await settle(tester);
@@ -70,8 +70,12 @@ void main() {
       expect(find.byTooltip('放大'), findsOneWidget);
       expect(find.byTooltip('縮小'), findsOneWidget);
       expect(find.byTooltip('離線地圖'), findsOneWidget);
-      expect(find.textContaining('內政部國土測繪中心'), findsOneWidget);
+      expect(find.textContaining('內政部國土測繪中心'), findsNothing, reason: 'the credit does not cover the map');
       expect(find.byKey(const ValueKey('peak-yushan-main')), findsOneWidget);
+      await tester.tap(find.byTooltip('地圖資料來源'));
+      await settle(tester);
+      expect(find.textContaining('內政部國土測繪中心'), findsOneWidget);
+      await tapText(tester, '關閉');
 
       // The three buttons share one column, so they cannot overlap each other.
       final locate = tester.getRect(find.byTooltip('我的位置'));

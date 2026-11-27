@@ -126,7 +126,7 @@ void main() {
         events: [ev('e1', '嘉明湖三日', mine: ApplicationStatus.pending, privateMessage: '祕密')],
       );
       final app = await openDetail(tester, api, 'e1');
-      expect(actionLabel(tester), '審核中');
+      expect(actionLabel(tester), '取消申請');
       expect(find.byKey(const ValueKey('event-private-locked')), findsOneWidget);
       await app.dispose(tester);
     });
@@ -136,7 +136,7 @@ void main() {
         events: [ev('e1', '嘉明湖三日', mine: ApplicationStatus.approved, privateMessage: '集合 07:00')],
       );
       final app = await openDetail(tester, api, 'e1');
-      expect(actionLabel(tester), '已加入');
+      expect(actionLabel(tester), '退出揪團');
       expect(find.byKey(const ValueKey('event-private')), findsOneWidget);
       expect(find.text('集合 07:00'), findsOneWidget);
       await app.dispose(tester);
@@ -210,7 +210,7 @@ void main() {
       await settle(tester);
       expect(api.applyMessages, ['有三次高山經驗']);
       expect(find.textContaining('等主辦人審核'), findsOneWidget);
-      expect(actionLabel(tester), '審核中');
+      expect(actionLabel(tester), '取消申請');
       await clearSnacks(tester);
 
       await tester.tap(action());
@@ -226,7 +226,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('apply-confirm')));
       await settle(tester);
       expect(api.applyMessages, ['有三次高山經驗', '']);
-      expect(actionLabel(tester), '審核中');
+      expect(actionLabel(tester), '取消申請');
       await app.dispose(tester);
     });
 
@@ -240,7 +240,7 @@ void main() {
       expect(find.textContaining('不需審核'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('apply-confirm')));
       await settle(tester);
-      expect(actionLabel(tester), '已加入');
+      expect(actionLabel(tester), '退出揪團');
       expect(find.text('集合 07:00'), findsOneWidget);
       expect(find.textContaining('4 / 8 人'), findsOneWidget);
       await clearSnacks(tester);
@@ -335,16 +335,16 @@ void main() {
       final api = FakeEventsApi(events: [ev('e1', '嘉明湖三日', likes: 2)]);
       final app = await openDetail(tester, api, 'e1');
       final like = find.byKey(const ValueKey('event-like'));
-      expect(find.descendant(of: like, matching: find.text('2')), findsOneWidget);
+      expect(find.descendant(of: like, matching: find.text('喜歡 2')), findsOneWidget);
       expect(find.descendant(of: like, matching: find.byIcon(Icons.favorite_border)), findsOneWidget);
       await tester.tap(like);
       await settle(tester);
-      expect(find.descendant(of: like, matching: find.text('3')), findsOneWidget);
+      expect(find.descendant(of: like, matching: find.text('喜歡 3')), findsOneWidget);
       expect(find.descendant(of: like, matching: find.byIcon(Icons.favorite)), findsOneWidget);
       expect(api.events.single.liked, isTrue);
       await tester.tap(like);
       await settle(tester);
-      expect(find.descendant(of: like, matching: find.text('2')), findsOneWidget);
+      expect(find.descendant(of: like, matching: find.text('喜歡 2')), findsOneWidget);
       expect(api.events.single.liked, isFalse);
       await app.dispose(tester);
     });

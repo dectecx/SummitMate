@@ -16,14 +16,14 @@ Future<void> saveTripAsTemplate(BuildContext context, WidgetRef ref, Trip trip) 
   final repo = ref.read(templateRepositoryProvider);
   final items = await repo.itemsOfTrip(trip.id);
   if (items.isEmpty) {
-    messenger.showSnackBar(const SnackBar(content: Text('這個行程還沒有裝備或餐點，沒有東西可以存成範本。')));
+    messenger.showSnackBar(const SnackBar(content: Text('這個行程還沒有裝備或餐食，沒有東西可以存成範本。')));
     return;
   }
   if (!context.mounted) return;
   final title = await _askTitle(context, initial: trip.name);
   if (title == null) return;
   await repo.create(title: title, items: items);
-  messenger.showSnackBar(SnackBar(content: Text('已存成範本「$title」（裝備 ${gearCountOf(items)}、餐點 ${mealCountOf(items)}）')));
+  messenger.showSnackBar(SnackBar(content: Text('已存成範本「$title」（裝備 ${gearCountOf(items)}、餐食 ${mealCountOf(items)}）')));
 }
 
 /// Lets the person pick a template and adds its items to the trip.
@@ -64,10 +64,10 @@ Future<void> applyTemplateToTrip(BuildContext context, WidgetRef ref, Trip trip)
 }
 
 String summaryOf(List<SetItem> items) =>
-    '裝備 ${gearCountOf(items)} 件  ·  餐點 ${mealCountOf(items)} 項  ·  ${(gearWeightOf(items) / 1000).toStringAsFixed(1)} kg';
+    '裝備 ${gearCountOf(items)} 件  ·  餐食 ${mealCountOf(items)} 項  ·  ${(gearWeightOf(items) / 1000).toStringAsFixed(1)} kg';
 
 String resultText(ApplyResult r) {
-  final parts = [if (r.gearAdded > 0) '裝備 ${r.gearAdded} 件', if (r.mealsAdded > 0) '餐點 ${r.mealsAdded} 項'];
+  final parts = [if (r.gearAdded > 0) '裝備 ${r.gearAdded} 件', if (r.mealsAdded > 0) '餐食 ${r.mealsAdded} 項'];
   final skipped = r.gearSkipped > 0 ? '（${r.gearSkipped} 件已有，略過）' : '';
   return parts.isEmpty ? '沒有新增任何項目$skipped' : '已加入 ${parts.join('、')}$skipped';
 }
@@ -248,7 +248,7 @@ class SetItemSections extends StatelessWidget {
           ),
         if (meals.isNotEmpty)
           SettingsSection(
-            title: '餐點',
+            title: '餐食',
             children: [
               for (final i in meals)
                 SettingsTile(

@@ -75,7 +75,12 @@ class _Header extends ConsumerWidget {
               ],
             ),
           ),
-          IconButton(key: const ValueKey('import-gpx'), tooltip: '匯入 GPX', icon: const Icon(Icons.file_open_outlined), onPressed: () => importGpx(context, ref)),
+          TextButton.icon(
+            key: const ValueKey('import-gpx'),
+            onPressed: () => importGpx(context, ref),
+            icon: const Icon(Icons.file_upload_outlined, size: 20),
+            label: const Text('匯入 GPX'),
+          ),
           if (canAdd) ...[
             const SizedBox(width: 4),
             IconButton.filled(
@@ -114,7 +119,7 @@ class _EmptyState extends ConsumerWidget {
             const SizedBox(height: 16),
             Text('還沒有行程', textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text('建立一個行程，開始規劃每天的路線、裝備與糧食。', textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+            Text('建立一個行程，開始規劃每天的路線、裝備與餐食。', textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 32),
             FilledButton(onPressed: () => _create(context), child: const Text('建立第一個行程')),
             const SizedBox(height: 12),
