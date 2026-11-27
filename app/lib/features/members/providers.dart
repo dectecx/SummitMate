@@ -12,7 +12,7 @@ final memberRepositoryProvider = Provider((ref) => MemberRepository(ref.watch(ap
 final tripOwnerApiProvider = Provider<TripOwnerApi>((ref) => DioTripOwnerApi(ref.watch(authedDioProvider)));
 final userSearchApiProvider = Provider<UserSearchApi>((ref) => DioUserSearchApi(ref.watch(authedDioProvider)));
 
-/// The members list of a trip, with the signed-in person included even before the server confirms them.
+/// The members list of a trip, with the person using the app included even before the server confirms them.
 final memberLinesProvider = Provider.family<List<MemberLine>, String>((ref, tripId) {
   final trip = ref.watch(tripProvider(tripId)).value;
   if (trip == null) return const [];

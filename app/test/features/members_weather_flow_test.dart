@@ -97,7 +97,11 @@ void main() {
     await ownTrip(tester, app);
     expect(find.textContaining('登入後才能邀請隊友'), findsOneWidget);
     expect(find.text('邀請'), findsNothing);
-    expect(find.text('成員（0）'), findsOneWidget);
+    expect(find.text('成員（1）'), findsOneWidget);
+    expect(find.text('訪客（你）'), findsOneWidget);
+    expect(find.text('團長'), findsOneWidget);
+    expect(find.byTooltip('管理 訪客'), findsNothing);
+    expect(find.text('離開這個行程'), findsNothing);
     await app.dispose(tester);
   });
 

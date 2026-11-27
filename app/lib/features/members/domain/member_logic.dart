@@ -35,7 +35,8 @@ TripRole roleOfKey(String key) => switch (key) {
 };
 
 /// The list to show: stored members (owner first, then guides, then members, by name), plus the
-/// signed-in person themselves when the server has not delivered their own row yet.
+/// signed-in person themselves when the server has not delivered their own row yet. A guest has no rows at all,
+/// so they are listed on their own.
 List<MemberLine> buildMemberLines({
   required Trip trip,
   required List<TripMember> members,
@@ -53,9 +54,10 @@ List<MemberLine> buildMemberLines({
         isMe: m.userId == myId,
       ),
   ];
-  if (myId != null && !lines.any((l) => l.isMe)) {
+  final isGuestAlone = myId == null && lines.isEmpty;
+  if (isGuestAlone || (myId != null && !lines.any((l) => l.isMe))) {
     final role = roleFor(trip: trip, accountId: myId, members: members);
-    lines.add(MemberLine(userId: myId, displayName: myName, avatar: myAvatar.isEmpty ? '🙂' : myAvatar, role: role, isMe: true));
+    lines.add(MemberLine(userId: myId ?? '', displayName: myId == null ? '訪客' : myName, avatar: myAvatar.isEmpty ? '🙂' : myAvatar, role: role, isMe: true));
   }
   lines.sort((a, b) {
     final r = a.role.index.compareTo(b.role.index);

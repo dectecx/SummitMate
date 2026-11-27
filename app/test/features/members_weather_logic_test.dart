@@ -45,8 +45,9 @@ void main() {
       expect([lines.single.role, lines.single.isMe, lines.single.avatar], [TripRole.owner, true, '🙂']);
     });
 
-    test('a guest sees nobody', () {
-      expect(buildMemberLines(trip: trip(), members: const [], myId: null, myName: '', myAvatar: ''), isEmpty);
+    test('a guest travelling alone is listed as the leader', () {
+      final me = buildMemberLines(trip: trip(), members: const [], myId: null, myName: '', myAvatar: '').single;
+      expect([me.displayName, me.role, me.isMe, me.avatar], ['訪客', TripRole.owner, true, '🙂']);
     });
 
     test('who may manage whom', () {
