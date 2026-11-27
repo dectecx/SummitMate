@@ -1,3 +1,4 @@
+import 'package:summitmate/app/nav_bar.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:summitmate/core/providers.dart';
@@ -39,7 +40,7 @@ void main() {
     await settle(tester);
     expect(find.text('訪客模式'), findsOneWidget, reason: 'clearing the data must not switch tabs by itself');
 
-    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('行程')));
+    await tester.tap(find.descendant(of: find.byType(AppNavBar), matching: find.text('行程')));
     await settle(tester);
     expect(find.textContaining('找不到這個行程'), findsNothing);
     expect(find.text('還沒有行程'), findsOneWidget);

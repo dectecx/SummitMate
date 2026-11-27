@@ -10,6 +10,15 @@ const _covers = <(String, Alignment)>[
   ('summit', Alignment(0, .1)),
 ];
 
+/// Takes some of the colour out of the pictures so they sit quietly beside the text.
+const _saturation = .7;
+const _calm = ColorFilter.matrix([
+  .213 + .787 * _saturation, .715 - .715 * _saturation, .072 - .072 * _saturation, 0, 0, //
+  .213 - .213 * _saturation, .715 + .285 * _saturation, .072 - .072 * _saturation, 0, 0,
+  .213 - .213 * _saturation, .715 - .715 * _saturation, .072 + .928 * _saturation, 0, 0,
+  0, 0, 0, 1, 0,
+]);
+
 /// How many covers there are to pick from.
 int get coverCount => _covers.length;
 
@@ -31,7 +40,9 @@ class CoverImage extends StatelessWidget {
           final width = box.maxWidth.isFinite ? box.maxWidth : 390.0;
           final height = box.maxHeight.isFinite ? box.maxHeight : 0.0;
           final needed = (width > height * 9 / 7 ? width : height * 9 / 7) * MediaQuery.devicePixelRatioOf(context);
-          return Image.asset(
+          return ColorFiltered(
+            colorFilter: _calm,
+            child: Image.asset(
             'assets/covers/$name.webp',
             fit: BoxFit.cover,
             alignment: alignment,
@@ -41,6 +52,7 @@ class CoverImage extends StatelessWidget {
             gaplessPlayback: true,
             color: dark ? const Color(0x8C0F1A1B) : null,
             colorBlendMode: dark ? BlendMode.srcATop : null,
+            ),
           );
         },
       ),

@@ -3,13 +3,12 @@ import 'package:material_ui/material_ui.dart';
 
 
 /// The palette of docs/ui/DESIGN_SYSTEM.md: warm off-white paper, white cards, a deep pine for selection and one
-/// burnt orange for the main action. Titles are set in Huninn, everything else in the system font.
+/// burnt orange for the main action. Everything is set in the system's sans-serif; titles are bold.
 /// Material 3, light and dark, large touch targets (used one-handed, outdoors), rounded shapes.
 abstract final class AppTheme {
   static const _seed = Color(0xFF214E45);
 
-  /// Titles; Huninn has one weight, so none is asked for.
-  static const _title = TextStyle(fontFamily: 'Huninn', fontWeight: FontWeight.w400);
+  static const _title = TextStyle(fontWeight: FontWeight.w700);
 
   static ThemeData light() => _build(Brightness.light);
   static ThemeData dark() => _build(Brightness.dark);
@@ -37,7 +36,7 @@ abstract final class AppTheme {
             onSurface: const Color(0xFF1D2A27),
             onSurfaceVariant: const Color(0xFF5E6A66),
             outline: const Color(0xFF848E8A),
-            outlineVariant: const Color(0xFFE8E4DA),
+            outlineVariant: const Color(0xFFDBD6C9),
           )
         : base.copyWith(
             primary: const Color(0xFF8FCAC2),
@@ -59,7 +58,7 @@ abstract final class AppTheme {
             onSurface: const Color(0xFFECE4D3),
             onSurfaceVariant: const Color(0xFFA9B0A8),
             outline: const Color(0xFF7D8A85),
-            outlineVariant: const Color(0xFF324041),
+            outlineVariant: const Color(0xFF3A494A),
           );
     final text = Typography.material2021(platform: TargetPlatform.iOS).black.apply(fontFamilyFallback: const ['PingFang TC', 'Noto Sans TC']);
     RoundedRectangleBorder round(double r) => RoundedRectangleBorder(borderRadius: BorderRadius.circular(r));
@@ -78,12 +77,12 @@ abstract final class AppTheme {
         titleTextStyle: text.titleLarge?.merge(_title).copyWith(fontSize: 24, color: scheme.onSurface),
       ),
       cardTheme: CardThemeData(
-        elevation: 2,
+        // A thin line, not a shadow, separates a card from the paper behind it.
+        elevation: 0,
         color: scheme.surfaceContainerLowest,
-        shadowColor: const Color(0x33192823),
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: scheme.outlineVariant)),
         clipBehavior: Clip.antiAlias,
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -119,22 +118,6 @@ abstract final class AppTheme {
         dividerColor: scheme.outlineVariant,
         labelColor: scheme.onSurface,
         unselectedLabelColor: scheme.onSurfaceVariant,
-      ),
-      // docked at the bottom: white, with a pale capsule behind the current place
-      navigationBarTheme: NavigationBarThemeData(
-        height: 68,
-        elevation: 0,
-        backgroundColor: scheme.surfaceContainerLowest,
-        indicatorColor: scheme.primaryContainer,
-        surfaceTintColor: Colors.transparent,
-        iconTheme: WidgetStateProperty.resolveWith((s) => IconThemeData(size: 24, color: s.contains(WidgetState.selected) ? scheme.primary : scheme.onSurfaceVariant)),
-        labelTextStyle: WidgetStateProperty.resolveWith(
-          (s) => TextStyle(
-            fontSize: 12,
-            fontWeight: s.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
-            color: s.contains(WidgetState.selected) ? scheme.primary : scheme.onSurfaceVariant,
-          ),
-        ),
       ),
       // The default range colour is too pale on paper to show which days are picked.
       datePickerTheme: DatePickerThemeData(rangeSelectionBackgroundColor: scheme.primary.withValues(alpha: brightness == Brightness.dark ? .45 : .24)),

@@ -217,9 +217,7 @@ class _Summary extends StatelessWidget {
           Expanded(
             child: Material(
               color: scheme.surfaceContainerLowest,
-              elevation: 2,
-              shadowColor: const Color(0x33192823),
-              borderRadius: BorderRadius.circular(18),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: scheme.outlineVariant)),
               child: Row(
                 children: [
                   for (var i = 0; i < stats.length; i++) ...[

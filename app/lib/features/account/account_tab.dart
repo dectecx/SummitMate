@@ -27,7 +27,7 @@ class AccountTab extends ConsumerWidget {
     return PageAccents(child: Scaffold(
       appBar: pageBar(context, '我'),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 24),
+        padding: EdgeInsets.only(bottom: 24 + MediaQuery.paddingOf(context).bottom),
         children: [
           switch (auth) {
             Guest() => const _GuestCard(),

@@ -125,7 +125,7 @@ class _ExploreTabState extends ConsumerState<ExploreTab> {
           child: results.isEmpty
               ? Center(child: Text(_onlyFavorites && favorites.isEmpty ? '還沒有收藏的山，點山岳右邊的愛心就能收藏。' : '沒有符合的山'))
               : ListView.builder(
-                  padding: const EdgeInsets.only(top: 2, bottom: 12),
+                  padding: EdgeInsets.only(top: 2, bottom: 12 + MediaQuery.paddingOf(context).bottom),
                   itemCount: results.length + 1, // one extra place for the ad
                   itemBuilder: (context, index) {
                     final adAt = results.length < 3 ? results.length : 3;

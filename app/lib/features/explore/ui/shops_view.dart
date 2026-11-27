@@ -89,7 +89,7 @@ class _ShopsViewState extends ConsumerState<ShopsView> {
           child: results.isEmpty
               ? const Center(child: Text('沒有符合的店家'))
               : ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.only(bottom: 16 + MediaQuery.paddingOf(context).bottom),
                   itemCount: results.length + 2, // the ad and the closing note
                   itemBuilder: (_, index) {
                     final adAt = results.length < 3 ? results.length : 3;

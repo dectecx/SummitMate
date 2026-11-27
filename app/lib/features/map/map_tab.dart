@@ -164,7 +164,7 @@ class _MapTabState extends ConsumerState<MapTab> {
             // Credit required by the data licence, one tap away so it does not cover the map.
             Positioned(
               left: 12,
-              bottom: 12,
+              bottom: 12 + MediaQuery.paddingOf(context).bottom,
               child: IconButton(
                 key: const ValueKey('map-attribution'),
                 tooltip: '地圖資料來源',
@@ -180,7 +180,7 @@ class _MapTabState extends ConsumerState<MapTab> {
             // One control group so the buttons can never overlap each other or the info button.
             Positioned(
               right: 12,
-              bottom: 32,
+              bottom: 32 + MediaQuery.paddingOf(context).bottom,
               child: Material(
                 elevation: 3,
                 shadowColor: Colors.black38,

@@ -1,3 +1,4 @@
+import 'package:summitmate/app/nav_bar.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -8,7 +9,7 @@ void main() {
     tester.platformDispatcher.localesTestValue = const [Locale('en', 'US')];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     final app = await AppHarness.start(tester, welcomeSeen: true);
-    final context = tester.element(find.byType(NavigationBar));
+    final context = tester.element(find.byType(AppNavBar));
 
     expect(Localizations.localeOf(context), const Locale('zh', 'TW'));
     final words = MaterialLocalizations.of(context);

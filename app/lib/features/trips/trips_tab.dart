@@ -110,7 +110,7 @@ class _EmptyState extends ConsumerWidget {
     final theme = Theme.of(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32) + EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -184,7 +184,7 @@ class _TripListState extends ConsumerState<_TripList> {
     ];
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: EdgeInsets.only(bottom: 24 + MediaQuery.paddingOf(context).bottom),
       children: [
         if (isGuest && hasRealTrip)
           HintBanner(

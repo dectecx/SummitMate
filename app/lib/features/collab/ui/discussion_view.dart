@@ -275,7 +275,7 @@ class _MessageTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: mine ? scheme.primaryContainer : scheme.surfaceContainerLowest,
-            boxShadow: const [BoxShadow(color: Color(0x22503C23), blurRadius: 8, offset: Offset(0, 3))],
+            border: mine ? null : Border.all(color: scheme.outlineVariant),
             borderRadius: BorderRadius.only(topLeft: mine ? round : tail, topRight: round, bottomLeft: round, bottomRight: mine ? tail : round),
           ),
           child: LinkText(message.body, style: theme.textTheme.bodyMedium?.copyWith(color: mine ? scheme.onPrimaryContainer : scheme.onSurface)),
