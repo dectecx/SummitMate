@@ -6,8 +6,8 @@ import '../../../core/providers.dart';
 import '../maplibre/rudy_providers.dart';
 
 /// The parts floating over the map. Each corner has one job, so later tools have a place to go: top left what is on
-/// the map (a route), top right what the map looks like (layers, then the compass), bottom right where the person is,
-/// bottom left the credit. See docs/ui/ONBOARDING_NAVIGATION.md.
+/// the map, top right what the map shows (layers, routes, then the compass), bottom right where the person is,
+/// bottom left the credit, and below those one card at a time (a route's height chart or an offer). See docs/ui/ONBOARDING_NAVIGATION.md.
 
 /// The way into the map settings, saying which map is on screen.
 class MapLayerButton extends StatelessWidget {
@@ -148,6 +148,47 @@ class RudyPrompt extends StatelessWidget {
                   style: FilledButton.styleFrom(minimumSize: const Size(88, 40)),
                   onPressed: onDownload,
                   child: const Text('下載'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A route is chosen while the government map is on screen, which does not draw routes.
+class RouteNeedsRudy extends StatelessWidget {
+  const RouteNeedsRudy({super.key, required this.name, required this.installed, required this.onSwitch, required this.onClose});
+  final String name;
+  final bool installed;
+  final VoidCallback onSwitch;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      key: const ValueKey('route-needs-rudy'),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 12, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('路線只在魯地圖上顯示', style: theme.textTheme.titleSmall),
+            const SizedBox(height: 4),
+            Text(installed ? '切換到魯地圖才看得到「$name」。' : '下載魯地圖（約 410 MB）後才看得到「$name」。', style: theme.textTheme.bodySmall),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(key: const ValueKey('route-close'), onPressed: onClose, child: const Text('不顯示路線')),
+                const SizedBox(width: 4),
+                FilledButton(
+                  key: const ValueKey('route-switch'),
+                  style: FilledButton.styleFrom(minimumSize: const Size(88, 40)),
+                  onPressed: onSwitch,
+                  child: Text(installed ? '切換魯地圖' : '下載'),
                 ),
               ],
             ),

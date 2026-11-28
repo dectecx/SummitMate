@@ -17,7 +17,6 @@ import '../gear/domain/gear_logic.dart';
 import 'ui/member_stack.dart';
 import 'ui/trip_checklist.dart';
 import 'ui/copy_trip.dart';
-import 'ui/gpx_actions.dart';
 import 'ui/trip_form_sheet.dart';
 
 /// "首頁": the next trip and what it still needs, then the others grouped by when they happen.
@@ -50,7 +49,7 @@ class TripsTab extends ConsumerWidget {
 
 const _weekdays = ['一', '二', '三', '四', '五', '六', '日'];
 
-/// Today's date over the page title, with the two ways to add a trip.
+/// Today's date over the page title, with the way to add a trip.
 class _Header extends ConsumerWidget {
   const _Header({required this.canAdd});
   final bool canAdd;
@@ -75,12 +74,6 @@ class _Header extends ConsumerWidget {
                 Text('我的行程', style: theme.textTheme.headlineMedium?.copyWith(fontSize: 30)),
               ],
             ),
-          ),
-          TextButton.icon(
-            key: const ValueKey('import-gpx'),
-            onPressed: () => importGpx(context, ref),
-            icon: const Icon(Icons.file_upload_outlined, size: 20),
-            label: const Text('匯入 GPX'),
           ),
           if (canAdd) ...[
             const SizedBox(width: 4),
@@ -131,7 +124,6 @@ class _EmptyState extends ConsumerWidget {
               },
               child: const Text('用範例行程試試看'),
             ),
-            TextButton(key: const ValueKey('empty-import-gpx'), onPressed: () => importGpx(context, ref), child: const Text('匯入 GPX 檔')),
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -8,7 +9,7 @@ import '../../../core/db/app_database.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/animations.dart';
 import '../../gpx/domain/elevation_profile.dart';
-import '../domain/gpx_trip.dart';
+import '../domain/track_codec.dart';
 import '../domain/trip_art.dart';
 import 'trip_header.dart';
 import '../../../shared/coming_soon.dart';
@@ -24,7 +25,7 @@ import '../domain/trip_logic.dart';
 import '../providers.dart';
 import '../../library/ui/template_actions.dart';
 import 'copy_trip.dart';
-import 'gpx_actions.dart';
+import 'attach_route.dart';
 import 'itinerary_view.dart';
 import 'item_form_sheet.dart';
 import 'trip_form_sheet.dart';
@@ -170,10 +171,8 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
               if (v == 'apply-template') {
                 applyTemplateToTrip(context, ref, trip);
               }
-              if (v == 'gpx-import') importGpxInto(context, ref, trip);
-              if (v == 'gpx') {
-                exportGpx(context, trip, ref.read(itineraryProvider(trip.id)).value ?? const []);
-              }
+              if (v == 'route-attach') attachRoute(context, ref, trip);
+              if (v == 'route-remove') ref.read(tripRepositoryProvider).update(trip.id, track: const Value(null));
               if (v == 'delete') _delete(context, trip);
               if (v == 'invite') {
                 Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => TeamPage(tripId: trip.id)));
@@ -186,8 +185,8 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
               const PopupMenuItem(value: 'copy', child: Text('複製行程')),
               const PopupMenuItem(value: 'save-template', child: Text('存成範本')),
               const PopupMenuItem(value: 'apply-template', child: Text('套用範本')),
-              if (role.canEditShared) const PopupMenuItem(value: 'gpx-import', child: Text('匯入 GPX 路線')),
-              const PopupMenuItem(value: 'gpx', child: Text('匯出 GPX')),
+              if (role.canEditShared) PopupMenuItem(value: 'route-attach', child: Text(trip.track == null ? '附加路線' : '更換路線')),
+              if (role.canEditShared && trip.track != null) const PopupMenuItem(value: 'route-remove', child: Text('移除路線')),
               if (role.canDeleteTrip)
                 const PopupMenuItem(value: 'delete', child: Text('刪除行程')),
             ],

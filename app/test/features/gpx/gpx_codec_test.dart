@@ -82,48 +82,4 @@ void main() {
     });
   });
 
-  group('buildGpx', () {
-    final source = GpxDocument(
-      name: 'A&B <1K處>',
-      waypoints: const [
-        GpxWaypoint(name: 'A&B <1K處>', lat: 24.123456789, lng: 121.5, ele: 1234.5, description: 'x "y" & z'),
-        GpxWaypoint(name: '無海拔', lat: 24, lng: 121),
-      ],
-      tracks: [
-        GpxTrack(
-          name: 'T<1>',
-          points: [
-            GpxPoint(lat: 24.1, lng: 121.1, ele: 100, time: DateTime.utc(2024, 5, 1, 1, 2, 3)),
-            const GpxPoint(lat: 24.2, lng: 121.2),
-          ],
-        ),
-      ],
-    );
-
-    test('round trips', () {
-      final out = parseGpx(buildGpx(source));
-      expect(out.name, 'A&B <1K處>');
-      expect(out.waypoints[0].name, 'A&B <1K處>');
-      expect(out.waypoints[0].description, 'x "y" & z');
-      expect(out.waypoints[0].lat, closeTo(24.123457, 1e-9));
-      expect(out.waypoints[0].ele, 1234.5);
-      expect(out.waypoints[1].ele, isNull);
-      expect(out.tracks.single.name, 'T<1>');
-      expect(out.tracks.single.points[0].time, DateTime.utc(2024, 5, 1, 1, 2, 3));
-      expect(out.tracks.single.points[0].ele, 100);
-      expect(out.tracks.single.points[1].ele, isNull);
-    });
-
-    test('produces namespaced GPX 1.1 with escaped text and tidy numbers', () {
-      final s = buildGpx(source, creator: 'Me');
-      expect(s, contains('xmlns="http://www.topografix.com/GPX/1/1"'));
-      expect(s, contains('creator="Me"'));
-      expect(s, contains('version="1.1"'));
-      expect(s, contains('A&amp;B &lt;1K處>'));
-      expect(s, contains('lat="24.123457"'));
-      expect(s, contains('lat="24" lon="121"'));
-      expect(s, contains('<time>2024-05-01T01:02:03Z</time>'));
-      expect(buildGpx(source), s.replaceFirst('creator="Me"', 'creator="SummitMate"'));
-    });
-  });
 }

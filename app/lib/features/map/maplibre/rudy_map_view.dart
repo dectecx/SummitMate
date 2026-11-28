@@ -17,8 +17,11 @@ abstract interface class MapHandle {
   Future<void> moveTo(double lat, double lng, {double? minZoom});
   Future<void> setMe(double? lat, double? lng);
 
-  /// Draws a route over the map (empty removes it) and brings the whole of it into view.
-  Future<void> setRoute(List<({double lat, double lng})> points);
+  /// Draws a route with its named points over the map (empty removes it) and brings the whole of it into view.
+  Future<void> setRoute(List<({double lat, double lng})> points, {List<({String name, double lat, double lng})> waypoints = const []});
+
+  /// Marks one place on the route (null removes the mark), keeping it in view.
+  Future<void> setCursor(({double lat, double lng})? point);
 }
 
 /// The Rudy Map drawn by MapLibre from local files, with the mountains and the person's position on top.
@@ -50,7 +53,12 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
   static const _meSource = 'summitmate-me';
   static const _routeSource = 'summitmate-route';
 
+  static const _waypointSource = 'summitmate-waypoints';
+  static const _cursorSource = 'summitmate-cursor';
+
   var _route = const <({double lat, double lng})>[];
+  var _waypoints = const <({String name, double lat, double lng})>[];
+  ({double lat, double lng})? _cursor;
 
   @override
   double get zoom => _c?.cameraPosition?.zoom ?? 7.5;
@@ -80,12 +88,48 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
   }
 
   @override
-  Future<void> setRoute(List<({double lat, double lng})> points) async {
+  Future<void> setRoute(List<({double lat, double lng})> points, {List<({String name, double lat, double lng})> waypoints = const []}) async {
     _route = points;
+    _waypoints = waypoints;
+    _cursor = null;
     if (!_styleReady) return; // drawn when the style is ready
     await _c?.setGeoJsonSource(_routeSource, _routeGeoJson());
+    await _c?.setGeoJsonSource(_waypointSource, _waypointGeoJson());
+    await _c?.setGeoJsonSource(_cursorSource, _cursorGeoJson());
     await _frameRoute();
   }
+
+  @override
+  Future<void> setCursor(({double lat, double lng})? point) async {
+    _cursor = point;
+    final c = _c;
+    if (!_styleReady || c == null) return;
+    await c.setGeoJsonSource(_cursorSource, _cursorGeoJson());
+    if (point == null) return;
+    // follow the mark only when it leaves the screen, so the map does not swim while dragging
+    final seen = await c.getVisibleRegion();
+    final inside = point.lat >= seen.southwest.latitude && point.lat <= seen.northeast.latitude && point.lng >= seen.southwest.longitude && point.lng <= seen.northeast.longitude;
+    if (!inside) await c.animateCamera(CameraUpdate.newLatLng(LatLng(point.lat, point.lng)));
+  }
+
+  Map<String, dynamic> _point(double lat, double lng, [Map<String, dynamic> properties = const {}]) => {
+    'type': 'Feature',
+    'properties': properties,
+    'geometry': {
+      'type': 'Point',
+      'coordinates': [lng, lat],
+    },
+  };
+
+  Map<String, dynamic> _waypointGeoJson() => {
+    'type': 'FeatureCollection',
+    'features': [for (final w in _waypoints) _point(w.lat, w.lng, {'name': w.name})],
+  };
+
+  Map<String, dynamic> _cursorGeoJson() => {
+    'type': 'FeatureCollection',
+    'features': [if (_cursor case final p?) _point(p.lat, p.lng)],
+  };
 
   Future<void> _frameRoute() async {
     if (_route.length < 2) return;
@@ -94,7 +138,7 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
       southwest: LatLng(lats.reduce(math.min), lngs.reduce(math.min)),
       northeast: LatLng(lats.reduce(math.max), lngs.reduce(math.max)),
     );
-    await _c?.animateCamera(CameraUpdate.newLatLngBounds(bounds, left: 48, top: 160, right: 80, bottom: 140));
+    await _c?.animateCamera(CameraUpdate.newLatLngBounds(bounds, left: 56, top: 190, right: 100, bottom: 380));
   }
 
   Map<String, dynamic> _routeGeoJson() => {
@@ -164,6 +208,32 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
         circleStrokeColor: '#FFFFFF',
         circleStrokeWidth: 2,
       ),
+    );
+    await c.addGeoJsonSource(_waypointSource, _waypointGeoJson());
+    await c.addCircleLayer(
+      _waypointSource,
+      'summitmate-waypoints-layer',
+      const CircleLayerProperties(circleRadius: 5, circleColor: '#FFFFFF', circleStrokeColor: '#B9532F', circleStrokeWidth: 3),
+    );
+    await c.addSymbolLayer(
+      _waypointSource,
+      'summitmate-waypoints-label',
+      const SymbolLayerProperties(
+        textField: ['get', 'name'],
+        textFont: ['Noto Sans Bold'],
+        textSize: 12,
+        textOffset: [0, 1.2],
+        textAnchor: 'top',
+        textColor: '#1D2A27',
+        textHaloColor: '#FFFFFF',
+        textHaloWidth: 1.5,
+      ),
+    );
+    await c.addGeoJsonSource(_cursorSource, _cursorGeoJson());
+    await c.addCircleLayer(
+      _cursorSource,
+      'summitmate-cursor-layer',
+      const CircleLayerProperties(circleRadius: 8, circleColor: '#1D2A27', circleStrokeColor: '#FFFFFF', circleStrokeWidth: 3),
     );
     await c.addGeoJsonSource(_meSource, _meGeoJson());
     await c.addCircleLayer(

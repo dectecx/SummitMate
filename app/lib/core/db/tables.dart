@@ -202,6 +202,23 @@ class Favorites extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// The GPX files kept in the app. This phone only: never synced, and kept when signing out. The file itself is
+/// `<app support>/gpx/<id>.gpx`, an untouched copy of what was imported.
+class GpxRoutes extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  RealColumn get distanceKm => real()();
+  // Null when the file has no elevation.
+  RealColumn get ascent => real().nullable()();
+  RealColumn get descent => real().nullable()();
+  BoolColumn get hasTime => boolean().withDefault(const Constant(false))();
+  IntColumn get sizeBytes => integer()();
+  DateTimeColumn get importedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Pending client operations, sent to the server in `seq` order.
 @DataClassName('OutboxOp')
 class Outbox extends Table {

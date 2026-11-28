@@ -22,10 +22,11 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('with no trips the list offers a GPX import as well as the first trip and the sample', (tester) async {
+  testWidgets('with no trips the home page offers the first trip and the sample', (tester) async {
     final app = await AppHarness.start(tester, welcomeSeen: true);
     expect(find.text('建立第一個行程'), findsOneWidget);
-    expect(find.byKey(const ValueKey('empty-import-gpx')), findsOneWidget);
+    expect(find.text('用範例行程試試看'), findsOneWidget);
+    expect(find.textContaining('GPX'), findsNothing, reason: 'routes are imported on the map');
     await app.dispose(tester);
   });
 

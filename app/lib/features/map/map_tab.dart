@@ -11,8 +11,10 @@ import '../../shared/icon_badge.dart';
 import '../../shared/brand/cover_image.dart';
 import '../../app/router.dart';
 import '../trips/domain/trip_art.dart';
-import '../trips/domain/gpx_trip.dart';
-import '../trips/providers.dart';
+import '../gpx/domain/track_route.dart';
+import '../gpx/ui/route_library_sheet.dart';
+import '../gpx/ui/route_panel.dart';
+import '../trips/domain/track_codec.dart';
 import 'ui/map_controls.dart';
 import 'ui/map_markers.dart';
 import '../../core/providers.dart';
@@ -56,7 +58,7 @@ class _MapTabState extends ConsumerState<MapTab> {
   MapHandle? _rudy; // set while the Rudy Map is the one on screen
   bool _usingRudy = false;
   bool _farView = true; // zoomed out: peaks are dots
-  String? _shownRoute; // what the map on screen has already drawn and framed
+  TrackRoute? _shownRoute; // what the Rudy Map on screen has been given
   final _north = ValueNotifier<double>(0); // of the government map; the Rudy Map keeps its own
   bool _creditOpen = false; // the short credit is on the map
   bool? _creditedRudy; // the map it was last shown for
@@ -127,10 +129,8 @@ class _MapTabState extends ConsumerState<MapTab> {
       _rudy = null;
     }
 
-    final routeTripId = ref.watch(mapRouteProvider);
-    final routeTrip = routeTripId == null ? null : ref.watch(tripProvider(routeTripId)).value;
-    final route = [for (final p in decodeTrack(routeTrip?.track)) (lat: p.lat, lng: p.lng)];
-    _drawRoute(routeTrip == null ? null : '${routeTrip.id}:${routeTrip.track.hashCode}', route);
+    final route = ref.watch(mapRouteProvider) == null ? null : ref.watch(shownRouteProvider).value;
+    _drawRoute(_usingRudy ? route : null); // routes are shown on the offline map only
 
     _creditFor(_usingRudy);
 
@@ -148,7 +148,7 @@ class _MapTabState extends ConsumerState<MapTab> {
                   // the compass follows this map from now on
                   WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? setState(() {}) : null);
                   h.setMe(_me?.latitude, _me?.longitude);
-                  if (route.length >= 2) h.setRoute(route);
+                  if (route != null) _sendRoute(h, route);
                 })
                 : FlutterMap(
                   mapController: _controller,
@@ -171,19 +171,6 @@ class _MapTabState extends ConsumerState<MapTab> {
                       maxNativeZoom: 15, // z16 of the NLSC layer is only an enlarged z15
                       tileProvider: ref.watch(mapTileProviderProvider),
                     ),
-                    if (route.length >= 2)
-                      PolylineLayer(
-                        key: const ValueKey('map-route'),
-                        polylines: [
-                          Polyline(
-                            points: [for (final p in route) LatLng(p.lat, p.lng)],
-                            color: const Color(0xFFB9532F),
-                            strokeWidth: 4,
-                            borderColor: Colors.white,
-                            borderStrokeWidth: 1.5,
-                          ),
-                        ],
-                      ),
                     MarkerLayer(
                       markers: [
                         for (final m in mountains)
@@ -204,23 +191,6 @@ class _MapTabState extends ConsumerState<MapTab> {
                   ],
                 ),
             ),
-            // top left: what is drawn on the map
-            if (routeTrip != null && route.length >= 2)
-              Positioned(
-                left: 12,
-                right: 150,
-                top: MediaQuery.paddingOf(context).top + 8,
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: InputChip(
-                    key: const ValueKey('map-route-chip'),
-                    avatar: const Icon(Icons.route_outlined, size: 18),
-                    label: Text('路線：${routeTrip.name}', overflow: TextOverflow.ellipsis),
-                    deleteButtonTooltipMessage: '不顯示路線',
-                    onDeleted: () => ref.read(mapRouteProvider.notifier).clear(),
-                  ),
-                ),
-              ),
             // top right: which map, then the compass
             Positioned(
               right: 12,
@@ -234,6 +204,17 @@ class _MapTabState extends ConsumerState<MapTab> {
                     onPressed: () {
                       _foldCredit();
                       showMapSettings(context, onChoose: _chooseSource, onOfflineMaps: () => context.push(Routes.offlineMaps), onCredit: _showCredit);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  MapRoundButton(
+                    key: const ValueKey('map-routes'),
+                    tooltip: '我的路線',
+                    icon: const Icon(Icons.route_outlined),
+                    onPressed: () async {
+                      _foldCredit();
+                      final id = await showRouteLibrary(context);
+                      if (id != null && mounted) ref.read(mapRouteProvider.notifier).showSaved(id);
                     },
                   ),
                   const SizedBox(height: 10),
@@ -291,7 +272,23 @@ class _MapTabState extends ConsumerState<MapTab> {
                       ),
                     ],
                   ),
-                  if (source == MapSource.rudy && installed == false)
+                  if (route != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: _usingRudy
+                          ? RoutePanel(
+                              route: route,
+                              onPoint: (i) => _rudy?.setCursor(i == null ? null : (lat: route.points[i].lat, lng: route.points[i].lng)),
+                              onClose: () => ref.read(mapRouteProvider.notifier).clear(),
+                            )
+                          : RouteNeedsRudy(
+                              name: route.name,
+                              installed: installed ?? false,
+                              onSwitch: () => _chooseSource(MapSource.rudy),
+                              onClose: () => ref.read(mapRouteProvider.notifier).clear(),
+                            ),
+                    )
+                  else if (source == MapSource.rudy && installed == false)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
                       child: RudyPrompt(
@@ -309,27 +306,22 @@ class _MapTabState extends ConsumerState<MapTab> {
     );
   }
 
-  /// Brings a newly chosen route into view, once. The Rudy Map also draws it itself.
-  void _drawRoute(String? id, List<({double lat, double lng})> route) {
-    final key = id == null ? null : '$id:$_usingRudy';
-    if (key == _shownRoute) return;
-    final hadRoute = _shownRoute != null;
-    _shownRoute = key;
+  /// Hands a newly chosen route to the Rudy Map once, which draws it and brings it into view.
+  void _drawRoute(TrackRoute? route) {
+    if (identical(route, _shownRoute)) return;
+    _shownRoute = route;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (_usingRudy) {
-        if (route.length >= 2 || hadRoute) _rudy?.setRoute(route);
-      } else if (route.length >= 2) {
-        _controller.fitCamera(
-          CameraFit.coordinates(
-            coordinates: [for (final p in route) LatLng(p.lat, p.lng)],
-            padding: const EdgeInsets.fromLTRB(48, 120, 48, 140),
-            maxZoom: 15,
-          ),
-        );
-      }
+      final map = _rudy;
+      if (!mounted || map == null) return;
+      route == null ? map.setRoute(const []) : _sendRoute(map, route);
     });
   }
+
+  /// A long track is thinned for drawing; the height chart keeps every point.
+  void _sendRoute(MapHandle map, TrackRoute route) => map.setRoute(
+    [for (final p in simplifyTrack(route.points, maxPoints: 4000)) (lat: p.lat, lng: p.lng)],
+    waypoints: [for (final w in route.waypoints) (name: w.name, lat: w.lat, lng: w.lng)],
+  );
 
   void _showCredit() {
     _foldCredit();

@@ -6,7 +6,7 @@ import 'tables.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Trips, TripMembers, ItineraryItems, GearItems, MealPlanDays, MealItems, LibraryItems, Templates, TripMessages, Polls, PollOptions, PollVotes, Favorites, Outbox, AppMeta, AppSettings, WeatherCache, HttpCache],
+  tables: [Trips, TripMembers, ItineraryItems, GearItems, MealPlanDays, MealItems, LibraryItems, Templates, TripMessages, Polls, PollOptions, PollVotes, Favorites, GpxRoutes, Outbox, AppMeta, AppSettings, WeatherCache, HttpCache],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);

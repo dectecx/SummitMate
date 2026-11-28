@@ -13,7 +13,7 @@ import '../../../shared/pills.dart';
 import '../providers.dart';
 import '../../gpx/domain/elevation_profile.dart';
 import '../../gpx/ui/elevation_profile_chart.dart';
-import '../domain/gpx_trip.dart';
+import '../domain/track_codec.dart';
 import 'item_form_sheet.dart';
 import '../../../shared/link_text.dart';
 import '../../map/ui/trip_offline_hint.dart';
@@ -180,7 +180,7 @@ class _ItemTile extends ConsumerWidget {
   }
 }
 
-/// Elevation profile and totals of the trip's stored GPX track (nothing when the trip has none).
+/// The route attached to the trip: its totals and height profile (nothing when it has none).
 class _TrackProfile extends ConsumerWidget {
   const _TrackProfile({required this.trip});
   final Trip trip;
@@ -199,7 +199,7 @@ class _TrackProfile extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('海拔剖面', style: theme.textTheme.titleMedium),
+            Text('路線', style: theme.textTheme.titleMedium),
             if (stats != null) ...[
               const SizedBox(height: 4),
               Text(
@@ -213,7 +213,7 @@ class _TrackProfile extends ConsumerWidget {
             FilledButton.tonalIcon(
               key: const ValueKey('show-route'),
               onPressed: () {
-                ref.read(mapRouteProvider.notifier).show(trip.id);
+                ref.read(mapRouteProvider.notifier).showTrip(trip.id);
                 context.go(Routes.map);
               },
               icon: const Icon(Icons.map_outlined),
