@@ -83,7 +83,7 @@ class _DayWeatherRow extends ConsumerWidget {
       key: ValueKey('weather-day-${day.day}'),
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(20), border: Border.all(color: scheme.outlineVariant)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -48,7 +48,7 @@ class ReorderableGroupSliver extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       sliver: DecoratedSliver(
-        decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(20), border: Border.all(color: scheme.outlineVariant)),
         sliver: SliverMainAxisGroup(
           slivers: [
             SliverToBoxAdapter(
