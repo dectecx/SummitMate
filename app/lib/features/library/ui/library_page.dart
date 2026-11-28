@@ -13,7 +13,7 @@ import '../../meals/domain/meal_logic.dart';
 import '../providers.dart';
 import 'library_item_sheet.dart';
 
-/// "我的裝備庫": the gear and the foods the person uses often. New trip items are added here automatically.
+/// "常用清單": the gear and the foods the person uses often. New trip items are added here automatically.
 class LibraryPage extends ConsumerStatefulWidget {
   const LibraryPage({super.key});
 
@@ -36,7 +36,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('我的裝備庫'),
+        title: const Text('常用清單'),
         bottom: TabBar(
           controller: _tabs,
           tabs: const [

@@ -97,7 +97,7 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                editing ? (_isGear ? '編輯裝備' : '編輯餐食') : (_isGear ? '新增到裝備庫' : '新增到常用餐食'),
+                editing ? (_isGear ? '編輯裝備' : '編輯餐食') : (_isGear ? '新增常用裝備' : '新增到常用餐食'),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),

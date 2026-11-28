@@ -48,19 +48,9 @@ class AccountTab extends ConsumerWidget {
                 onTap: () => context.push(Routes.favorites),
               ),
               SettingsTile(
-                icon: Icons.bookmark_outline,
-                title: '我的裝備庫',
-                onTap: () => context.push(Routes.library),
-              ),
-              SettingsTile(
-                icon: Icons.inventory_2_outlined,
-                title: '我的範本',
-                onTap: () => context.push(Routes.templates),
-              ),
-              SettingsTile(
-                icon: Icons.cloud_outlined,
-                title: '雲端裝備組合',
-                onTap: () => context.push(Routes.sharedSets),
+                icon: Icons.backpack_outlined,
+                title: '裝備與範本',
+                onTap: () => context.push(Routes.kit),
               ),
             ],
           ),

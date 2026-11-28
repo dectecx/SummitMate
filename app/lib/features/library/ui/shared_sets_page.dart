@@ -144,7 +144,7 @@ class _SetListState extends ConsumerState<_SetList> with AutomaticKeepAliveClien
                     height: 360,
                     child: ComingSoon(
                       illustration: Illustration.search,
-                      message: widget.scope == 'mine' ? '你還沒有分享過任何組合。到「我的範本」開啟一份範本，選「分享到雲端」。' : '沒有找到組合。',
+                      message: widget.scope == 'mine' ? '你還沒有分享過任何組合。到「我的範本」開啟一份範本，按「分享到雲端」。' : '沒有找到組合。',
                     ),
                   ),
                 if (_items.isNotEmpty)

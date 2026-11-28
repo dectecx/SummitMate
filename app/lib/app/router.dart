@@ -6,6 +6,7 @@ import '../features/events/ui/event_detail_page.dart';
 import '../features/events/ui/event_form_page.dart';
 import '../features/events/ui/events_tab.dart';
 import '../features/favorites/ui/favorites_page.dart';
+import '../features/library/ui/kit_page.dart';
 import '../features/library/ui/library_page.dart';
 import '../features/library/ui/shared_set_detail_page.dart';
 import '../features/library/ui/shared_sets_page.dart';
@@ -39,6 +40,7 @@ abstract final class Routes {
   static String mountain(String id) => '/explore/$id';
   static const me = '/me';
   static const help = '/me/help';
+  static const kit = '/me/kit';
   static const library = '/me/library';
   static const friends = '/me/friends';
   static const favorites = '/me/favorites';
@@ -123,6 +125,7 @@ GoRouter buildRouter({required String initialLocation}) {
                 builder: (_, _) => const AccountTab(),
                 routes: [
                   GoRoute(path: 'help', builder: (_, _) => const HelpPage()),
+                  GoRoute(path: 'kit', builder: (_, _) => const KitPage()),
                   GoRoute(path: 'library', builder: (_, _) => const LibraryPage()),
                   GoRoute(path: 'friends', builder: (_, _) => const FriendsPage()),
                   GoRoute(path: 'favorites', builder: (_, _) => const FavoritesPage()),

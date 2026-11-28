@@ -73,6 +73,7 @@ Future<AppHarness> start(WidgetTester tester, FakeSharedSets api, {bool signedIn
 
 Future<void> openShared(WidgetTester tester) async {
   await tapText(tester, '我');
+  await tapText(tester, '裝備與範本');
   await tapText(tester, '雲端裝備組合');
   await settle(tester);
 }
@@ -170,11 +171,11 @@ void main() {
       await act(tester, () => app.container.read(templateRepositoryProvider).create(title: '夏季兩天', items: items));
       await settle(tester);
       await tapText(tester, '我');
+      await tapText(tester, '裝備與範本');
       await tapText(tester, '我的範本');
       await tapText(tester, '夏季兩天');
-      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.tap(find.byKey(const ValueKey('template-share')));
       await settle(tester);
-      await tapText(tester, '分享到雲端');
     }
 
     testWidgets('a guest is asked to sign in first', (tester) async {

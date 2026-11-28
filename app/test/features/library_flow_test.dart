@@ -52,7 +52,8 @@ void main() {
     await goBack(tester);
     await settle(tester);
     await tapText(tester, '我');
-    await tapText(tester, '我的裝備庫');
+    await tapText(tester, '裝備與範本');
+    await tapText(tester, '常用清單');
     expect(find.text('睡袋'), findsOneWidget);
     await tapText(tester, '睡袋');
     await enter(tester, '單件重量', '850');
@@ -77,7 +78,8 @@ void main() {
     await goBack(tester);
     await settle(tester);
     await tapText(tester, '我');
-    await tapText(tester, '我的裝備庫');
+    await tapText(tester, '裝備與範本');
+    await tapText(tester, '常用清單');
     await tapText(tester, '餐食');
     expect(find.text('燕麥粥'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('library-add')));
@@ -127,6 +129,7 @@ void main() {
     await settle(tester);
     await tapText(tester, '我');
     final tripId = await trip(tester, app, '後來的行程');
+    await tapText(tester, '裝備與範本');
     await tapText(tester, '我的範本');
     await tapText(tester, '夏季兩天');
     await tester.tap(find.byKey(const ValueKey('template-apply')));
@@ -140,6 +143,7 @@ void main() {
     final id = await act(tester, () => app.container.read(templateRepositoryProvider).create(title: '夏季兩天', items: const []));
     await settle(tester);
     await tapText(tester, '我');
+    await tapText(tester, '裝備與範本');
     await tapText(tester, '我的範本');
     expect(find.byKey(ValueKey('template-$id')), findsOneWidget);
     await tapText(tester, '夏季兩天');

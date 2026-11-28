@@ -73,8 +73,6 @@ class TemplateDetailPage extends ConsumerWidget {
               if (v == 'rename') {
                 final title = await askTemplateTitle(context, initial: t.title);
                 if (title != null) await repo.update(t.id, title: title);
-              } else if (v == 'share') {
-                await shareTemplate(context, ref, t, signedIn: ref.read(accountIdProvider) != null);
               } else if (v == 'delete') {
                 final ok = await showDialog<bool>(
                   context: context,
@@ -103,7 +101,6 @@ class TemplateDetailPage extends ConsumerWidget {
             },
             itemBuilder: (_) => const [
               PopupMenuItem(value: 'rename', child: Text('改名')),
-              PopupMenuItem(value: 'share', child: Text('分享到雲端')),
               PopupMenuItem(value: 'delete', child: Text('刪除範本')),
             ],
           ),
@@ -130,6 +127,13 @@ class TemplateDetailPage extends ConsumerWidget {
                       onPressed: () => _applyToATrip(context, ref, items),
                       icon: const Icon(Icons.playlist_add),
                       label: const Text('套用到行程'),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      key: const ValueKey('template-share'),
+                      onPressed: () => shareTemplate(context, ref, t, signedIn: ref.read(accountIdProvider) != null),
+                      icon: const Icon(Icons.cloud_upload_outlined),
+                      label: const Text('分享到雲端'),
                     ),
                   ],
                 ),
