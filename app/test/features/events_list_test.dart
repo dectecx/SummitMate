@@ -10,12 +10,12 @@ import 'harness.dart';
 
 FakeEventsApi sample() => FakeEventsApi(
   events: [
-    ev('e1', '嘉明湖三日', end: '2026-12-07', approved: 3, likes: 12, comments: 5),
-    ev('e2', '合歡山看日出', category: EventCategory.camping, location: '南投', start: '2026-12-20', approved: 1, likes: 1),
-    ev('e3', '龍洞攀岩體驗', category: EventCategory.bouldering, location: '新北', start: '2026-11-10', approved: 8, likes: 30),
-    ev('e4', '我參加的玉山', mine: ApplicationStatus.approved, start: '2026-12-25', likes: 0),
-    ev('e5', '我主辦的雪山', isHost: true, start: '2026-12-30', approved: 0, likes: 0),
-    ev('e7', '額滿的活動', approved: 8, start: '2026-12-12', likes: 0),
+    ev('e1', '嘉明湖三日', end: '2026-12-07', approved: 3, comments: 5),
+    ev('e2', '合歡山看日出', category: EventCategory.camping, location: '南投', start: '2026-12-20', approved: 1),
+    ev('e3', '龍洞攀岩體驗', category: EventCategory.bouldering, location: '新北', start: '2026-11-10', approved: 8),
+    ev('e4', '我參加的玉山', mine: ApplicationStatus.approved, start: '2026-12-25'),
+    ev('e5', '我主辦的雪山', isHost: true, start: '2026-12-30', approved: 0),
+    ev('e7', '額滿的活動', approved: 8, start: '2026-12-12'),
     ev('e6', '我取消的活動', isHost: true, status: EventStatus.cancelled, start: '2026-12-31'),
   ],
 );
@@ -83,7 +83,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('cards show the title, category, place, dates, people, likes and comments; cancelled ones are hidden', (
+  testWidgets('cards show the title, category, place, dates, people and comments; cancelled ones are hidden', (
     tester,
   ) async {
     final api = sample();
@@ -97,7 +97,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.descendant(of: card('e1'), matching: find.text('3 / 8 人')), findsOneWidget);
-    expect(find.descendant(of: card('e1'), matching: find.text('12')), findsOneWidget);
     expect(find.descendant(of: card('e1'), matching: find.text('5')), findsOneWidget);
     expect(find.descendant(of: card('e1'), matching: find.text('陳大山')), findsOneWidget);
     expect(find.descendant(of: card('e2'), matching: find.text('露營')), findsOneWidget);
@@ -123,7 +122,7 @@ void main() {
 
     await tapText(tester, '熱門');
     expect(api.listCalls.last.scope, EventScope.popular);
-    expect(tester.getTopLeft(card('e3')).dy, lessThan(tester.getTopLeft(card('e1')).dy), reason: 'most liked first');
+    expect(tester.getTopLeft(card('e3')).dy, lessThan(tester.getTopLeft(card('e1')).dy), reason: 'most people first');
 
     expect(find.text('我參加的'), findsNothing, reason: 'mine are on the other side');
     await tapText(tester, '我的團');

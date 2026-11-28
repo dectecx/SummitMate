@@ -62,11 +62,9 @@ type Event struct {
 
 	ApprovedCount int
 	PendingCount  int // applications waiting for review, host only
-	LikeCount     int
 	CommentCount  int
 
 	// Viewer specific.
-	Liked       bool
 	MyStatus    string // "" when the viewer never applied
 	MyRejection string
 	IsHost      bool
@@ -132,10 +130,4 @@ type SnapshotNode struct {
 type Opt[T any] struct {
 	Set   bool
 	Value T
-}
-
-// LikeState is the result of a like or unlike.
-type LikeState struct {
-	Liked     bool
-	LikeCount int
 }

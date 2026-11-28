@@ -37,7 +37,7 @@ var publicPaths = map[string]bool{
 }
 
 // isOptionalAuth reports routes that anyone may read but that also use the caller's identity
-// when a token is sent (shared sets: `mine`, owner access; group events: `liked`, `my_status`, private
+// when a token is sent (shared sets: `mine`, owner access; group events: `my_status`, private
 // message). Writes and scopes that need an identity still require a token in the handler.
 func isOptionalAuth(method, path string) bool {
 	if method != http.MethodGet {

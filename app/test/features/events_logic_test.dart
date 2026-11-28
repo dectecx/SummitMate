@@ -194,13 +194,11 @@ void main() {
         'end_date': null,
         'max_members': 8,
         'approved_count': 3,
-        'like_count': 12,
         'comment_count': 5,
         'status': 'closed',
         'approval_required': false,
         'host': {'display_name': '陳大山', 'avatar': '🐻'},
         'created_at': '2026-11-01T00:00:00Z',
-        'liked': true,
         'my_status': 'rejected',
         'is_host': false,
         'description': '說明',
@@ -212,8 +210,8 @@ void main() {
         'snapshot_updated_at': null,
       });
       expect(
-        (d.category, d.status, d.approvalRequired, d.myStatus, d.liked),
-        (EventCategory.camping, EventStatus.closed, false, ApplicationStatus.rejected, true),
+        (d.category, d.status, d.approvalRequired, d.myStatus),
+        (EventCategory.camping, EventStatus.closed, false, ApplicationStatus.rejected),
       );
       expect(
         (d.privateMessage, d.privateMessageLocked, d.myRejectionReason, d.host.displayName),
@@ -249,7 +247,6 @@ void main() {
       final api = apiWith((o) async {
         final p = o.path;
         if (p.endsWith('/comments') && o.method == 'GET') return json({'items': [], 'next_cursor': 'c2'});
-        if (p.endsWith('/like')) return json({'liked': o.method == 'PUT', 'like_count': 4});
         if (p.endsWith('/apply') && o.method == 'POST') return json({'my_status': 'pending'});
         if (p.endsWith('/applications') && o.method == 'GET') {
           return json({
@@ -337,14 +334,6 @@ void main() {
       expect(adapter.requests.last.data, {'body': '嗨'});
       await api.deleteComment('e1', 'c1');
       expect((adapter.requests.last.method, adapter.requests.last.path), ('DELETE', '/group-events/e1/comments/c1'));
-
-      var like = await api.like('e1');
-      expect((adapter.requests.last.method, like.liked, like.likeCount), ('PUT', true, 4));
-      like = await api.unlike('e1');
-      expect(
-        (adapter.requests.last.method, adapter.requests.last.path, like.liked),
-        ('DELETE', '/group-events/e1/like', false),
-      );
 
       await api.report(target: ReportTarget.groupEventComment, targetId: 'c1', reason: ' 廣告 ');
       r = adapter.requests.last;

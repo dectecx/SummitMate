@@ -5,7 +5,7 @@ import 'events_fakes.dart';
 import 'harness.dart';
 
 void main() {
-  testWidgets('the bookmark saves an event offline-first and 我的收藏 → 揪團 lists it', (tester) async {
+  testWidgets('the heart saves an event offline-first and 我的收藏 → 揪團 lists it', (tester) async {
     final api = FakeEventsApi(events: [ev('e1', '嘉明湖三日'), ev('e2', '雪山東峰')]);
     final app = await startEvents(tester, api, signedIn: true);
     await openEvents(tester);

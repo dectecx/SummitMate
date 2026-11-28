@@ -79,13 +79,11 @@ class EventSummary {
     required this.maxMembers,
     required this.approvedCount,
     this.pendingCount = 0,
-    required this.likeCount,
     required this.commentCount,
     required this.status,
     required this.approvalRequired,
     required this.host,
     required this.createdAt,
-    required this.liked,
     this.myStatus,
     required this.isHost,
   });
@@ -103,13 +101,11 @@ class EventSummary {
 
   /// Applications waiting for review; 0 unless the person is the host.
   final int pendingCount;
-  final int likeCount;
   final int commentCount;
   final EventStatus status;
   final bool approvalRequired;
   final EventPerson host;
   final DateTime createdAt;
-  final bool liked;
   final ApplicationStatus? myStatus;
   final bool isHost;
 
@@ -123,13 +119,11 @@ class EventSummary {
     maxMembers: ((j['max_members'] as num?) ?? 0).toInt(),
     approvedCount: ((j['approved_count'] as num?) ?? 0).toInt(),
     pendingCount: ((j['pending_count'] as num?) ?? 0).toInt(),
-    likeCount: ((j['like_count'] as num?) ?? 0).toInt(),
     commentCount: ((j['comment_count'] as num?) ?? 0).toInt(),
     status: EventStatus.parse(j['status'] as String?),
     approvalRequired: j['approval_required'] != false,
     host: EventPerson.fromJson(j['host']),
     createdAt: _time(j['created_at']),
-    liked: j['liked'] == true,
     myStatus: ApplicationStatus.tryParse(j['my_status'] as String?),
     isHost: j['is_host'] == true,
   );
@@ -144,13 +138,11 @@ class EventSummary {
     'max_members': maxMembers,
     'approved_count': approvedCount,
     'pending_count': pendingCount,
-    'like_count': likeCount,
     'comment_count': commentCount,
     'status': status.name,
     'approval_required': approvalRequired,
     'host': {'id': host.id, 'display_name': host.displayName, 'avatar': host.avatar},
     'created_at': createdAt.toUtc().toIso8601String(),
-    'liked': liked,
     'my_status': myStatus?.name,
     'is_host': isHost,
   };
@@ -167,13 +159,11 @@ class EventDetail extends EventSummary {
     required super.maxMembers,
     required super.approvedCount,
     super.pendingCount,
-    required super.likeCount,
     required super.commentCount,
     required super.status,
     required super.approvalRequired,
     required super.host,
     required super.createdAt,
-    required super.liked,
     super.myStatus,
     required super.isHost,
     this.description = '',
@@ -211,13 +201,11 @@ class EventDetail extends EventSummary {
       maxMembers: s.maxMembers,
       approvedCount: s.approvedCount,
       pendingCount: s.pendingCount,
-      likeCount: s.likeCount,
       commentCount: s.commentCount,
       status: s.status,
       approvalRequired: s.approvalRequired,
       host: s.host,
       createdAt: s.createdAt,
-      liked: s.liked,
       myStatus: s.myStatus,
       isHost: s.isHost,
       description: (j['description'] as String?) ?? '',
@@ -244,8 +232,6 @@ class EventDetail extends EventSummary {
 
   /// The same event after a local change (like, application, counts).
   EventDetail copyWith({
-    bool? liked,
-    int? likeCount,
     int? commentCount,
     int? approvedCount,
     ApplicationStatus? myStatus,
@@ -261,13 +247,11 @@ class EventDetail extends EventSummary {
     maxMembers: maxMembers,
     approvedCount: approvedCount ?? this.approvedCount,
     pendingCount: pendingCount,
-    likeCount: likeCount ?? this.likeCount,
     commentCount: commentCount ?? this.commentCount,
     status: status,
     approvalRequired: approvalRequired,
     host: host,
     createdAt: createdAt,
-    liked: liked ?? this.liked,
     myStatus: clearMyStatus ? null : (myStatus ?? this.myStatus),
     isHost: isHost,
     description: description,
@@ -423,12 +407,6 @@ class CommentPage {
   final String? nextCursor;
 }
 
-class LikeResult {
-  const LikeResult({required this.liked, required this.likeCount});
-  final bool liked;
-  final int likeCount;
-}
-
 /// What a report is about.
 enum ReportTarget {
   groupEvent('group_event'),
@@ -545,8 +523,6 @@ abstract interface class EventsApi {
   Future<CommentPage> comments(String id, {String? cursor, int limit = 20});
   Future<EventComment> addComment(String id, String body);
   Future<void> deleteComment(String id, String commentId);
-  Future<LikeResult> like(String id);
-  Future<LikeResult> unlike(String id);
   Future<void> report({required ReportTarget target, required String targetId, required String reason});
 }
 
@@ -672,19 +648,6 @@ class DioEventsApi implements EventsApi {
   Future<void> deleteComment(String id, String commentId) => _run(() async {
     await _dio.delete<void>('/group-events/$id/comments/$commentId');
   });
-
-  LikeResult _like(Object? data) {
-    final m = _map(data);
-    return LikeResult(liked: m['liked'] == true, likeCount: ((m['like_count'] as num?) ?? 0).toInt());
-  }
-
-  @override
-  Future<LikeResult> like(String id) =>
-      _run(() async => _like((await _dio.put<Map<String, dynamic>>('/group-events/$id/like')).data));
-
-  @override
-  Future<LikeResult> unlike(String id) =>
-      _run(() async => _like((await _dio.delete<Map<String, dynamic>>('/group-events/$id/like')).data));
 
   @override
   Future<void> report({required ReportTarget target, required String targetId, required String reason}) =>

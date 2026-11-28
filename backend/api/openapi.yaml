@@ -447,10 +447,10 @@ paths:
       summary: List group events (scopes all, upcoming and popular need no token)
       description: |
         `all`: not cancelled, newest first. `upcoming`: not cancelled and `start_date` today or later, soonest first.
-        `popular`: not cancelled, by like_count + approved_count, then newest. `joined`: events where the caller's
+        `popular`: not cancelled, by approved_count, then newest. `joined`: events where the caller's
         application is pending or approved (cancelled events included). `hosting`: the caller's own events (cancelled
         included). `joined` and `hosting` require a token (401 otherwise). A token is optional for the other scopes and
-        fills `liked`, `my_status` and `is_host`; an invalid token is rejected with 401. `q` matches title or location.
+        fills `my_status` and `is_host`; an invalid token is rejected with 401. `q` matches title or location.
         `private_message` is never part of a summary.
       parameters:
         - name: scope
@@ -747,37 +747,6 @@ paths:
         "204": { description: Deleted }
         "401": { $ref: "#/components/responses/Error" }
         "403": { $ref: "#/components/responses/Error" }
-        "404": { $ref: "#/components/responses/Error" }
-
-  /group-events/{id}/like:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    put:
-      operationId: likeGroupEvent
-      summary: Like (idempotent)
-      security: [{ bearerAuth: [] }]
-      responses:
-        "200":
-          description: Result
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/LikeState" }
-        "401": { $ref: "#/components/responses/Error" }
-        "404": { $ref: "#/components/responses/Error" }
-    delete:
-      operationId: unlikeGroupEvent
-      summary: Remove my like (idempotent)
-      security: [{ bearerAuth: [] }]
-      responses:
-        "200":
-          description: Result
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/LikeState" }
-        "401": { $ref: "#/components/responses/Error" }
         "404": { $ref: "#/components/responses/Error" }
 
   /reports:
@@ -1299,7 +1268,7 @@ components:
 
     GroupEventSummary:
       type: object
-      required: [id, title, category, location, start_date, end_date, max_members, approved_count, pending_count, like_count, comment_count, status, approval_required, host, created_at, liked, my_status, is_host]
+      required: [id, title, category, location, start_date, end_date, max_members, approved_count, pending_count, comment_count, status, approval_required, host, created_at, my_status, is_host]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -1310,13 +1279,11 @@ components:
         max_members: { type: integer }
         approved_count: { type: integer }
         pending_count: { type: integer, description: Applications waiting for review; 0 unless the caller is the host }
-        like_count: { type: integer }
         comment_count: { type: integer }
         status: { $ref: "#/components/schemas/GroupEventStatus" }
         approval_required: { type: boolean }
         host: { $ref: "#/components/schemas/EventUser" }
         created_at: { type: string, format: date-time }
-        liked: { type: boolean, description: False without a token }
         my_status:
           type: string
           nullable: true
@@ -1465,13 +1432,6 @@ components:
       required: [body]
       properties:
         body: { type: string, minLength: 1, maxLength: 1000 }
-
-    LikeState:
-      type: object
-      required: [liked, like_count]
-      properties:
-        liked: { type: boolean }
-        like_count: { type: integer }
 
     CreateReportRequest:
       type: object

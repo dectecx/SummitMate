@@ -4,8 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../data/favorite_repository.dart';
 import '../providers.dart';
 
-/// The bookmark of a group event: tap to save or remove it from "我的收藏".
-/// A bookmark rather than a heart, because the heart on an event is "感興趣" (a like everyone sees).
+/// The heart of a group event, like a mountain's: tap to save or remove it from "我的收藏". Only the person sees it.
 class FavoriteEventButton extends ConsumerWidget {
   const FavoriteEventButton({super.key, required this.eventId, this.compact = false});
   final String eventId;
@@ -19,8 +18,8 @@ class FavoriteEventButton extends ConsumerWidget {
       tooltip: on ? '取消收藏' : '收藏',
       visualDensity: compact ? VisualDensity.compact : null,
       isSelected: on,
-      icon: const Icon(Icons.bookmark_border),
-      selectedIcon: Icon(Icons.bookmark, color: Theme.of(context).colorScheme.primary),
+      icon: const Icon(Icons.favorite_border),
+      selectedIcon: Icon(Icons.favorite, color: Theme.of(context).colorScheme.tertiary),
       onPressed: () => ref.read(favoriteRepositoryProvider).toggle(FavoriteKind.groupEvent, eventId),
     );
   }

@@ -550,10 +550,6 @@ type GroupEventDetail struct {
 	Host             EventUser           `json:"host"`
 	Id               openapi_types.UUID  `json:"id"`
 	IsHost           bool                `json:"is_host"`
-	LikeCount        int                 `json:"like_count"`
-
-	// Liked False without a token
-	Liked bool `json:"liked"`
 
 	// LinkedTripId Only returned to the host
 	LinkedTripId *openapi_types.UUID `json:"linked_trip_id"`
@@ -603,12 +599,8 @@ type GroupEventSummary struct {
 	Host             EventUser           `json:"host"`
 	Id               openapi_types.UUID  `json:"id"`
 	IsHost           bool                `json:"is_host"`
-	LikeCount        int                 `json:"like_count"`
-
-	// Liked False without a token
-	Liked      bool   `json:"liked"`
-	Location   string `json:"location"`
-	MaxMembers int    `json:"max_members"`
+	Location         string              `json:"location"`
+	MaxMembers       int                 `json:"max_members"`
 
 	// MyStatus The caller's application status (pending, approved, rejected, cancelled), null if never applied or no token
 	MyStatus *string `json:"my_status"`
@@ -618,12 +610,6 @@ type GroupEventSummary struct {
 	StartDate    openapi_types.Date `json:"start_date"`
 	Status       GroupEventStatus   `json:"status"`
 	Title        string             `json:"title"`
-}
-
-// LikeState defines model for LikeState.
-type LikeState struct {
-	LikeCount int  `json:"like_count"`
-	Liked     bool `json:"liked"`
 }
 
 // LoginRequest defines model for LoginRequest.
@@ -1210,12 +1196,6 @@ type ServerInterface interface {
 	// DeleteGroupEventComment Delete a comment (author or host, soft delete)
 	// (DELETE /group-events/{id}/comments/{commentId})
 	DeleteGroupEventComment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, commentId openapi_types.UUID)
-	// UnlikeGroupEvent Remove my like (idempotent)
-	// (DELETE /group-events/{id}/like)
-	UnlikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
-	// LikeGroupEvent Like (idempotent)
-	// (PUT /group-events/{id}/like)
-	LikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 	// GetHealth Liveness check
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
@@ -1432,18 +1412,6 @@ func (_ Unimplemented) CreateGroupEventComment(w http.ResponseWriter, r *http.Re
 // DeleteGroupEventComment Delete a comment (author or host, soft delete)
 // (DELETE /group-events/{id}/comments/{commentId})
 func (_ Unimplemented) DeleteGroupEventComment(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, commentId openapi_types.UUID) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// UnlikeGroupEvent Remove my like (idempotent)
-// (DELETE /group-events/{id}/like)
-func (_ Unimplemented) UnlikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// LikeGroupEvent Like (idempotent)
-// (PUT /group-events/{id}/like)
-func (_ Unimplemented) LikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -2294,58 +2262,6 @@ func (siw *ServerInterfaceWrapper) DeleteGroupEventComment(w http.ResponseWriter
 	handler.ServeHTTP(w, r)
 }
 
-// UnlikeGroupEvent operation middleware
-func (siw *ServerInterfaceWrapper) UnlikeGroupEvent(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-	_ = err
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UnlikeGroupEvent(w, r, id)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// LikeGroupEvent operation middleware
-func (siw *ServerInterfaceWrapper) LikeGroupEvent(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-	_ = err
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.LikeGroupEvent(w, r, id)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // GetHealth operation middleware
 func (siw *ServerInterfaceWrapper) GetHealth(w http.ResponseWriter, r *http.Request) {
 
@@ -2944,12 +2860,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/group-events/{id}/comments/{commentId}", wrapper.DeleteGroupEventComment)
-	})
-	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/group-events/{id}/like", wrapper.UnlikeGroupEvent)
-	})
-	r.Group(func(r chi.Router) {
-		r.Put(options.BaseURL+"/group-events/{id}/like", wrapper.LikeGroupEvent)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/reports", wrapper.CreateReport)

@@ -98,10 +98,10 @@ func summary(e Event) api.GroupEventSummary {
 	return api.GroupEventSummary{
 		Id: e.ID, Title: e.Title, Category: api.GroupEventCategory(e.Category), Location: e.Location,
 		StartDate: openapi_types.Date{Time: e.StartDate}, EndDate: dateOut(e.EndDate), MaxMembers: e.MaxMembers,
-		ApprovedCount: e.ApprovedCount, PendingCount: e.PendingCount, LikeCount: e.LikeCount, CommentCount: e.CommentCount,
+		ApprovedCount: e.ApprovedCount, PendingCount: e.PendingCount, CommentCount: e.CommentCount,
 		Status: api.GroupEventStatus(e.Status), ApprovalRequired: e.ApprovalRequired,
 		Host:      api.EventUser{Id: e.HostID, DisplayName: e.HostName, Avatar: e.HostAvatar},
-		CreatedAt: e.CreatedAt, Liked: e.Liked, MyStatus: strOrNil(e.MyStatus), IsHost: e.IsHost,
+		CreatedAt: e.CreatedAt, MyStatus: strOrNil(e.MyStatus), IsHost: e.IsHost,
 	}
 }
 
@@ -110,7 +110,7 @@ func detail(e Event) (api.GroupEventDetail, error) {
 	d := api.GroupEventDetail{
 		ApprovalRequired: s.ApprovalRequired, ApprovedCount: s.ApprovedCount, PendingCount: s.PendingCount, Category: s.Category,
 		CommentCount: s.CommentCount, CreatedAt: s.CreatedAt, EndDate: s.EndDate, Host: s.Host, Id: s.Id,
-		IsHost: s.IsHost, LikeCount: s.LikeCount, Liked: s.Liked, Location: s.Location, MaxMembers: s.MaxMembers,
+		IsHost: s.IsHost, Location: s.Location, MaxMembers: s.MaxMembers,
 		MyStatus: s.MyStatus, StartDate: s.StartDate, Status: s.Status, Title: s.Title,
 		Description: e.Description, PrivateMessageLocked: !e.PrivateMessageVisible,
 		MyRejectionReason: strOrNil(e.MyRejection), SnapshotUpdatedAt: e.SnapshotAt,
@@ -465,27 +465,6 @@ func (h *Handler) DeleteGroupEventComment(w http.ResponseWriter, r *http.Request
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func (h *Handler) setLike(w http.ResponseWriter, r *http.Request, id uuid.UUID, liked bool) {
-	user, ok := caller(w, r)
-	if !ok {
-		return
-	}
-	st, err := h.svc.SetLike(r.Context(), user, id, liked)
-	if err != nil {
-		httpx.WriteError(w, r, err)
-		return
-	}
-	httpx.WriteJSON(w, http.StatusOK, api.LikeState{Liked: st.Liked, LikeCount: st.LikeCount})
-}
-
-func (h *Handler) LikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	h.setLike(w, r, id, true)
-}
-
-func (h *Handler) UnlikeGroupEvent(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	h.setLike(w, r, id, false)
 }
 
 func (h *Handler) CreateReport(w http.ResponseWriter, r *http.Request) {

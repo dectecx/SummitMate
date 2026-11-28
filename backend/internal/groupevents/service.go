@@ -782,18 +782,6 @@ func (s *Service) DeleteComment(ctx context.Context, user, id, commentID uuid.UU
 	return s.repo.DeleteComment(ctx, commentID)
 }
 
-// SetLike likes or unlikes (idempotent) and returns the new state.
-func (s *Service) SetLike(ctx context.Context, user, id uuid.UUID, liked bool) (LikeState, error) {
-	if _, err := s.visibleEvent(ctx, &user, id); err != nil {
-		return LikeState{}, err
-	}
-	n, err := s.repo.SetLike(ctx, id, user, liked)
-	if err != nil {
-		return LikeState{}, err
-	}
-	return LikeState{Liked: liked, LikeCount: n}, nil
-}
-
 // ReportInput is a report request.
 type ReportInput struct {
 	TargetType string

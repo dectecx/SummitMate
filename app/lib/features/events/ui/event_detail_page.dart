@@ -163,16 +163,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     await _load(silent: true);
   }
 
-  Future<void> _toggleLike(EventDetail d) async {
-    if (await _needSignIn()) return;
-    LikeResult? r;
-    final ok = await _run(() async => r = d.liked ? await _api.unlike(_id) : await _api.like(_id));
-    final result = r;
-    if (ok && mounted && result != null) {
-      setState(() => _detail = _detail!.copyWith(liked: result.liked, likeCount: result.likeCount));
-    }
-  }
-
   Future<void> _report({required ReportTarget target, required String targetId}) async {
     if (await _needSignIn()) return;
     if (!mounted) return;
@@ -343,31 +333,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       RidgeBanner(title: d.title, seed: coverFor(d.id, coverCount), height: 140),
       const SizedBox(height: 14),
       EventTags(d, today: _today),
-      const SizedBox(height: 4),
-      Row(
-        children: [
-          TextButton.icon(
-            key: const ValueKey('event-like'),
-            style: TextButton.styleFrom(
-              minimumSize: const Size(64, 44),
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              foregroundColor: theme.colorScheme.onSurfaceVariant,
-            ),
-            onPressed: _busy ? null : () => _toggleLike(d),
-            icon: Icon(
-              d.liked ? Icons.favorite : Icons.favorite_border,
-              size: 18,
-              color: d.liked ? theme.colorScheme.tertiary : null,
-            ),
-            label: Text('喜歡 ${d.likeCount}'),
-          ),
-          const SizedBox(width: 16),
-          Icon(Icons.chat_bubble_outline, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 6),
-          Text('留言 ${d.commentCount}', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-        ],
-      ),
-      const SizedBox(height: 4),
       Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

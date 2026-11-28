@@ -338,17 +338,13 @@ func TestListScopesSearchAndPaging(t *testing.T) {
 	// upcoming: soonest start first, expired and cancelled gone
 	assert.Equal(t, []string{soon, last, later}, ids(list(person{}, "?scope=upcoming")))
 
-	// popular: likes + approved first, then newest
-	for _, u := range []person{alice, bob} {
-		require.Equal(t, 200, e.do("PUT", "/group-events/"+soon+"/like", u.token, nil).Code)
-	}
-	require.Equal(t, 200, e.do("PUT", "/group-events/"+past+"/like", alice.token, nil).Code)
-	assert.Equal(t, []string{soon, past, last, later}, ids(list(person{}, "?scope=popular")))
+	// popular: most approved people first, then newest (nobody has joined yet)
+	assert.Equal(t, []string{last, later, soon, past}, ids(list(person{}, "?scope=popular")))
 	p1 := list(person{}, "?scope=popular&limit=3")
-	assert.Equal(t, []string{soon, past, last}, ids(p1))
+	assert.Equal(t, []string{last, later, soon}, ids(p1))
 	cur := p1["next_cursor"].(string)
 	p2 := list(person{}, "?scope=popular&limit=3&cursor="+cur)
-	assert.Equal(t, []string{later}, ids(p2))
+	assert.Equal(t, []string{past}, ids(p2))
 	assert.NotContains(t, p2, "next_cursor")
 
 	// keyset paging over all, newest first
@@ -401,13 +397,9 @@ func TestListScopesSearchAndPaging(t *testing.T) {
 		m := it.(map[string]any)
 		byID[m["id"].(string)] = m
 	}
-	assert.Equal(t, true, byID[past]["liked"])
-	assert.Equal(t, true, byID[soon]["liked"])
-	assert.Equal(t, false, byID[later]["liked"])
 	assert.Equal(t, "pending", byID[later]["my_status"])
 	assert.Equal(t, "cancelled", byID[soon]["my_status"])
 	assert.Nil(t, byID[last]["my_status"])
-	assert.EqualValues(t, 2, byID[soon]["like_count"])
 	assert.Equal(t, false, byID[last]["is_host"])
 	// pending applications are counted for the host only
 	assert.EqualValues(t, 0, byID[later]["pending_count"])
@@ -682,7 +674,6 @@ func TestEditCancelAndVisibility(t *testing.T) {
 	assert.Equal(t, 404, e.do("GET", path, carol.token, nil).Code)
 	assert.Equal(t, 404, e.do("DELETE", path, carol.token, nil).Code)
 	assert.Equal(t, 404, e.do("GET", path+"/comments", "", nil).Code)
-	assert.Equal(t, 404, e.do("PUT", path+"/like", carol.token, nil).Code)
 	assert.Equal(t, 404, e.do("POST", path+"/apply", carol.token, nil).Code)
 	for _, p := range []person{host, alice, bob} {
 		rec = e.do("GET", path, p.token, nil)
@@ -746,19 +737,6 @@ func TestCommentsLikesReports(t *testing.T) {
 	require.NoError(t, e.pool.QueryRow(context.Background(), `SELECT count(*) FROM group_event_comments WHERE deleted_at IS NOT NULL`).Scan(&deleted))
 	assert.Equal(t, 2, deleted, "soft delete")
 
-	// likes
-	assert.Equal(t, 401, e.do("PUT", path+"/like", "", nil).Code)
-	rec := e.do("PUT", path+"/like", alice.token, nil)
-	require.Equal(t, 200, rec.Code)
-	assert.Equal(t, map[string]any{"liked": true, "like_count": float64(1)}, decode(t, rec))
-	assert.Equal(t, map[string]any{"liked": true, "like_count": float64(1)}, decode(t, e.do("PUT", path+"/like", alice.token, nil)))
-	assert.Equal(t, map[string]any{"liked": true, "like_count": float64(2)}, decode(t, e.do("PUT", path+"/like", bob.token, nil)))
-	assert.Equal(t, true, decode(t, e.do("GET", path, alice.token, nil))["liked"])
-	assert.Equal(t, false, decode(t, e.do("GET", path, "", nil))["liked"])
-	assert.Equal(t, map[string]any{"liked": false, "like_count": float64(1)}, decode(t, e.do("DELETE", path+"/like", alice.token, nil)))
-	assert.Equal(t, map[string]any{"liked": false, "like_count": float64(1)}, decode(t, e.do("DELETE", path+"/like", alice.token, nil)))
-	assert.Equal(t, 404, e.do("PUT", "/group-events/"+uuid.NewString()+"/like", alice.token, nil).Code)
-
 	// reports
 	rep := func(p person, typ, target, reason string) *httptest.ResponseRecorder {
 		return e.do("POST", "/reports", p.token, map[string]any{"target_type": typ, "target_id": target, "reason": reason})
@@ -770,7 +748,7 @@ func TestCommentsLikesReports(t *testing.T) {
 	assert.Equal(t, 404, rep(alice, "group_event", uuid.NewString(), "x").Code)
 	assert.Equal(t, 404, rep(alice, "group_event_comment", uuid.NewString(), "x").Code)
 	assert.Equal(t, 404, rep(alice, "group_event_comment", cids[0], "x").Code, "deleted comments cannot be reported")
-	rec = rep(alice, "group_event", id, "詐騙")
+	rec := rep(alice, "group_event", id, "詐騙")
 	assert.Equal(t, 201, rec.Code, rec.Body.String())
 	first := decode(t, rec)
 	rec = rep(alice, "group_event", id, "再報一次")

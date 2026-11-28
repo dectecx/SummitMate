@@ -410,13 +410,6 @@ CREATE TABLE group_event_comments (
 
 CREATE INDEX idx_group_event_comments_event_created ON group_event_comments(event_id, created_at, id) WHERE deleted_at IS NULL;
 
-CREATE TABLE group_event_likes (
-    event_id   UUID        NOT NULL REFERENCES group_events(id),
-    user_id    UUID        NOT NULL REFERENCES users(id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
-    PRIMARY KEY (event_id, user_id)
-);
-
 -- Stored for operators to read directly (no review UI yet); one report per reporter and target.
 CREATE TABLE reports (
     id          UUID PRIMARY KEY,

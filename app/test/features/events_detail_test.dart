@@ -72,11 +72,6 @@ void main() {
       expect(find.text('登入後使用'), findsOneWidget);
       await tapText(tester, '取消');
 
-      await tester.tap(find.byKey(const ValueKey('event-like')));
-      await settle(tester);
-      expect(find.text('登入後使用'), findsOneWidget);
-      await tapText(tester, '取消');
-
       await tester.tap(find.byKey(const ValueKey('comment-signin')));
       await settle(tester);
       expect(find.text('登入後使用'), findsOneWidget);
@@ -286,7 +281,7 @@ void main() {
     });
   });
 
-  group('comments, likes and reports', () {
+  group('comments and reports', () {
     testWidgets('a signed-in person adds a comment and deletes their own', (tester) async {
       final api = FakeEventsApi(events: [ev('e1', '嘉明湖三日')])..comments_['e1'] = [cm('c1', '好期待')];
       final app = await openDetail(tester, api, 'e1');
@@ -328,24 +323,6 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('confirm-yes')));
       await settle(tester);
       expect(find.text('廣告留言'), findsNothing);
-      await app.dispose(tester);
-    });
-
-    testWidgets('the like button toggles and shows the count from the server', (tester) async {
-      final api = FakeEventsApi(events: [ev('e1', '嘉明湖三日', likes: 2)]);
-      final app = await openDetail(tester, api, 'e1');
-      final like = find.byKey(const ValueKey('event-like'));
-      expect(find.descendant(of: like, matching: find.text('喜歡 2')), findsOneWidget);
-      expect(find.descendant(of: like, matching: find.byIcon(Icons.favorite_border)), findsOneWidget);
-      await tester.tap(like);
-      await settle(tester);
-      expect(find.descendant(of: like, matching: find.text('喜歡 3')), findsOneWidget);
-      expect(find.descendant(of: like, matching: find.byIcon(Icons.favorite)), findsOneWidget);
-      expect(api.events.single.liked, isTrue);
-      await tester.tap(like);
-      await settle(tester);
-      expect(find.descendant(of: like, matching: find.text('喜歡 2')), findsOneWidget);
-      expect(api.events.single.liked, isFalse);
       await app.dispose(tester);
     });
 

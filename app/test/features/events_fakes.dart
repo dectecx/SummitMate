@@ -25,11 +25,9 @@ EventDetail ev(
   int max = 8,
   int approved = 3,
   int pending = 0,
-  int likes = 2,
   int comments = 0,
   EventStatus status = EventStatus.open,
   bool approval = true,
-  bool liked = false,
   ApplicationStatus? mine,
   bool isHost = false,
   String description = '',
@@ -47,13 +45,11 @@ EventDetail ev(
   maxMembers: max,
   approvedCount: approved,
   pendingCount: pending,
-  likeCount: likes,
   commentCount: comments,
   status: status,
   approvalRequired: approval,
   host: host,
   createdAt: DateTime.utc(2026, 11, 1),
-  liked: liked,
   myStatus: mine,
   isHost: isHost,
   description: description,
@@ -139,7 +135,7 @@ class FakeEventsApi implements EventsApi {
       EventScope.all => all,
       EventScope.upcoming => all.where((e) => e.startDate.compareTo('2026-11-22') >= 0).toList(),
       EventScope.popular =>
-        all..sort((a, b) => (b.likeCount + b.approvedCount).compareTo(a.likeCount + a.approvedCount)),
+        all..sort((a, b) => b.approvedCount.compareTo(a.approvedCount)),
       EventScope.joined =>
         all.where((e) => e.myStatus == ApplicationStatus.pending || e.myStatus == ApplicationStatus.approved).toList(),
       EventScope.hosting => all.where((e) => e.isHost).toList(),
@@ -163,7 +159,6 @@ class FakeEventsApi implements EventsApi {
       end: input.endDate,
       max: input.maxMembers,
       approved: 0,
-      likes: 0,
       approval: input.approvalRequired,
       isHost: true,
       description: input.description,
@@ -314,26 +309,6 @@ class FakeEventsApi implements EventsApi {
     comments_[id]!.removeWhere((c) => c.id == commentId);
     final i = _index(id);
     events[i] = events[i].copyWith(commentCount: events[i].commentCount - 1);
-  }
-
-  LikeResult _like(String id, bool liked) {
-    final i = _index(id);
-    final e = events[i];
-    final n = e.liked == liked ? e.likeCount : e.likeCount + (liked ? 1 : -1);
-    events[i] = e.copyWith(liked: liked, likeCount: n);
-    return LikeResult(liked: liked, likeCount: n);
-  }
-
-  @override
-  Future<LikeResult> like(String id) async {
-    _write();
-    return _like(id, true);
-  }
-
-  @override
-  Future<LikeResult> unlike(String id) async {
-    _write();
-    return _like(id, false);
   }
 
   @override

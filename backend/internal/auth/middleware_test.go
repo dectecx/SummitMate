@@ -62,7 +62,6 @@ func TestOptionalAuthRoutes(t *testing.T) {
 		{http.MethodGet, "/group-events/abc/comments", true},
 		{http.MethodGet, "/group-events/abc/applications", false},
 		{http.MethodGet, "/group-events/abc/comments/x", false},
-		{http.MethodGet, "/group-events/abc/like", false},
 		{http.MethodGet, "/group-events/", false},
 		{http.MethodGet, "/group-events//comments", false},
 		{http.MethodPost, "/group-events", false},

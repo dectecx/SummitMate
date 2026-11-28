@@ -26,8 +26,6 @@ type Repository interface {
 	GetComment(ctx context.Context, id uuid.UUID) (Comment, error)
 	CreateComment(ctx context.Context, c Comment) (Comment, error)
 	DeleteComment(ctx context.Context, id uuid.UUID) error
-	// SetLike inserts or removes the like and returns the new like count.
-	SetLike(ctx context.Context, eventID, userID uuid.UUID, liked bool) (int, error)
 	// CreateReport stores r unless the reporter already reported the target (then the old row, false).
 	CreateReport(ctx context.Context, r Report) (Report, bool, error)
 }
@@ -73,27 +71,25 @@ func (r *PgRepository) WithTx(ctx context.Context, fn func(Tx) error) error {
 var likeEscaper = strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
 
 const summaryCols = `e.id, e.host_id, e.title, e.category, e.location, e.start_date, e.end_date, e.max_members,
-	ac.n, pc.n, lc.n, cc.n, e.status, e.approval_required, u.display_name, u.avatar, e.created_at,
-	(ml.user_id IS NOT NULL), COALESCE(ma.status, '')`
+	ac.n, pc.n, cc.n, e.status, e.approval_required, u.display_name, u.avatar, e.created_at,
+	COALESCE(ma.status, '')`
 
 const detailCols = `, e.description, e.private_message, e.linked_trip_id, e.trip_snapshot, e.snapshot_updated_at,
 	COALESCE(ma.rejection_reason, '')`
 
-// eventFrom joins host, counts (computed per row, no N+1) and the viewer's like and application ($1).
+// eventFrom joins host, counts (computed per row, no N+1) and the viewer's application ($1).
 const eventFrom = ` FROM group_events e
 	JOIN users u ON u.id = e.host_id
 	JOIN LATERAL (SELECT count(*) AS n FROM group_event_applications a WHERE a.event_id = e.id AND a.status = 'approved') ac ON TRUE
 	JOIN LATERAL (SELECT count(*) AS n FROM group_event_applications a WHERE a.event_id = e.id AND a.status = 'pending' AND e.host_id = $1::uuid) pc ON TRUE
-	JOIN LATERAL (SELECT count(*) AS n FROM group_event_likes l WHERE l.event_id = e.id) lc ON TRUE
 	JOIN LATERAL (SELECT count(*) AS n FROM group_event_comments c WHERE c.event_id = e.id AND c.deleted_at IS NULL) cc ON TRUE
-	LEFT JOIN group_event_likes ml ON ml.event_id = e.id AND ml.user_id = $1::uuid
 	LEFT JOIN group_event_applications ma ON ma.event_id = e.id AND ma.user_id = $1::uuid`
 
 func scanEvent(row pgx.Row, detail bool) (Event, error) {
 	var e Event
 	dst := []any{&e.ID, &e.HostID, &e.Title, &e.Category, &e.Location, &e.StartDate, &e.EndDate, &e.MaxMembers,
-		&e.ApprovedCount, &e.PendingCount, &e.LikeCount, &e.CommentCount, &e.Status, &e.ApprovalRequired, &e.HostName, &e.HostAvatar,
-		&e.CreatedAt, &e.Liked, &e.MyStatus}
+		&e.ApprovedCount, &e.PendingCount, &e.CommentCount, &e.Status, &e.ApprovalRequired, &e.HostName, &e.HostAvatar,
+		&e.CreatedAt, &e.MyStatus}
 	if detail {
 		dst = append(dst, &e.Description, &e.PrivateMessage, &e.LinkedTripID, &e.TripSnapshot, &e.SnapshotAt, &e.MyRejection)
 	}
@@ -132,7 +128,7 @@ func (r *PgRepository) List(ctx context.Context, q ListQuery) ([]Event, error) {
 		order = "e.start_date ASC, e.id ASC"
 	case ScopePopular:
 		where = append(where, "e.status <> 'cancelled'")
-		order = "(lc.n + ac.n) DESC, e.created_at DESC, e.id DESC"
+		order = "ac.n DESC, e.created_at DESC, e.id DESC"
 	case ScopeJoined:
 		where = append(where, "ma.status IN ('pending', 'approved')")
 	case ScopeHosting:
@@ -240,22 +236,6 @@ func (r *PgRepository) DeleteComment(ctx context.Context, id uuid.UUID) error {
 	_, err := r.pool.Exec(ctx, `UPDATE group_event_comments SET deleted_at = clock_timestamp()
 		WHERE id = $1 AND deleted_at IS NULL`, id)
 	return err
-}
-
-func (r *PgRepository) SetLike(ctx context.Context, eventID, userID uuid.UUID, liked bool) (int, error) {
-	var err error
-	if liked {
-		_, err = r.pool.Exec(ctx, `INSERT INTO group_event_likes (event_id, user_id) VALUES ($1, $2)
-			ON CONFLICT DO NOTHING`, eventID, userID)
-	} else {
-		_, err = r.pool.Exec(ctx, `DELETE FROM group_event_likes WHERE event_id = $1 AND user_id = $2`, eventID, userID)
-	}
-	if err != nil {
-		return 0, err
-	}
-	var n int
-	err = r.pool.QueryRow(ctx, `SELECT count(*) FROM group_event_likes WHERE event_id = $1`, eventID).Scan(&n)
-	return n, err
 }
 
 func (r *PgRepository) CreateReport(ctx context.Context, rp Report) (Report, bool, error) {

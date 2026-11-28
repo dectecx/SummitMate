@@ -17,7 +17,6 @@ type fakeRepo struct {
 	apps     []*Application
 	comments []*Comment
 	deleted  map[uuid.UUID]bool
-	likes    map[[2]uuid.UUID]bool
 	reports  map[[3]string]Report
 	owners   map[[2]uuid.UUID]bool // (trip, user) is an owner
 	members  map[[2]uuid.UUID]bool // (trip, user) is an active member
@@ -27,7 +26,7 @@ type fakeRepo struct {
 
 func newFake() *fakeRepo {
 	return &fakeRepo{
-		events: map[uuid.UUID]*Event{}, deleted: map[uuid.UUID]bool{}, likes: map[[2]uuid.UUID]bool{},
+		events: map[uuid.UUID]*Event{}, deleted: map[uuid.UUID]bool{},
 		reports: map[[3]string]Report{}, owners: map[[2]uuid.UUID]bool{}, members: map[[2]uuid.UUID]bool{},
 		names: map[uuid.UUID]string{}, clock: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
@@ -42,18 +41,13 @@ func (f *fakeRepo) WithTx(_ context.Context, fn func(Tx) error) error {
 }
 
 func (f *fakeRepo) counts(e *Event) {
-	e.ApprovedCount, e.PendingCount, e.LikeCount, e.CommentCount = 0, 0, 0, 0
+	e.ApprovedCount, e.PendingCount, e.CommentCount = 0, 0, 0
 	for _, a := range f.apps {
 		if a.EventID == e.ID && a.Status == AppApproved {
 			e.ApprovedCount++
 		}
 		if a.EventID == e.ID && a.Status == AppPending {
 			e.PendingCount++
-		}
-	}
-	for k, ok := range f.likes {
-		if ok && k[0] == e.ID {
-			e.LikeCount++
 		}
 	}
 	for _, c := range f.comments {
@@ -68,7 +62,6 @@ func (f *fakeRepo) view(e *Event, viewer *uuid.UUID) Event {
 	f.counts(&out)
 	out.HostName = f.names[e.HostID]
 	if viewer != nil {
-		out.Liked = f.likes[[2]uuid.UUID{e.ID, *viewer}]
 		for _, a := range f.apps {
 			if a.EventID == e.ID && a.UserID == *viewer {
 				out.MyStatus, out.MyRejection = a.Status, a.RejectionReason
@@ -175,23 +168,6 @@ func (f *fakeRepo) DeleteComment(_ context.Context, id uuid.UUID) error {
 	defer f.mu.Unlock()
 	f.deleted[id] = true
 	return nil
-}
-
-func (f *fakeRepo) SetLike(_ context.Context, eventID, userID uuid.UUID, liked bool) (int, error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	if liked {
-		f.likes[[2]uuid.UUID{eventID, userID}] = true
-	} else {
-		delete(f.likes, [2]uuid.UUID{eventID, userID})
-	}
-	n := 0
-	for k := range f.likes {
-		if k[0] == eventID {
-			n++
-		}
-	}
-	return n, nil
 }
 
 func (f *fakeRepo) CreateReport(_ context.Context, r Report) (Report, bool, error) {

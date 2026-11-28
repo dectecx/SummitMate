@@ -632,23 +632,6 @@ func TestCommentsLikesReports(t *testing.T) {
 	got, _ := r.svc.Get(ctx, nil, e.ID)
 	assert.Equal(t, 2, got.CommentCount)
 
-	// likes are idempotent
-	st, err := r.svc.SetLike(ctx, a, e.ID, true)
-	require.NoError(t, err)
-	assert.Equal(t, LikeState{Liked: true, LikeCount: 1}, st)
-	st, _ = r.svc.SetLike(ctx, a, e.ID, true)
-	assert.Equal(t, 1, st.LikeCount)
-	st, _ = r.svc.SetLike(ctx, b, e.ID, true)
-	assert.Equal(t, 2, st.LikeCount)
-	got, _ = r.svc.Get(ctx, &a, e.ID)
-	assert.True(t, got.Liked)
-	st, _ = r.svc.SetLike(ctx, a, e.ID, false)
-	assert.Equal(t, LikeState{Liked: false, LikeCount: 1}, st)
-	st, _ = r.svc.SetLike(ctx, a, e.ID, false)
-	assert.Equal(t, 1, st.LikeCount)
-	_, err = r.svc.SetLike(ctx, a, uuid.New(), true)
-	assert.Equal(t, "group_event_not_found", code(err))
-
 	// reports
 	_, _, err = r.svc.CreateReport(ctx, a, ReportInput{TargetType: "user", TargetID: e.ID, Reason: "x"})
 	assert.Equal(t, "invalid_target_type", code(err))
