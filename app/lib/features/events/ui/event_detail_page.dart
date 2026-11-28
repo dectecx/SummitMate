@@ -333,6 +333,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       RidgeBanner(title: d.title, seed: coverFor(d.id, coverCount), height: 140),
       const SizedBox(height: 14),
       EventTags(d, today: _today),
+      const SizedBox(height: 14),
       Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
