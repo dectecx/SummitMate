@@ -14,7 +14,7 @@ class KitPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('裝備與範本')),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 32),
+        padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
         children: [
           SettingsSection(
             title: '我的',

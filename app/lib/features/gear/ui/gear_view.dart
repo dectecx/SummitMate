@@ -54,7 +54,7 @@ class _GearViewState extends ConsumerState<GearView> {
             onReorder: (ids) => ref.read(gearRepositoryProvider).reorder(ids),
             itemBuilder: (_, i) => _GearRow(tripId: tripId, item: g.items[i], handleIndex: _reordering ? i : null),
           ),
-        const SliverPadding(padding: EdgeInsets.only(bottom: 96)),
+        SliverPadding(padding: EdgeInsets.only(bottom: 96 + MediaQuery.paddingOf(context).bottom)),
       ],
     );
   }

@@ -172,7 +172,7 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
     return Scaffold(
       appBar: AppBar(title: Text(d.summary.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 32),
+        padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),

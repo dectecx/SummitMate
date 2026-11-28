@@ -100,7 +100,7 @@ class _MealsViewState extends ConsumerState<MealsView> {
                           );
                         },
                       ),
-                    const SliverPadding(padding: EdgeInsets.only(bottom: 96)),
+                    SliverPadding(padding: EdgeInsets.only(bottom: 96 + MediaQuery.paddingOf(context).bottom)),
                   ],
                 ),
         ),

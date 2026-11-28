@@ -1,13 +1,14 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// One place of the bottom bar.
 typedef AppNavItem = ({Widget icon, String label});
 
-/// The floating bottom bar: a frosted capsule above the page. The current place has one pale pill behind both its
-/// icon and its name. See docs/ui/DESIGN_SYSTEM.md.
+/// The floating bottom bar: a glass capsule above the page that bends what passes behind it. The current place has
+/// one tinted pill behind both its icon and its name. With "increase contrast" on, the package draws it frosted.
+/// See docs/ui/DESIGN_SYSTEM.md.
 class AppNavBar extends StatelessWidget {
   const AppNavBar({super.key, required this.items, required this.selected, required this.onSelected, required this.animate});
 
@@ -16,102 +17,50 @@ class AppNavBar extends StatelessWidget {
   final ValueChanged<int> onSelected;
   final bool animate;
 
-  static const height = 60.0;
-  static const _itemWidth = 64.0;
-  static const _inset = 5.0;
-
-  /// How far the capsule stays from the bottom edge: a little into the home indicator's room, never under it.
-  static double bottomGap(BuildContext context) => math.max(MediaQuery.viewPaddingOf(context).bottom - 12, 10);
+  static const _height = 60.0;
+  static const _maxWidth = 340.0;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final solid = MediaQuery.highContrastOf(context);
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12, 4, 12, bottomGap(context)),
+    final dark = scheme.brightness == Brightness.dark;
+    final media = MediaQuery.of(context);
+    // A little into the home indicator's room, never under it.
+    final bottomGap = math.max(media.viewPadding.bottom - 12, 10.0);
+    final bar = Padding(
+      padding: EdgeInsets.fromLTRB(12, 4, 12, bottomGap),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Flexible(
-            child: DecoratedBox(
-              decoration: const ShapeDecoration(
-                shape: StadiumBorder(),
-                shadows: [BoxShadow(color: Color(0x1F192823), blurRadius: 16, offset: Offset(0, 4))],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(height / 2),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                  child: Material(
-                    color: scheme.surfaceContainerLowest.withValues(alpha: solid ? 1 : .78),
-                    shape: StadiumBorder(side: BorderSide(color: scheme.outlineVariant)),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: _itemWidth * items.length + _inset * 2),
-                      child: Padding(
-                        padding: const EdgeInsets.all(_inset),
-                        child: SizedBox(
-                          height: height - _inset * 2,
-                          child: Row(
-                            children: [
-                              for (var i = 0; i < items.length; i++)
-                                Expanded(child: _Item(item: items[i], selected: i == selected, animate: animate, onTap: () => onSelected(i))),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _maxWidth),
+              child: GlassTabBar.bottom(
+                tabs: [for (final i in items) GlassTab(icon: i.icon, label: i.label)],
+                selectedIndex: selected,
+                onTabSelected: onSelected,
+                barHeight: _height,
+                horizontalPadding: 0,
+                verticalPadding: 0,
+                iconSize: 22,
+                iconLabelSpacing: 1,
+                labelFontSize: 11,
+                selectedIconColor: scheme.primary,
+                selectedLabelColor: scheme.primary,
+                // Full-strength ink: grey is lost where a blue map or a dark picture shows through.
+                unselectedIconColor: scheme.onSurface,
+                unselectedLabelColor: scheme.onSurface,
+                indicatorColor: scheme.primary.withValues(alpha: dark ? .4 : .22),
+                // Milky enough for the names to stay readable over pictures and the map.
+                settings: LiquidGlassSettings(glassColor: scheme.surfaceContainerLowest.withValues(alpha: .8), blur: 8),
+                quality: GlassQuality.premium,
               ),
             ),
           ),
         ],
       ),
     );
-  }
-}
-
-class _Item extends StatelessWidget {
-  const _Item({required this.item, required this.selected, required this.animate, required this.onTap});
-
-  final AppNavItem item;
-  final bool selected;
-  final bool animate;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final color = selected ? scheme.primary : scheme.onSurfaceVariant;
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: animate ? const Duration(milliseconds: 200) : Duration.zero,
-          decoration: ShapeDecoration(shape: const StadiumBorder(), color: scheme.primaryContainer.withValues(alpha: selected ? 1 : 0)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconTheme(data: IconThemeData(size: 22, color: color), child: item.icon),
-              const SizedBox(height: 1),
-              // The bar has a fixed height: very large text stops growing here, as in the system's own bars.
-              MediaQuery.withClampedTextScaling(
-                maxScaleFactor: 1.2,
-                child: Text(
-                  item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                  style: TextStyle(fontSize: 11, height: 1.2, fontWeight: FontWeight.w600, color: color),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    // The package reads the system's "reduce motion"; the app's own animation switch says the same thing to it.
+    return MediaQuery(data: media.copyWith(disableAnimations: media.disableAnimations || !animate), child: bar);
   }
 }

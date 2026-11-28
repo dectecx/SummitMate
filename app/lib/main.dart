@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
@@ -16,7 +17,9 @@ import 'features/map/data/download_updates.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(await buildApp(ads: true));
+  await LiquidGlassWidgets.initialize(enablePerformanceMonitor: false); // loads the bar's shaders before the first frame
+  final app = await buildApp(ads: true);
+  runApp(LiquidGlassWidgets.wrap(child: app, brightnessResolver: Theme.maybeBrightnessOf));
 }
 
 /// Builds the app widget: restores the session, starts the sync triggers and picks the first screen.

@@ -60,7 +60,7 @@ class _MountainFavorites extends ConsumerWidget {
           : const Center(child: CircularProgressIndicator());
     }
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
       children: [
         SettingsSection(
           children: [

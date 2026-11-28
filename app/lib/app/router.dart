@@ -71,7 +71,7 @@ GoRouter buildRouter({required String initialLocation}) {
       GoRoute(path: Routes.register, builder: (_, s) => RegisterPage(next: nextOf(s))),
       GoRoute(path: Routes.verify, builder: (_, s) => VerifyPage(email: s.uri.queryParameters['email'] ?? '', next: nextOf(s))),
       StatefulShellRoute.indexedStack(
-        builder: (_, state, shell) => AppShell(navigationShell: shell, path: state.uri.path),
+        builder: (_, _, shell) => AppShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
             routes: [

@@ -127,7 +127,7 @@ class _DiscussionViewState extends ConsumerState<DiscussionView> {
           child: _showPolls
               ? ListView(
                   key: const ValueKey('poll-list'),
-                  padding: const EdgeInsets.only(top: 4, bottom: 32),
+                  padding: EdgeInsets.only(top: 4, bottom: 32 + MediaQuery.paddingOf(context).bottom),
                   children: [
                     if (canManagePolls(widget.role))
                       Padding(
@@ -182,7 +182,7 @@ class _DiscussionViewState extends ConsumerState<DiscussionView> {
         ),
         if (!_showPolls)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+            padding: EdgeInsets.fromLTRB(16, 6, 16, 10 + MediaQuery.paddingOf(context).bottom), // clear of the bar below
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

@@ -77,7 +77,7 @@ class _ItemList extends ConsumerWidget {
       );
     }
     return ListView(
-      padding: const EdgeInsets.only(bottom: 96),
+      padding: EdgeInsets.only(bottom: 96 + MediaQuery.paddingOf(context).bottom),
       children: [
         HintBanner(hintId: 'library-$kind', icon: Icons.bookmark_outline, text: '點一下可以修改；新增行程項目時輸入名稱就會出現建議。'),
         SettingsSection(

@@ -191,7 +191,7 @@ class _EventsViewState extends ConsumerState<EventsView> {
             },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.only(bottom: 88 + MediaQuery.paddingOf(context).bottom),
+              padding: EdgeInsets.only(bottom: 24 + MediaQuery.paddingOf(context).bottom),
               children: [
                 if (locked)
                   _EmptyState(

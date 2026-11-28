@@ -114,7 +114,10 @@ Future<T> real<T>(WidgetTester tester, Future<T> Function() action) async => (aw
 Future<void> tapText(WidgetTester tester, String text) async {
   // Prefer a button with this label (the app bar title may use the same words).
   final buttons = find.ancestor(of: find.text(text), matching: find.byWidgetPredicate((w) => w is ButtonStyleButton));
-  await tester.tap(buttons.evaluate().isNotEmpty ? buttons.last : find.text(text).last);
+  // The bottom bar draws each name twice (plain and selected), one over the other: take one that can be tapped.
+  final reachable = find.text(text).hitTestable();
+  final label = reachable.evaluate().isNotEmpty ? reachable.last : find.text(text).last;
+  await tester.tap(buttons.evaluate().isNotEmpty ? buttons.last : label);
   await settle(tester);
 }
 

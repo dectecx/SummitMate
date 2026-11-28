@@ -94,7 +94,7 @@ class _Lists extends ConsumerWidget {
     );
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: 96),
+      padding: EdgeInsets.only(bottom: 96 + MediaQuery.paddingOf(context).bottom),
       children: [
         if (overview.incoming.isNotEmpty)
           SettingsSection(

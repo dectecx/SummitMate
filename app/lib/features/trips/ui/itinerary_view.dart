@@ -46,7 +46,7 @@ class ItineraryView extends ConsumerWidget {
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.only(bottom: 96),
+            padding: EdgeInsets.only(bottom: 96 + MediaQuery.paddingOf(context).bottom),
             children: [
               TripOfflineHint(trip: trip),
               DayWeatherStrip(trip: trip, day: day),

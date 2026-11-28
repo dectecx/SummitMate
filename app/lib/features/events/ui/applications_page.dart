@@ -129,7 +129,7 @@ class _ApplicationsPageState extends ConsumerState<ApplicationsPage> {
         onRefresh: () => _load(silent: true),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: EdgeInsets.fromLTRB(16, 8, 16, 32 + MediaQuery.paddingOf(context).bottom),
           children: [
             Card(
               child: Padding(

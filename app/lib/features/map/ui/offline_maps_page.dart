@@ -24,7 +24,7 @@ class OfflineMapsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('離線地圖')),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 32),
+        padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
         children: [
           const SizedBox(height: 8),
           const Center(child: IllustrationView(Illustration.map)),

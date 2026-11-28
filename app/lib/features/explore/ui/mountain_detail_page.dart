@@ -33,7 +33,7 @@ class MountainDetailPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(actions: [FavoriteHeart(mountainId: mountain.id)]),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16) + EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
         children: [
           RidgeBanner(
             title: mountain.name,

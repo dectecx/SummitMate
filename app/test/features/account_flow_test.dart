@@ -22,7 +22,7 @@ void main() {
 
       expect(find.byType(AppNavBar), findsOneWidget);
       for (final label in ['首頁', '揪團', '地圖', '探索', '我']) {
-        expect(find.descendant(of: find.byType(AppNavBar), matching: find.text(label)), findsOneWidget);
+        expect(find.descendant(of: find.byType(AppNavBar), matching: find.text(label)), findsWidgets); // drawn in two layers
       }
       expect(await real(tester, () => app.container.read(settingsStoreProvider).getBool(SettingsStore.welcomeSeen)), isTrue);
       expect(app.container.read(authRepositoryProvider).state, isA<Guest>());

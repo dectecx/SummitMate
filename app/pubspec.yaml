@@ -57,6 +57,7 @@ dependencies:
   maplibre_gl: 0.28.0
   archive: ^4.7.1
   url_launcher: ^6.3.3
+  liquid_glass_widgets: 1.22.0
 
 dev_dependencies:
   flutter_test:

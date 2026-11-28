@@ -28,7 +28,7 @@ class MembersView extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),

@@ -29,12 +29,12 @@ void main() {
     await tapText(tester, '探索');
     expect(find.text('玉山主峰'), findsOneWidget);
     expect(find.descendant(of: find.byKey(const ValueKey('explore-segment')), matching: find.text('揪團')), findsNothing);
-    expect(find.text('建立揪團'), findsNothing);
+    expect(find.byTooltip('建立揪團'), findsNothing);
 
     await openEvents(tester);
     expect(find.text('玉山主峰'), findsNothing);
     expect(card('e1'), findsOneWidget);
-    expect(find.text('建立揪團'), findsOneWidget);
+    expect(find.byTooltip('建立揪團'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -48,7 +48,7 @@ void main() {
     final app = await startEvents(tester, api, signedIn: true);
     await settle(tester);
     final navBadge = find.descendant(of: find.byType(AppNavBar), matching: find.text('2'));
-    expect(navBadge, findsOneWidget, reason: 'seen without opening the tab');
+    expect(navBadge, findsWidgets, reason: 'seen without opening the tab; the bar draws each icon in two layers');
 
     await openEvents(tester);
     await tapText(tester, '我的團');

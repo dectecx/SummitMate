@@ -80,7 +80,7 @@ class HelpPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('使用說明')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: EdgeInsets.fromLTRB(16, 8, 16, 32 + MediaQuery.paddingOf(context).bottom),
         children: [
           const Center(child: IllustrationView(Illustration.help, width: 150)),
           const SizedBox(height: 4),
