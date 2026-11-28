@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../../core/db/app_database.dart';
 import '../../trips/providers.dart';
 import '../data/shared_sets_api.dart';
@@ -150,7 +151,7 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
     final theme = Theme.of(context);
     final d = _detail;
     if (d == null) {
-      return Scaffold(
+      return PageAccents.inner(child: Scaffold(
         appBar: AppBar(),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -167,9 +168,9 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
                   ),
                 ),
               ),
-      );
+      ));
     }
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: Text(d.summary.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       body: ListView(
         padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
@@ -220,6 +221,6 @@ class _SharedSetDetailPageState extends ConsumerState<SharedSetDetailPage> {
           SetItemSections(items: d.items),
         ],
       ),
-    );
+    ));
   }
 }

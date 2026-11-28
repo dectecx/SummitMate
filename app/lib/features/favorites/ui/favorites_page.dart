@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../../app/router.dart';
 import '../../../shared/coming_soon.dart';
 import '../../../shared/settings_section.dart';
@@ -23,7 +24,7 @@ class FavoritesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
+      child: PageAccents.inner(child: Scaffold(
         appBar: AppBar(
           title: const Text('我的收藏'),
           bottom: const TabBar(
@@ -34,7 +35,7 @@ class FavoritesPage extends StatelessWidget {
           ),
         ),
         body: const TabBarView(children: [_MountainFavorites(), _EventFavorites()]),
-      ),
+      )),
     );
   }
 }

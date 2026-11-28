@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../../app/router.dart';
 import '../../../shared/brand/illustrations.dart';
 import '../../../shared/coming_soon.dart';
@@ -28,7 +29,7 @@ class _SharedSetsPageState extends State<SharedSetsPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(
         title: const Text('雲端裝備組合'),
         bottom: TabBar(
@@ -46,7 +47,7 @@ class _SharedSetsPageState extends State<SharedSetsPage> with SingleTickerProvid
           _SetList(scope: 'mine'),
         ],
       ),
-    );
+    ));
   }
 }
 

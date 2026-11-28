@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../meals/ui/meal_icons.dart';
 import '../../gear/ui/gear_icons.dart';
 import '../../../core/db/app_database.dart';
@@ -34,7 +35,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(
         title: const Text('常用清單'),
         bottom: TabBar(
@@ -58,7 +59,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
         icon: const Icon(Icons.add),
         label: Text(_kind == 'gear' ? '新增裝備' : '新增餐食'),
       ),
-    );
+    ));
   }
 }
 

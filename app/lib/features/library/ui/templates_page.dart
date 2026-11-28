@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../../app/router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/coming_soon.dart';
@@ -19,7 +20,7 @@ class TemplatesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final templates = ref.watch(templatesProvider).value ?? const <Template>[];
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: const Text('我的範本')),
       body: templates.isEmpty
           ? const ComingSoon(
@@ -43,7 +44,7 @@ class TemplatesPage extends ConsumerWidget {
                 ),
               ],
             ),
-    );
+    ));
   }
 }
 
@@ -55,14 +56,14 @@ class TemplateDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(templateProvider(templateId)).value;
     if (t == null) {
-      return Scaffold(
+      return PageAccents.inner(child: Scaffold(
         appBar: AppBar(),
         body: const ComingSoon(illustration: Illustration.search, message: '找不到這份範本，可能已被刪除'),
-      );
+      ));
     }
     final items = decodeSetItems(t.items);
     final theme = Theme.of(context);
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(
         title: Text(t.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
@@ -143,7 +144,7 @@ class TemplateDetailPage extends ConsumerWidget {
           SetItemSections(items: items),
         ],
       ),
-    );
+    ));
   }
 
   Future<void> _applyToATrip(BuildContext context, WidgetRef ref, List<SetItem> items) async {

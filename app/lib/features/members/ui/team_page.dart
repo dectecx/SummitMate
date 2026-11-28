@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../trips/domain/trip_logic.dart';
 import '../../trips/providers.dart';
 import 'members_view.dart';
@@ -13,9 +14,9 @@ class TeamPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final trip = ref.watch(tripProvider(tripId)).value;
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: const Text('邀請隊友')),
       body: trip == null ? const SizedBox.shrink() : MembersView(trip: trip, role: ref.watch(myRoleProvider(tripId)) ?? TripRole.member),
-    );
+    ));
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../../shared/auth_messages.dart';
 import '../../../shared/coming_soon.dart';
 import '../../../shared/settings_section.dart';
@@ -19,7 +20,7 @@ class FriendsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final signedIn = ref.watch(accountIdProvider) != null;
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: const Text('好友')),
       floatingActionButton: signedIn
           ? FloatingActionButton.extended(
@@ -41,7 +42,7 @@ class FriendsPage extends ConsumerWidget {
                     child: _Lists(overview: o),
                   ),
                 ),
-    );
+    ));
   }
 }
 

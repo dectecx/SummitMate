@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../../shared/brand/illustrations.dart';
 import 'rudy_download_card.dart';
 
@@ -21,7 +22,7 @@ class OfflineMapsPage extends ConsumerWidget {
         ],
       ),
     );
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: const Text('離線地圖')),
       body: ListView(
         padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
@@ -43,6 +44,6 @@ class OfflineMapsPage extends ConsumerWidget {
           const RudyDownloadCard(),
         ],
       ),
-    );
+    ));
   }
 }

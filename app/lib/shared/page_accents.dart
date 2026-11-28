@@ -1,9 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
-/// The quiet decoration behind the top-level pages: a soft, blurred watercolour wash in two corners
-/// (`tool/art/accents.py`). It stays put while the page scrolls. A screen wider than tall gets none.
+/// The quiet decoration behind a page: a soft, blurred watercolour wash (`tool/art/accents.py`). The top-level pages
+/// have it in two corners; the pages opened from them that show no picture of their own have a fainter one in the
+/// top corner only ([PageAccents.inner]). Forms, the map and pages with a cover stay plain. It stays put while the page scrolls. A screen wider than tall gets none.
 class PageAccents extends StatelessWidget {
-  const PageAccents({super.key, required this.child});
+  const PageAccents({super.key, required this.child}) : inner = false;
+
+  const PageAccents.inner({super.key, required this.child}) : inner = true;
+
+  final bool inner;
 
   /// The page's [Scaffold]; its background and app bar become transparent here.
   final Widget child;
@@ -51,11 +56,11 @@ class PageAccents extends StatelessWidget {
               child: IgnorePointer(
                 child: RepaintBoundary(
                   child: Opacity(
-                    opacity: theme.brightness == Brightness.dark ? .3 : 1,
+                    opacity: (theme.brightness == Brightness.dark ? .3 : 1) * (inner ? .5 : 1),
                     child: Stack(
                       children: [
                         piece('wash_top', right: 0, top: 0, width: 240, height: 250),
-                        piece('wash_bottom', left: 0, bottom: 0, width: 200, height: 280),
+                        if (!inner) piece('wash_bottom', left: 0, bottom: 0, width: 200, height: 280),
                       ],
                     ),
                   ),

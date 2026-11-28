@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/page_accents.dart';
 import '../../shared/brand/illustrations.dart';
 
 /// Static help: short answers to the questions people actually have, grouped by what they are doing.
@@ -77,7 +78,7 @@ class HelpPage extends StatelessWidget {
     for (final t in topics) {
       if (!sections.contains(t.section)) sections.add(t.section);
     }
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: const Text('使用說明')),
       body: ListView(
         padding: EdgeInsets.fromLTRB(16, 8, 16, 32 + MediaQuery.paddingOf(context).bottom),
@@ -114,6 +115,6 @@ class HelpPage extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ));
   }
 }

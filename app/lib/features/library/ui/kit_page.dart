@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../../../app/router.dart';
 import '../../../shared/settings_section.dart';
 
@@ -11,7 +12,7 @@ class KitPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: const Text('裝備與範本')),
       body: ListView(
         padding: EdgeInsets.only(bottom: 32 + MediaQuery.paddingOf(context).bottom),
@@ -55,6 +56,6 @@ class KitPage extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

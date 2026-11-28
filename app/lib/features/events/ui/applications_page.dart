@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/page_accents.dart';
 import '../data/events_api.dart';
 import '../domain/event_logic.dart';
 import '../providers.dart';
@@ -111,19 +112,19 @@ class _ApplicationsPageState extends ConsumerState<ApplicationsPage> {
   Widget build(BuildContext context) {
     final e = _event;
     if (e == null) {
-      return Scaffold(
+      return PageAccents.inner(child: Scaffold(
         appBar: AppBar(title: const Text('管理申請')),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : Center(
                 child: RetryMessage(text: _error?.text ?? '無法開啟', onRetry: _load),
               ),
-      );
+      ));
     }
     final theme = Theme.of(context);
     final pending = _apps.where((a) => a.status == ApplicationStatus.pending).toList();
     final approved = _apps.where((a) => a.status == ApplicationStatus.approved).toList();
-    return Scaffold(
+    return PageAccents.inner(child: Scaffold(
       appBar: AppBar(title: const Text('管理申請')),
       body: RefreshIndicator(
         onRefresh: () => _load(silent: true),
@@ -251,6 +252,6 @@ class _ApplicationsPageState extends ConsumerState<ApplicationsPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
