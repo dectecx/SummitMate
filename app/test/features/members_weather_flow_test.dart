@@ -81,7 +81,10 @@ Future<String> ownTrip(WidgetTester tester, AppHarness app) async {
   final id = await act(tester, () => app.container.read(tripRepositoryProvider).create(name: '我的行程', start: DateTime(2026, 5, 10), end: DateTime(2026, 5, 11)));
   await settle(tester);
   await tapText(tester, '我的行程');
-  await tapText(tester, '成員');
+  // Travelling alone: the members live behind the menu until someone joins.
+  await tester.tap(find.byTooltip('更多'));
+  await settle(tester);
+  await tapText(tester, '邀請隊友');
   return id;
 }
 
@@ -102,6 +105,30 @@ void main() {
     expect(find.text('團長'), findsOneWidget);
     expect(find.byTooltip('管理 訪客'), findsNothing);
     expect(find.text('離開這個行程'), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('discussion and members join the trip page once there is a team', (tester) async {
+    final app = await start(tester);
+    await ownTrip(tester, app);
+    await goBack(tester);
+    await settle(tester);
+    Finder tab(String name) => find.descendant(of: find.byType(TabBar), matching: find.text(name));
+    expect(tab('討論'), findsNothing);
+    expect(tab('成員'), findsNothing);
+
+    await tester.tap(find.byTooltip('更多'));
+    await settle(tester);
+    await tapText(tester, '邀請隊友');
+    await tapText(tester, '邀請');
+    await searchFor(tester, 'bob@x.co');
+    await tapText(tester, '邀請 Bob');
+    await goBack(tester);
+    await settle(tester);
+    expect(tab('討論'), findsOneWidget);
+    await tester.tap(tab('成員'));
+    await settle(tester);
+    expect(find.text('成員（2）'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -201,7 +228,7 @@ void main() {
   });
 
   Future<void> openItineraryTab(WidgetTester tester) async {
-    await tester.tap(find.descendant(of: find.byType(TabBar), matching: find.text('行程')));
+    await goBack(tester);
     await settle(tester);
   }
 

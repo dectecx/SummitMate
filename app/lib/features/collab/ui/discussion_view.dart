@@ -98,12 +98,13 @@ class _DiscussionViewState extends ConsumerState<DiscussionView> {
     );
 
     final openPolls = polls.where((p) => pollStateOf(p, ref.watch(clockProvider)()) == PollState.open).length;
-    _MessageTile tile(TripMessage m, {bool reply = false}) => _MessageTile(
+    _MessageTile tile(TripMessage m, {bool reply = false, bool continues = false}) => _MessageTile(
       message: m,
       author: author(m.userId),
       mine: isMineUser(m.userId, me.id),
       canDelete: canDeleteMessage(role: widget.role, isMine: isMineUser(m.userId, me.id)),
       indent: reply,
+      continues: continues,
       onReply: !reply && canReplyTo(m) ? () => setState(() => _replyTo = m) : null,
       onDelete: () => _delete(m),
     );
@@ -172,8 +173,8 @@ class _DiscussionViewState extends ConsumerState<DiscussionView> {
                         ),
                       ),
                     for (final t in threads) ...[
-                      tile(t.message),
-                      for (final r in t.replies) tile(r, reply: true),
+                      tile(t.message, continues: t.replies.isNotEmpty),
+                      for (final (i, r) in t.replies.indexed) tile(r, reply: true, continues: i < t.replies.length - 1),
                     ],
                     SizedBox(key: _end, height: 1),
                   ],
@@ -233,7 +234,8 @@ class _DiscussionViewState extends ConsumerState<DiscussionView> {
   }
 }
 
-/// One message as a speech bubble: mine on the right, the others on the left with their avatar.
+/// One message, all aligned on the left: picture, name and time, then the text. A line joins a message to the
+/// replies under it, so a conversation reads as one piece.
 class _MessageTile extends StatelessWidget {
   const _MessageTile({
     required this.message,
@@ -243,43 +245,49 @@ class _MessageTile extends StatelessWidget {
     required this.onDelete,
     this.onReply,
     this.indent = false,
+    this.continues = false,
   });
   final TripMessage message;
   final Author author;
   final bool mine;
   final bool canDelete;
-  final bool indent;
   final VoidCallback? onReply;
   final VoidCallback onDelete;
+
+  /// A reply, set in under its parent.
+  final bool indent;
+
+  /// Another message of the same thread follows.
+  final bool continues;
+
+  static const _side = 20.0;
+  static const _gap = 6.0;
+  static const _radius = 16.0;
+  static const _replyRadius = 12.0;
+  static const _replyInset = 44.0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    const round = Radius.circular(18);
-    const tail = Radius.circular(5);
-    final avatar = CircleAvatar(radius: 16, backgroundColor: scheme.secondaryContainer, child: Text(author.avatar));
+    final radius = indent ? _replyRadius : _radius;
+    final avatar = CircleAvatar(radius: radius, backgroundColor: scheme.secondaryContainer, child: Text(author.avatar, style: TextStyle(fontSize: radius)));
     final column = Column(
-      crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text.rich(
           TextSpan(
             children: [
-              TextSpan(text: author.name, style: theme.textTheme.labelMedium?.copyWith(color: author.departed ? scheme.onSurfaceVariant : scheme.onSurface)),
+              TextSpan(
+                text: author.name,
+                style: theme.textTheme.labelLarge?.copyWith(color: mine ? scheme.primary : (author.departed ? scheme.onSurfaceVariant : scheme.onSurface)),
+              ),
               TextSpan(text: '  ${formatStamp(message.createdAt)}', style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
             ],
           ),
         ),
-        const SizedBox(height: 3),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: mine ? scheme.primaryContainer : scheme.surfaceContainerLowest,
-            border: mine ? null : Border.all(color: scheme.outlineVariant),
-            borderRadius: BorderRadius.only(topLeft: mine ? round : tail, topRight: round, bottomLeft: round, bottomRight: mine ? tail : round),
-          ),
-          child: LinkText(message.body, style: theme.textTheme.bodyMedium?.copyWith(color: mine ? scheme.onPrimaryContainer : scheme.onSurface)),
-        ),
+        const SizedBox(height: 2),
+        LinkText(message.body, style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurface, height: 1.45)),
         if (onReply != null || canDelete)
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -301,17 +309,19 @@ class _MessageTile extends StatelessWidget {
           ),
       ],
     );
-    return Padding(
-      padding: EdgeInsets.fromLTRB((indent && !mine ? 44 : 16), 6, 16, 2),
-      child: Row(
-        mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (mine) const SizedBox(width: 56),
-          if (!mine) ...[avatar, const SizedBox(width: 10)],
-          Flexible(child: column),
-          if (!mine) const SizedBox(width: 40),
-        ],
+    return CustomPaint(
+      painter: _ThreadLine(color: scheme.outlineVariant, reply: indent, continues: continues),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(_side, _gap, _side, _gap),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (indent) const SizedBox(width: _replyInset),
+            avatar,
+            const SizedBox(width: 10),
+            Expanded(child: column),
+          ],
+        ),
       ),
     );
   }
@@ -353,4 +363,38 @@ Future<bool> confirmDialog(
     ),
   );
   return ok == true;
+}
+
+/// The line of a thread, drawn in the margin of one message.
+class _ThreadLine extends CustomPainter {
+  const _ThreadLine({required this.color, required this.reply, required this.continues});
+  final Color color;
+  final bool reply;
+  final bool continues;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const x = _MessageTile._side + _MessageTile._radius;
+    final ink = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    if (!reply) {
+      if (continues) canvas.drawLine(const Offset(x, _MessageTile._gap + _MessageTile._radius * 2 + 4), Offset(x, size.height), ink);
+      return;
+    }
+    const middle = _MessageTile._gap + _MessageTile._replyRadius;
+    const turn = 10.0;
+    final branch = Path()
+      ..moveTo(x, 0)
+      ..lineTo(x, middle - turn)
+      ..quadraticBezierTo(x, middle, x + turn, middle)
+      ..lineTo(_MessageTile._side + _MessageTile._replyInset - 4, middle);
+    canvas.drawPath(branch, ink);
+    if (continues) canvas.drawLine(const Offset(x, middle - turn), Offset(x, size.height), ink);
+  }
+
+  @override
+  bool shouldRepaint(_ThreadLine old) => old.color != color || old.reply != reply || old.continues != continues;
 }

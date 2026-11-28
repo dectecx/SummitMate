@@ -7,6 +7,7 @@ import '../../gear/domain/gear_logic.dart';
 import '../../meals/domain/meal_logic.dart';
 import '../providers.dart';
 import '../../../shared/form_sheet.dart';
+import '../../../shared/more_options.dart';
 
 /// Add or edit one library item. [kind] is 'gear' or 'meal'.
 Future<void> showLibraryItemSheet(BuildContext context, {required String kind, LibraryItem? item}) {
@@ -125,17 +126,6 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
                       decoration: const InputDecoration(labelText: '單件重量', suffixText: 'g'),
                     ),
                   ),
-                  if (!_isGear) ...[
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _calories,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: decimal,
-                        decoration: const InputDecoration(labelText: '熱量', suffixText: 'kcal'),
-                      ),
-                    ),
-                  ],
                 ],
               ),
               const SizedBox(height: 16),
@@ -145,6 +135,16 @@ class _LibraryItemSheetState extends ConsumerState<LibraryItemSheet> {
                 maxLines: 3,
                 decoration: const InputDecoration(labelText: '備註（選填）'),
               ),
+              if (!_isGear)
+                MoreOptions(
+                  open: (double.tryParse(_calories.text) ?? 0) > 0,
+                  child: TextFormField(
+                    controller: _calories,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: decimal,
+                    decoration: const InputDecoration(labelText: '熱量', suffixText: 'kcal'),
+                  ),
+                ),
               const SizedBox(height: 24),
               FilledButton(onPressed: _save, child: Text(editing ? '儲存' : '新增')),
               if (editing)

@@ -9,9 +9,9 @@ import '../domain/trip_logic.dart';
 import '../providers.dart';
 import '../../../shared/form_sheet.dart';
 
-/// Bottom sheet to create a trip, or to edit one when [trip] is given. Returns the trip id.
+/// A page to create a trip, or to edit one when [trip] is given. Returns the trip id.
 Future<String?> showTripFormSheet(BuildContext context, {Trip? trip}) {
-  return showFormSheet<String>(
+  return showFormPage<String>(
     context: context,
     builder: (_) => TripFormSheet(trip: trip),
   );

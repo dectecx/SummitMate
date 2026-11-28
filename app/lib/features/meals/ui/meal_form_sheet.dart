@@ -8,6 +8,7 @@ import '../../library/ui/library_suggestions.dart';
 import '../domain/meal_logic.dart';
 import '../providers.dart';
 import '../../../shared/form_sheet.dart';
+import '../../../shared/more_options.dart';
 
 Future<void> showMealFormSheet(BuildContext context, {required String tripId, required int dayIndex, MealEntry? entry}) {
   return showFormSheet<void>(
@@ -111,26 +112,11 @@ class _MealFormSheetState extends ConsumerState<MealFormSheet> {
                 onChanged: (v) => setState(() => _type = v ?? _type),
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _weight,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: decimal,
-                      decoration: const InputDecoration(labelText: '單份重量', suffixText: 'g'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _calories,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: decimal,
-                      decoration: const InputDecoration(labelText: '單份熱量', suffixText: 'kcal'),
-                    ),
-                  ),
-                ],
+              TextFormField(
+                controller: _weight,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: decimal,
+                decoration: const InputDecoration(labelText: '單份重量', suffixText: 'g'),
               ),
               const SizedBox(height: 16),
               Row(
@@ -149,7 +135,16 @@ class _MealFormSheetState extends ConsumerState<MealFormSheet> {
                   Expanded(flex: 3, child: TextFormField(controller: _note, decoration: const InputDecoration(labelText: '備註（選填）'))),
                 ],
               ),
-              const SizedBox(height: 24),
+              MoreOptions(
+                open: (_item?.calories ?? 0) > 0,
+                child: TextFormField(
+                  controller: _calories,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: decimal,
+                  decoration: const InputDecoration(labelText: '單份熱量', suffixText: 'kcal'),
+                ),
+              ),
+              const SizedBox(height: 16),
               FilledButton(onPressed: _busy ? null : _save, child: Text(editing ? '儲存' : '新增')),
               if (editing)
                 TextButton(

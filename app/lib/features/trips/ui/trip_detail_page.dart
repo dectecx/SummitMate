@@ -17,7 +17,9 @@ import '../../gear/ui/gear_form_sheet.dart';
 import '../../gear/ui/gear_view.dart';
 import '../../meals/ui/meal_form_sheet.dart';
 import '../../meals/ui/meals_view.dart';
+import '../../members/providers.dart';
 import '../../members/ui/members_view.dart';
+import '../../members/ui/team_page.dart';
 import '../domain/trip_logic.dart';
 import '../providers.dart';
 import '../../library/ui/template_actions.dart';
@@ -37,14 +39,27 @@ class TripDetailPage extends ConsumerStatefulWidget {
 }
 
 class _TripDetailPageState extends ConsumerState<TripDetailPage>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 5, vsync: this)
-    ..addListener(_onTab);
+    with TickerProviderStateMixin {
+  /// A person travelling alone has the first three tabs; discussion and members join once there is a team.
+  static const _soloTabs = 3;
+  static const _teamTabs = 5;
+  late TabController _tabs = _controller(_soloTabs, 0);
   final _scroll = GlobalKey<NestedScrollViewState>();
   int _shownTab = 0;
   int? _day;
   bool _hadTrip = false; // the trip was shown here at least once
   int _mealDay = 1;
+
+  TabController _controller(int length, int index) => TabController(length: length, initialIndex: index, vsync: this)..addListener(_onTab);
+
+  void _fitTabs(bool team) {
+    final length = team ? _teamTabs : _soloTabs;
+    if (_tabs.length == length) return;
+    final old = _tabs;
+    _shownTab = old.index < length ? old.index : 0;
+    _tabs = _controller(length, _shownTab);
+    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose()); // the old bar lets go of it first
+  }
 
   @override
   void dispose() {
@@ -125,6 +140,8 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
     }
     final role = ref.watch(myRoleProvider(trip.id)) ?? TripRole.member;
     final day = _day ?? _initialDay(trip);
+    final team = role != TripRole.owner || ref.watch(memberLinesProvider(trip.id)).length > 1;
+    _fitTabs(team);
 
     final scheme = Theme.of(context).colorScheme;
     final media = MediaQuery.of(context);
@@ -141,8 +158,12 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
                 exportGpx(context, trip, ref.read(itineraryProvider(trip.id)).value ?? const []);
               }
               if (v == 'delete') _delete(context, trip);
+              if (v == 'invite') {
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => TeamPage(tripId: trip.id)));
+              }
             },
             itemBuilder: (_) => [
+              if (!team) const PopupMenuItem(value: 'invite', child: Text('邀請隊友')),
               if (role.canEditShared)
                 const PopupMenuItem(value: 'edit', child: Text('編輯行程')),
               const PopupMenuItem(value: 'copy', child: Text('複製行程')),
@@ -157,12 +178,12 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
       controller: _tabs,
       labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       unselectedLabelStyle: const TextStyle(fontSize: 15),
-      tabs: const [
-        Tab(text: '行程'),
-        Tab(text: '裝備'),
-        Tab(text: '餐食'),
-        Tab(text: '討論'),
-        Tab(text: '成員'),
+      tabs: [
+        const Tab(text: '行程'),
+        const Tab(text: '裝備'),
+        const Tab(text: '餐食'),
+        if (team) const Tab(text: '討論'),
+        if (team) const Tab(text: '成員'),
       ],
     );
     final header = TripHeaderDelegate(
@@ -196,6 +217,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
             context: context,
             removeTop: true,
             child: TabBarView(
+              key: ValueKey(_tabs.length),
               controller: _tabs,
               children: [
                 ItineraryView(
@@ -210,8 +232,8 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
                   day: _mealDay,
                   onDayChanged: (d) => setState(() => _mealDay = d),
                 ),
-                DiscussionView(trip: trip, role: role),
-                MembersView(trip: trip, role: role),
+                if (team) DiscussionView(trip: trip, role: role),
+                if (team) MembersView(trip: trip, role: role),
               ],
             ),
           ),

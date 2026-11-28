@@ -321,38 +321,12 @@ void main() {
       },
     );
 
-    testWidgets('a guest can write on their own trip, without signing in', (
-      tester,
-    ) async {
+    testWidgets('a trip of one person has no discussion tab', (tester) async {
       final app = await start(tester, signedIn: false);
-      await act(
-        tester,
-        () => app.container
-            .read(tripRepositoryProvider)
-            .create(
-              name: '我的行程',
-              start: DateTime(2026, 5, 10),
-              end: DateTime(2026, 5, 11),
-            ),
-      );
+      await act(tester, () => app.container.read(tripRepositoryProvider).create(name: '我的行程', start: DateTime(2026, 5, 10)));
       await settle(tester);
       await tapText(tester, '我的行程');
-      await tapText(tester, '討論');
-
-      await tester.enterText(find.widgetWithText(TextField, '寫留言'), '給未來的自己');
-      await tester.tap(find.byTooltip('送出'));
-      await settle(tester);
-
-      expect(find.text('給未來的自己'), findsOneWidget);
-      expect(rich('我  5/10'), findsOneWidget);
-      expect(
-        (await real(
-          tester,
-          () => app.db.select(app.db.tripMessages).getSingle(),
-        )).userId,
-        isNull,
-      );
-      expect(find.byTooltip('刪除留言'), findsOneWidget);
+      expect(find.text('討論'), findsNothing);
       await app.dispose(tester);
     });
   });

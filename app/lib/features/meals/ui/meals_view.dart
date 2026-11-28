@@ -95,7 +95,7 @@ class _MealsViewState extends ConsumerState<MealsView> {
                                 : Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [Text(formatWeight(e.weight)), Text(formatKcal(e.calories), style: theme.textTheme.bodySmall)],
+                                    children: [Text(formatWeight(e.weight)), if (e.calories > 0) Text(formatKcal(e.calories), style: theme.textTheme.bodySmall)],
                                   ),
                           );
                         },
@@ -123,7 +123,7 @@ class _Total extends StatelessWidget {
         Text(label, style: theme.textTheme.bodySmall),
         const SizedBox(height: 4),
         Text(formatWeight(weight), style: theme.textTheme.headlineSmall?.copyWith(color: theme.colorScheme.onSurface)),
-        Text(formatKcal(kcal), style: theme.textTheme.bodySmall),
+        if (kcal > 0) Text(formatKcal(kcal), style: theme.textTheme.bodySmall),
       ],
     );
   }

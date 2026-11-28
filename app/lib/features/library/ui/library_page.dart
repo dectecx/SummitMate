@@ -89,7 +89,7 @@ class _ItemList extends ConsumerWidget {
                 title: i.name,
                 subtitle: isGear
                     ? '${GearCategory.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}'
-                    : '${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal',
+                    : '${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}${i.calories > 0 ? '  ·  ${formatKcal(i.calories)}' : ''}',
                 onTap: () => showLibraryItemSheet(context, kind: kind, item: i),
               ),
           ],

@@ -11,9 +11,9 @@ import '../domain/trip_logic.dart';
 import '../providers.dart';
 import '../../../shared/form_sheet.dart';
 
-/// Bottom sheet to add a node, or to edit/view one when [item] is given.
+/// A page to add a node, or to edit/view one when [item] is given.
 Future<void> showItemFormSheet(BuildContext context, {required Trip trip, ItineraryItem? item, int initialDay = 1, bool readOnly = false}) {
-  return showFormSheet<void>(
+  return showFormPage<void>(
     context: context,
     builder: (_) => ItemFormSheet(trip: trip, item: item, initialDay: initialDay, readOnly: readOnly),
   );

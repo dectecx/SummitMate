@@ -68,6 +68,7 @@ void main() {
     await tapText(tester, '餐食');
     await tapText(tester, '新增餐食');
     await enter(tester, '名稱', '燕麥粥');
+    await tapText(tester, '更多選項');
     await enter(tester, '單份熱量', '300');
     await tapText(tester, '新增');
     final rows = await real(tester, () => app.db.select(app.db.libraryItems).get());

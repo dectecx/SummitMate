@@ -111,6 +111,7 @@ void main() {
     await tapText(tester, '新增餐食');
     await enter(tester, '名稱', '飯糰');
     await enter(tester, '單份重量', '180');
+    await tapText(tester, '更多選項');
     await enter(tester, '單份熱量', '320');
     await enter(tester, '份數', '2');
     await tapText(tester, '新增');
@@ -135,6 +136,8 @@ void main() {
     expect(find.text('鮪魚飯糰'), findsOneWidget);
 
     await tapText(tester, '鮪魚飯糰');
+    await tester.ensureVisible(find.text('刪除餐食'));
+    await settle(tester);
     await tapText(tester, '刪除餐食');
     expect(find.text('鮪魚飯糰'), findsNothing);
     await app.dispose(tester);

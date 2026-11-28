@@ -255,7 +255,7 @@ class SetItemSections extends StatelessWidget {
                   icon: Icons.restaurant_outlined,
                   title: name(i),
                   subtitle:
-                      'D${i.day}  ·  ${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}  ·  ${i.calories.round()} kcal',
+                      'D${i.day}  ·  ${MealType.fromKey(i.category).label}  ·  ${formatWeight(i.weight)}${i.calories > 0 ? '  ·  ${formatKcal(i.calories)}' : ''}',
                 ),
             ],
           ),
