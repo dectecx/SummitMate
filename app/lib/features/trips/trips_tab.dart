@@ -15,11 +15,12 @@ import 'providers.dart';
 import '../gear/providers.dart';
 import '../gear/domain/gear_logic.dart';
 import 'ui/member_stack.dart';
+import 'ui/trip_checklist.dart';
 import 'ui/copy_trip.dart';
 import 'ui/gpx_actions.dart';
 import 'ui/trip_form_sheet.dart';
 
-/// "行程": the person's trips, grouped by when they happen.
+/// "首頁": the next trip and what it still needs, then the others grouped by when they happen.
 class TripsTab extends ConsumerWidget {
   const TripsTab({super.key});
 
@@ -178,8 +179,9 @@ class _TripListState extends ConsumerState<_TripList> {
     final visible = g.ongoing.length + g.upcoming.length + (showPast ? g.past.length : 0);
     final adAfter = visible < 2 ? visible : 2;
     var cards = 0;
+    final next = g.ongoing.firstOrNull ?? g.upcoming.firstOrNull; // the one to get ready for
     List<Widget> card(Trip t, {bool hero = false}) => [
-      hero && tall ? _HeroCard(trip: t, today: today) : _TripRow(trip: t, today: today),
+      hero && tall ? _HeroCard(trip: t, today: today, next: t.id == next?.id) : _TripRow(trip: t, today: today),
       if (++cards == adAfter) const AdBannerSlot(key: ValueKey('ad-slot')),
     ];
 
@@ -259,11 +261,13 @@ class _Tag extends StatelessWidget {
   }
 }
 
-/// The large card: picture and countdown, who is coming, and how far the packing is.
+/// The large card: picture and countdown, who is coming, and how far the packing is. The [next] trip lists
+/// everything still to prepare.
 class _HeroCard extends ConsumerWidget {
-  const _HeroCard({required this.trip, required this.today});
+  const _HeroCard({required this.trip, required this.today, required this.next});
   final Trip trip;
   final DateTime today;
+  final bool next;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -315,7 +319,12 @@ class _HeroCard extends ConsumerWidget {
                       MemberStack(tripId: trip.id),
                     ],
                   ),
-                  if (gear.isNotEmpty) ...[
+                  if (next) ...[
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: scheme.outlineVariant),
+                    const SizedBox(height: 10),
+                    TripChecklist(trip: trip),
+                  ] else if (gear.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Divider(height: 1, color: scheme.outlineVariant),
                     const SizedBox(height: 10),

@@ -31,7 +31,7 @@ class HelpPage extends StatelessWidget {
     (
       section: '行程與裝備',
       question: '怎麼匯入或匯出 GPX？',
-      answer: '「行程」列表右上角的圖示可以選一個 GPX 檔建立行程，會自動產生節點和海拔剖面圖。進入行程後，右上角選單的「匯出 GPX」可以把行程分享給其他 App 或朋友。',
+      answer: '「首頁」右上角的「匯入 GPX」可以選一個 GPX 檔建立行程，會自動產生節點和海拔剖面圖。進入行程後，右上角選單的「匯出 GPX」可以把行程分享給其他 App 或朋友。',
     ),
     (
       section: '行程與裝備',

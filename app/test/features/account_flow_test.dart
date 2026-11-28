@@ -21,7 +21,7 @@ void main() {
       await tapText(tester, '開始使用');
 
       expect(find.byType(AppNavBar), findsOneWidget);
-      for (final label in ['行程', '揪團', '地圖', '探索', '我']) {
+      for (final label in ['首頁', '揪團', '地圖', '探索', '我']) {
         expect(find.descendant(of: find.byType(AppNavBar), matching: find.text(label)), findsOneWidget);
       }
       expect(await real(tester, () => app.container.read(settingsStoreProvider).getBool(SettingsStore.welcomeSeen)), isTrue);

@@ -31,8 +31,11 @@ import 'trip_form_sheet.dart';
 
 /// One trip: its itinerary today; gear, meals and members arrive in later steps.
 class TripDetailPage extends ConsumerStatefulWidget {
-  const TripDetailPage({super.key, required this.tripId});
+  const TripDetailPage({super.key, required this.tripId, this.initialTab = 0});
   final String tripId;
+
+  /// The tab to open on: one of the three every trip has.
+  final int initialTab;
 
   @override
   ConsumerState<TripDetailPage> createState() => _TripDetailPageState();
@@ -43,7 +46,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
   /// A person travelling alone has the first three tabs; discussion and members join once there is a team.
   static const _soloTabs = 3;
   static const _teamTabs = 5;
-  late TabController _tabs = _controller(_soloTabs, 0);
+  late TabController _tabs = _controller(_soloTabs, widget.initialTab.clamp(0, _soloTabs - 1));
   final _scroll = GlobalKey<NestedScrollViewState>();
   int _shownTab = 0;
   int? _day;
@@ -65,6 +68,19 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
   void dispose() {
     _tabs.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _shownTab = widget.initialTab.clamp(0, _soloTabs - 1);
+    if (_shownTab != 0) {
+      // Opened on a list: give it the room, as switching to it would.
+      WidgetsBinding.instance.addPostFrameCallback((_) => WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _collapseHeader();
+      }));
+      WidgetsBinding.instance.ensureVisualUpdate();
+    }
   }
 
   void _onTab() {

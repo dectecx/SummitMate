@@ -48,6 +48,8 @@ abstract final class Routes {
   static String template(String id) => '/me/templates/$id';
   static const sharedSets = '/me/shared';
   static String sharedSet(String id) => '/me/shared/$id';
+  /// A trip opened on one of its tabs: 0 itinerary, 1 gear, 2 meals.
+  static String tripTab(String id, int tab) => '${trip(id)}?tab=$tab';
   static String trip(String id) => '/trips/$id';
   static const login = '/login';
   static const register = '/register';
@@ -76,7 +78,7 @@ GoRouter buildRouter({required String initialLocation}) {
               GoRoute(
                 path: Routes.trips,
                 builder: (_, _) => const TripsTab(),
-                routes: [GoRoute(path: ':id', builder: (_, s) => TripDetailPage(tripId: s.pathParameters['id']!))],
+                routes: [GoRoute(path: ':id', builder: (_, s) => TripDetailPage(tripId: s.pathParameters['id']!, initialTab: int.tryParse(s.uri.queryParameters['tab'] ?? '') ?? 0))],
               ),
             ],
           ),

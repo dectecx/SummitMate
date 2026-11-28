@@ -74,7 +74,7 @@ void main() {
     await tapAndSettle(tester, find.text('登出'));
     await tapAndSettle(tester, find.widgetWithText(FilledButton, '登出'));
     await pumpUntil(tester, find.text('訪客模式'));
-    await tapAndSettle(tester, find.text('行程'));
+    await tapAndSettle(tester, find.text('首頁'));
     expect(find.text('還沒有行程'), findsOneWidget, reason: 'the account data was removed from the device');
   });
 }

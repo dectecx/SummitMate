@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 /// The hand-drawn line icons of the bottom bar. One colour, taken from the surrounding icon theme.
-enum NavGlyph { trips, events, map, explore, me }
+enum NavGlyph { home, events, map, explore, me }
 
 class NavGlyphIcon extends StatelessWidget {
   const NavGlyphIcon(this.glyph, {super.key});
@@ -30,17 +30,19 @@ class _GlyphPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
     final p = Path();
     switch (glyph) {
-      case NavGlyph.trips: // two summits
+      case NavGlyph.home: // a house with a pitched roof
         p
-          ..moveTo(2.5, 22)
-          ..quadraticBezierTo(7, 14.5, 11, 7)
-          ..lineTo(16.5, 16)
-          ..lineTo(19.5, 12.5)
-          ..lineTo(25.5, 22.3)
-          ..quadraticBezierTo(14, 21.4, 2.5, 22)
-          ..moveTo(8.5, 11.8)
-          ..lineTo(11, 13.8)
-          ..lineTo(13.4, 11.2);
+          ..moveTo(3, 13)
+          ..lineTo(14, 4)
+          ..lineTo(25, 13)
+          ..moveTo(6, 11.5)
+          ..lineTo(6.2, 23.5)
+          ..lineTo(21.8, 23.5)
+          ..lineTo(22, 11.5)
+          ..moveTo(11.5, 23.3)
+          ..lineTo(11.5, 17)
+          ..lineTo(16.5, 17)
+          ..lineTo(16.5, 23.3);
       case NavGlyph.events: // two people
         p
           ..addOval(const Rect.fromLTWH(5.5, 4.8, 8.4, 8.2))

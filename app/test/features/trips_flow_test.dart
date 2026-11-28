@@ -40,7 +40,7 @@ void main() {
     await settle(tester);
     expect(find.text('訪客模式'), findsOneWidget, reason: 'clearing the data must not switch tabs by itself');
 
-    await tester.tap(find.descendant(of: find.byType(AppNavBar), matching: find.text('行程')));
+    await tester.tap(find.descendant(of: find.byType(AppNavBar), matching: find.text('首頁')));
     await settle(tester);
     expect(find.textContaining('找不到這個行程'), findsNothing);
     expect(find.text('還沒有行程'), findsOneWidget);
@@ -171,6 +171,23 @@ void main() {
     await settle(tester);
     expect(find.text('去年的'), findsOneWidget);
     expect(find.text('已結束'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the next trip lists what is left to prepare, and a line opens that tab', (tester) async {
+    tester.view.physicalSize = const Size(420, 900); // the large card needs a screen taller than wide
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final app = await start(tester);
+    await createTrip(tester, '我的行程');
+    await goBack(tester);
+    await settle(tester);
+    expect(find.text('準備清單'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const ValueKey('checklist-gear')), matching: find.text('還沒列')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('checklist-meals')));
+    await settle(tester);
+    expect(find.textContaining('這一天還沒有餐食'), findsOneWidget);
     await app.dispose(tester);
   });
 

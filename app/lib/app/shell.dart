@@ -39,7 +39,7 @@ class AppShell extends ConsumerWidget {
           navigationShell.goBranch(i, initialLocation: i == navigationShell.currentIndex);
         },
         items: [
-          (icon: const NavGlyphIcon(NavGlyph.trips), label: '行程'),
+          (icon: const NavGlyphIcon(NavGlyph.home), label: '首頁'),
           (icon: badged(const NavGlyphIcon(NavGlyph.events)), label: '揪團'),
           (icon: const NavGlyphIcon(NavGlyph.map), label: '地圖'),
           (icon: const NavGlyphIcon(NavGlyph.explore), label: '探索'),
