@@ -16,6 +16,7 @@ import (
 	"summitmate/internal/groupevents"
 	"summitmate/internal/platform/config"
 	"summitmate/internal/platform/database"
+	"summitmate/internal/platform/devmaps"
 	"summitmate/internal/platform/mail"
 	"summitmate/internal/platform/ratelimit"
 	"summitmate/internal/server"
@@ -73,28 +74,34 @@ func run() error {
 		return err
 	}
 
+	var handler http.Handler = server.NewRouter(server.Options{
+		Auth:    auth.NewHandler(authSvc),
+		Sync:    sync.NewHandler(sync.NewService(pool)),
+		Weather: weather.NewHandler(weather.NewDefaultService(weather.NewOpenMeteo(weather.OpenMeteoURL))),
+		Explore: explore.NewHandler(exploreSvc).WithShops(shopSvc),
+		SharedSets: sharedsets.NewHandler(sharedsets.NewService(sharedsets.NewPgRepository(pool), sharedsets.Options{
+			BcryptCost: cfg.BcryptCost,
+			WrongKeys:  ratelimit.NewMemory(10, 15*time.Minute),
+		})),
+		GroupEvents: groupevents.NewHandler(groupevents.NewService(groupevents.NewPgRepository(pool), groupevents.Options{
+			Comments:     ratelimit.NewMemory(20, time.Minute),
+			Applications: ratelimit.NewMemory(20, 10*time.Minute),
+		})),
+		Friends: friends.NewHandler(friends.NewService(friends.NewPgRepository(pool), friends.Options{
+			Requests: ratelimit.NewMemory(friends.MaxRequestsPerHour, time.Hour),
+		})),
+		Tokens:         tokens,
+		MaxBodyBytes:   cfg.MaxBodyBytes,
+		RequestTimeout: cfg.RequestTimeout,
+	})
+	// Development only: test devices fetch the offline map from this machine's copy (see docker-compose.yml).
+	if dir := os.Getenv("MAP_CACHE_DIR"); dir != "" && !cfg.IsProduction() {
+		slog.Info("serving cached map files", "path", devmaps.Prefix)
+		handler = devmaps.Wrap(handler, dir)
+	}
 	srv := &http.Server{
-		Addr: ":" + cfg.Port,
-		Handler: server.NewRouter(server.Options{
-			Auth:    auth.NewHandler(authSvc),
-			Sync:    sync.NewHandler(sync.NewService(pool)),
-			Weather: weather.NewHandler(weather.NewDefaultService(weather.NewOpenMeteo(weather.OpenMeteoURL))),
-			Explore: explore.NewHandler(exploreSvc).WithShops(shopSvc),
-			SharedSets: sharedsets.NewHandler(sharedsets.NewService(sharedsets.NewPgRepository(pool), sharedsets.Options{
-				BcryptCost: cfg.BcryptCost,
-				WrongKeys:  ratelimit.NewMemory(10, 15*time.Minute),
-			})),
-			GroupEvents: groupevents.NewHandler(groupevents.NewService(groupevents.NewPgRepository(pool), groupevents.Options{
-				Comments:     ratelimit.NewMemory(20, time.Minute),
-				Applications: ratelimit.NewMemory(20, 10*time.Minute),
-			})),
-			Friends: friends.NewHandler(friends.NewService(friends.NewPgRepository(pool), friends.Options{
-				Requests: ratelimit.NewMemory(friends.MaxRequestsPerHour, time.Hour),
-			})),
-			Tokens:         tokens,
-			MaxBodyBytes:   cfg.MaxBodyBytes,
-			RequestTimeout: cfg.RequestTimeout,
-		}),
+		Addr:              ":" + cfg.Port,
+		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      60 * time.Second,

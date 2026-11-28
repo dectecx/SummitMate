@@ -47,6 +47,13 @@ docker compose --profile api up --build api        # API on http://localhost:808
 curl localhost:8080/api/v1/health
 ```
 
+### Cached map files for test devices
+Put `MOI_OSM_Taiwan_TOPO_Rudy.pmtiles` and `noto-sans.zip` in `_local_docs/rudy_cache/` (git-ignored). The compose
+`api` service mounts that folder and, in development only, serves it at `/dev/maps/`. A **debug** build of the app
+looks there first (next to its `API_BASE_URL`) when downloading the offline map, so phones on the local network and
+reinstalled simulators do not fetch ~390 MB from the map author's servers. Without the files nothing changes.
+Check with `curl -I localhost:8080/dev/maps/noto-sans.zip`.
+
 Compose passes `ENV=development`, `DATABASE_URL`, a dev-only `JWT_SECRET` and `BCRYPT_COST=4`
 (override `DATABASE_URL` from your shell to target another database). The full variable list is in
 `.env.example` / `internal/platform/config/config.go`: `ENV`, `PORT`, `DATABASE_URL` (or `DB_*`), `JWT_SECRET` (>= 32 chars),

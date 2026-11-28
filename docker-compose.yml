@@ -56,7 +56,13 @@ services:
     restart: "no"
     ports:
       - "${API_PORT:-8080}:8080"
-    environment: *backend-env
+    environment:
+      <<: *backend-env
+      MAP_CACHE_DIR: /maps
+    # A local copy of the offline map (git-ignored), served at /dev/maps/ so test devices on the local network do
+    # not download it from the author's servers. Without the files the app downloads from there as usual.
+    volumes:
+      - ./_local_docs/rudy_cache:/maps:ro
     depends_on:
       db:
         condition: service_healthy
