@@ -58,6 +58,8 @@ class FakeMapHandle implements MapHandle {
   @override
   @override
   Future<void> setMe(double? lat, double? lng) async => calls.add('me');
+  @override
+  Future<void> setRoute(List<({double lat, double lng})> points) async => calls.add('route:${points.length}');
 }
 
 const fakeRudyMapKey = Key('fake-rudy-map');

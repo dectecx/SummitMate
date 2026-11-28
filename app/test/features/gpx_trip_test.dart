@@ -37,6 +37,25 @@ GpxDocument sample({bool waypoints = true}) {
 }
 
 void main() {
+  test('a route is put on an existing trip, with the nodes only when asked, inside its days', () async {
+    final db = memoryDb();
+    addTearDown(db.close);
+    final w = OutboxWriter(db);
+    final trips = TripRepository(db, w);
+    final items = ItineraryRepository(db, w);
+    final id = await trips.create(name: '單日', start: DateTime(2026, 5, 10));
+    final imported = tripFromGpx(sample(), today: DateTime(2026, 5, 1));
+
+    await attachGpx(trips, items, id, imported, dayCount: 1, addNodes: false);
+    expect(decodeTrack((await db.select(db.trips).getSingle()).track), hasLength(4));
+    expect(await db.select(db.itineraryItems).get(), isEmpty);
+
+    await attachGpx(trips, items, id, imported, dayCount: 1, addNodes: true);
+    final rows = await db.select(db.itineraryItems).get();
+    expect(rows, hasLength(imported.nodes.length));
+    expect({for (final r in rows) r.dayIndex}, {1});
+  });
+
   test('waypoints become nodes in track order, with days, times, altitudes and distances from the track', () {
     final t = tripFromGpx(sample(), today: DateTime(2026, 1, 1));
     expect(t.name, '向陽山屋');

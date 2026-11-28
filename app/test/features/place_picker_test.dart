@@ -263,6 +263,14 @@ void main() {
     expect(find.byKey(const ValueKey('track-profile')), findsOneWidget);
     expect(find.textContaining('爬升 780 m'), findsOneWidget);
     expect(find.textContaining('最高 2780 m'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('show-route')));
+    await tester.tap(find.byKey(const ValueKey('show-route')));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('map-route')), findsOneWidget);
+    expect(find.byKey(const ValueKey('map-route-chip')), findsOneWidget);
+    await tester.tap(find.byTooltip('不顯示路線'));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('map-route')), findsNothing);
     await app.dispose(tester);
   });
 }

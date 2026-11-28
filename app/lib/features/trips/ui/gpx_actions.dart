@@ -17,7 +17,56 @@ import '../../gpx/domain/gpx_codec.dart';
 import '../../gpx/domain/gpx_models.dart';
 import '../data/gpx_import.dart';
 import '../domain/gpx_trip.dart';
+import '../domain/trip_logic.dart';
 import '../providers.dart';
+
+/// Lets the person pick a GPX file and puts its route on [trip], asking before replacing one and whether the
+/// file's points should become nodes too.
+Future<void> importGpxInto(BuildContext context, WidgetRef ref, Trip trip) async {
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    final picked = await FilePicker.pickFiles(dialogTitle: '選擇 GPX 檔案');
+    if (picked.isEmpty || !context.mounted) return;
+    final doc = parseGpx(utf8.decode(await picked.first.readAsBytes(), allowMalformed: true));
+    final imported = tripFromGpx(doc, today: ref.read(clockProvider)());
+    if (imported.track.length < 2) {
+      messenger.showSnackBar(const SnackBar(content: Text('這個檔案沒有路線軌跡，只能從首頁匯入成新行程。')));
+      return;
+    }
+    if (decodeTrack(trip.track).length >= 2) {
+      if (!context.mounted) return;
+      final replace = await _ask(context, title: '換掉目前的路線？', message: '這個行程原本的路線會被新檔案取代。', yes: '換掉', no: '取消');
+      if (replace != true) return;
+    }
+    var addNodes = false;
+    if (doc.waypoints.isNotEmpty) {
+      if (!context.mounted) return;
+      final answer = await _ask(context, title: '也加入節點嗎？', message: '檔案裡有 ${imported.nodes.length} 個航點，可以一起加到行程節點。', yes: '加入節點', no: '只要路線');
+      if (answer == null) return;
+      addNodes = answer;
+    }
+    await attachGpx(ref.read(tripRepositoryProvider), ref.read(itineraryRepositoryProvider), trip.id, imported, dayCount: trip.dayCount, addNodes: addNodes);
+    messenger.showSnackBar(const SnackBar(content: Text('已加入路線')));
+  } on GpxFormatException catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text('這個檔案不是可用的 GPX：${e.message}')));
+  } on Object catch (e, st) {
+    debugPrint('GPX import failed: $e\n$st');
+    messenger.showSnackBar(const SnackBar(content: Text('無法讀取這個檔案，請換一個 GPX 檔再試。')));
+  }
+}
+
+/// True for [yes], false for [no], null when dismissed.
+Future<bool?> _ask(BuildContext context, {required String title, required String message, required String yes, required String no}) => showDialog<bool>(
+  context: context,
+  builder: (ctx) => AlertDialog(
+    title: Text(title),
+    content: Text(message),
+    actions: [
+      TextButton(onPressed: () => Navigator.pop(ctx, no == '取消' ? null : false), child: Text(no)),
+      FilledButton(style: FilledButton.styleFrom(minimumSize: const Size(88, 44)), onPressed: () => Navigator.pop(ctx, true), child: Text(yes)),
+    ],
+  ),
+);
 
 /// Lets the person pick a GPX file and turns it into a new trip.
 Future<void> importGpx(BuildContext context, WidgetRef ref) async {

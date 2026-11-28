@@ -13,6 +13,8 @@ abstract interface class MapHandle {
   Future<void> moveTo(double lat, double lng, {double? minZoom});
   Future<void> setMe(double? lat, double? lng);
 
+  /// Draws a route over the map (empty removes it) and brings the whole of it into view.
+  Future<void> setRoute(List<({double lat, double lng})> points);
 }
 
 /// The Rudy Map drawn by MapLibre from local files, with the mountains and the person's position on top.
@@ -42,6 +44,9 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
 
   static const _peaksSource = 'summitmate-peaks';
   static const _meSource = 'summitmate-me';
+  static const _routeSource = 'summitmate-route';
+
+  var _route = const <({double lat, double lng})>[];
 
   @override
   double get zoom => _c?.cameraPosition?.zoom ?? 7.5;
@@ -61,6 +66,41 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
     _me = lat == null || lng == null ? null : (lat: lat, lng: lng);
     if (_styleReady) await _c?.setGeoJsonSource(_meSource, _meGeoJson());
   }
+
+  @override
+  Future<void> setRoute(List<({double lat, double lng})> points) async {
+    _route = points;
+    if (!_styleReady) return; // drawn when the style is ready
+    await _c?.setGeoJsonSource(_routeSource, _routeGeoJson());
+    await _frameRoute();
+  }
+
+  Future<void> _frameRoute() async {
+    if (_route.length < 2) return;
+    final lats = _route.map((p) => p.lat), lngs = _route.map((p) => p.lng);
+    final bounds = LatLngBounds(
+      southwest: LatLng(lats.reduce(math.min), lngs.reduce(math.min)),
+      northeast: LatLng(lats.reduce(math.max), lngs.reduce(math.max)),
+    );
+    await _c?.animateCamera(CameraUpdate.newLatLngBounds(bounds, left: 48, top: 160, right: 80, bottom: 140));
+  }
+
+  Map<String, dynamic> _routeGeoJson() => {
+    'type': 'FeatureCollection',
+    'features': [
+      if (_route.length >= 2)
+        {
+          'type': 'Feature',
+          'properties': <String, dynamic>{},
+          'geometry': {
+            'type': 'LineString',
+            'coordinates': [
+              for (final p in _route) [p.lng, p.lat],
+            ],
+          },
+        },
+    ],
+  };
 
   Map<String, dynamic> _peaksGeoJson() => {
     'type': 'FeatureCollection',
@@ -96,6 +136,12 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
   Future<void> _addOverlays() async {
     final c = _c;
     if (c == null) return;
+    await c.addGeoJsonSource(_routeSource, _routeGeoJson());
+    await c.addLineLayer(
+      _routeSource,
+      'summitmate-route-layer',
+      const LineLayerProperties(lineColor: '#B9532F', lineWidth: 4, lineCap: 'round', lineJoin: 'round'),
+    );
     await c.addGeoJsonSource(_peaksSource, _peaksGeoJson());
     await c.addCircleLayer(
       _peaksSource,
@@ -119,6 +165,7 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
       ),
     );
     _styleReady = true;
+    await _frameRoute();
   }
 
   @override

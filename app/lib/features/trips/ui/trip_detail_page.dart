@@ -170,6 +170,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
               if (v == 'apply-template') {
                 applyTemplateToTrip(context, ref, trip);
               }
+              if (v == 'gpx-import') importGpxInto(context, ref, trip);
               if (v == 'gpx') {
                 exportGpx(context, trip, ref.read(itineraryProvider(trip.id)).value ?? const []);
               }
@@ -185,6 +186,7 @@ class _TripDetailPageState extends ConsumerState<TripDetailPage>
               const PopupMenuItem(value: 'copy', child: Text('複製行程')),
               const PopupMenuItem(value: 'save-template', child: Text('存成範本')),
               const PopupMenuItem(value: 'apply-template', child: Text('套用範本')),
+              if (role.canEditShared) const PopupMenuItem(value: 'gpx-import', child: Text('匯入 GPX 路線')),
               const PopupMenuItem(value: 'gpx', child: Text('匯出 GPX')),
               if (role.canDeleteTrip)
                 const PopupMenuItem(value: 'delete', child: Text('刪除行程')),

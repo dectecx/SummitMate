@@ -9,3 +9,13 @@ final locationServiceProvider = Provider<LocationService>((ref) => const Geoloca
 final mapTileProviderProvider = Provider<TileProvider>(
   (ref) => NetworkTileProvider(cachingProvider: const DisabledMapCachingProvider()),
 );
+
+/// The trip whose recorded route the map shows, or null.
+class MapRoute extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void show(String tripId) => state = tripId;
+  void clear() => state = null;
+}
+
+final mapRouteProvider = NotifierProvider<MapRoute, String?>(MapRoute.new);

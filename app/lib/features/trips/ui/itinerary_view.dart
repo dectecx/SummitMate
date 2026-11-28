@@ -1,7 +1,10 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../app/router.dart';
+import '../../map/providers.dart';
 import '../../../core/db/app_database.dart';
 import '../../../shared/hint_banner.dart';
 import '../domain/trip_logic.dart';
@@ -178,12 +181,12 @@ class _ItemTile extends ConsumerWidget {
 }
 
 /// Elevation profile and totals of the trip's stored GPX track (nothing when the trip has none).
-class _TrackProfile extends StatelessWidget {
+class _TrackProfile extends ConsumerWidget {
   const _TrackProfile({required this.trip});
   final Trip trip;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final track = decodeTrack(trip.track);
     if (track.length < 2) return const SizedBox.shrink();
     final stats = profileStats(track);
@@ -206,6 +209,16 @@ class _TrackProfile extends StatelessWidget {
             ],
             const SizedBox(height: 12),
             ElevationProfileChart(profile: elevationProfile(track)),
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              key: const ValueKey('show-route'),
+              onPressed: () {
+                ref.read(mapRouteProvider.notifier).show(trip.id);
+                context.go(Routes.map);
+              },
+              icon: const Icon(Icons.map_outlined),
+              label: const Text('在地圖上看路線'),
+            ),
           ],
         ),
       ),

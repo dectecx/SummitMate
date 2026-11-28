@@ -9,6 +9,8 @@ import '../../shared/icon_badge.dart';
 import '../../shared/brand/cover_image.dart';
 import '../../app/router.dart';
 import '../trips/domain/trip_art.dart';
+import '../trips/domain/gpx_trip.dart';
+import '../trips/providers.dart';
 import 'ui/map_markers.dart';
 import '../../shared/open_link.dart';
 import '../explore/domain/mountain_models.dart';
@@ -41,6 +43,7 @@ class _MapTabState extends ConsumerState<MapTab> {
   MapHandle? _rudy; // set while the Rudy Map is the one on screen
   bool _usingRudy = false;
   bool _farView = true; // zoomed out: peaks are dots
+  String? _shownRoute; // what the map on screen has already drawn and framed
 
   @override
   void dispose() {
@@ -98,6 +101,11 @@ class _MapTabState extends ConsumerState<MapTab> {
       _rudy = null;
     }
 
+    final routeTripId = ref.watch(mapRouteProvider);
+    final routeTrip = routeTripId == null ? null : ref.watch(tripProvider(routeTripId)).value;
+    final route = [for (final p in decodeTrack(routeTrip?.track)) (lat: p.lat, lng: p.lng)];
+    _drawRoute(routeTrip == null ? null : '${routeTrip.id}:${routeTrip.track.hashCode}', route);
+
     // The map fills the screen; its title and controls float over it. The map picture is light in both themes.
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
@@ -108,6 +116,7 @@ class _MapTabState extends ConsumerState<MapTab> {
               ref.watch(rudyMapBuilderProvider)(context, rudyStyle, mountains, _onPeaksTapped, (h) {
                 _rudy = h;
                 h.setMe(_me?.latitude, _me?.longitude);
+                if (route.length >= 2) h.setRoute(route);
               })
             else
               FlutterMap(
@@ -130,6 +139,19 @@ class _MapTabState extends ConsumerState<MapTab> {
                     maxNativeZoom: 15, // z16 of the NLSC layer is only an enlarged z15
                     tileProvider: ref.watch(mapTileProviderProvider),
                   ),
+                  if (route.length >= 2)
+                    PolylineLayer(
+                      key: const ValueKey('map-route'),
+                      polylines: [
+                        Polyline(
+                          points: [for (final p in route) LatLng(p.lat, p.lng)],
+                          color: const Color(0xFFB9532F),
+                          strokeWidth: 4,
+                          borderColor: Colors.white,
+                          borderStrokeWidth: 1.5,
+                        ),
+                      ],
+                    ),
                   MarkerLayer(
                     markers: [
                       for (final m in mountains)
@@ -155,9 +177,26 @@ class _MapTabState extends ConsumerState<MapTab> {
               top: MediaQuery.paddingOf(context).top + 8,
               child: Align(
                 alignment: Alignment.topLeft,
-                child: _TitleCard(
-                  sourceName: _usingRudy ? '魯地圖・登山地形圖' : '政府底圖・需要網路',
-                  onOfflineMaps: () => context.push(Routes.offlineMaps),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _TitleCard(
+                      sourceName: _usingRudy ? '魯地圖・登山地形圖' : '政府底圖・需要網路',
+                      onOfflineMaps: () => context.push(Routes.offlineMaps),
+                    ),
+                    if (routeTrip != null && route.length >= 2)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: InputChip(
+                          key: const ValueKey('map-route-chip'),
+                          avatar: const Icon(Icons.route_outlined, size: 18),
+                          label: Text('路線：${routeTrip.name}', overflow: TextOverflow.ellipsis),
+                          deleteButtonTooltipMessage: '不顯示路線',
+                          onDeleted: () => ref.read(mapRouteProvider.notifier).clear(),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -228,6 +267,28 @@ class _MapTabState extends ConsumerState<MapTab> {
         ),
       ),
     );
+  }
+
+  /// Brings a newly chosen route into view, once. The Rudy Map also draws it itself.
+  void _drawRoute(String? id, List<({double lat, double lng})> route) {
+    final key = id == null ? null : '$id:$_usingRudy';
+    if (key == _shownRoute) return;
+    final hadRoute = _shownRoute != null;
+    _shownRoute = key;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_usingRudy) {
+        if (route.length >= 2 || hadRoute) _rudy?.setRoute(route);
+      } else if (route.length >= 2) {
+        _controller.fitCamera(
+          CameraFit.coordinates(
+            coordinates: [for (final p in route) LatLng(p.lat, p.lng)],
+            padding: const EdgeInsets.fromLTRB(48, 160, 80, 140),
+            maxZoom: 15,
+          ),
+        );
+      }
+    });
   }
 
   void _showCredit() {
