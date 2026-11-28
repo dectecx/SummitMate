@@ -30,6 +30,7 @@ class _EventsViewState extends ConsumerState<EventsView> {
   final _items = <EventSummary>[];
   late EventScope _scope = widget.initialScope ?? widget.scopes.first;
   String? _cursor;
+  String _query = ''; // what the list on screen was searched with
   bool _loading = false;
   EventsException? _error;
   int _request = 0;
@@ -56,6 +57,7 @@ class _EventsViewState extends ConsumerState<EventsView> {
 
   Future<void> _load({bool reset = false}) async {
     final ticket = ++_request;
+    if (reset) _query = _search.text;
     setState(() {
       _error = null;
       if (reset) {
@@ -71,7 +73,7 @@ class _EventsViewState extends ConsumerState<EventsView> {
     try {
       final page = await ref
           .read(eventsApiProvider)
-          .list(scope: _scope, q: _search.text, cursor: reset ? null : _cursor);
+          .list(scope: _scope, q: _query, cursor: reset ? null : _cursor);
       if (!mounted || ticket != _request) return;
       setState(() {
         _items.addAll(page.items);
@@ -87,6 +89,32 @@ class _EventsViewState extends ConsumerState<EventsView> {
     }
   }
 
+  /// Fetches the same stretch of the list again and swaps it in at once, so the person stays where they were.
+  Future<void> _refresh() async {
+    if (_locked || _loading || _items.isEmpty) return _load(reset: true);
+    final ticket = ++_request;
+    final api = ref.read(eventsApiProvider);
+    final fresh = <EventSummary>[];
+    String? cursor;
+    try {
+      do {
+        final page = await api.list(scope: _scope, q: _query, cursor: cursor);
+        if (!mounted || ticket != _request) return;
+        fresh.addAll(page.items);
+        cursor = page.nextCursor;
+      } while (cursor != null && fresh.length < _items.length);
+    } on EventsException {
+      return; // what is on screen is still the best there is
+    }
+    setState(() {
+      _items
+        ..clear()
+        ..addAll(fresh);
+      _cursor = cursor;
+      _error = null;
+    });
+  }
+
   void _setScope(EventScope s) {
     if (s == _scope) return;
     setState(() => _scope = s);
@@ -97,7 +125,7 @@ class _EventsViewState extends ConsumerState<EventsView> {
     await context.push(Routes.event(e.id));
     if (!mounted) return;
     ref.invalidate(pendingApplicationsProvider);
-    _load(reset: true);
+    _refresh();
   }
 
   @override

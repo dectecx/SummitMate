@@ -185,6 +185,40 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('coming back from an event keeps the place in the list and shows what changed', (tester) async {
+    final api = FakeEventsApi(events: [for (var i = 0; i < 12; i++) ev('e$i', '健行 $i', start: '2026-12-${10 + i}')])..pageSize = 5;
+    final app = await startEvents(tester, api);
+    await openEvents(tester);
+    tester.view.physicalSize = const Size(420, 800);
+    await settle(tester);
+    final list = find.descendant(of: find.byType(RefreshIndicator), matching: find.byType(Scrollable)).first;
+    ScrollPosition position() => tester.state<ScrollableState>(list).position;
+    Future<void> toEnd() async {
+      position().jumpTo(position().maxScrollExtent);
+      await settle(tester);
+    }
+
+    await toEnd();
+    await toEnd(); // the first jump can reveal more height
+    await tester.tap(find.byKey(const ValueKey('events-more')));
+    await settle(tester);
+    await toEnd();
+    await tester.scrollUntilVisible(card('e7'), -200, scrollable: list);
+    await settle(tester);
+    final before = position().pixels;
+    expect(before, greaterThan(0));
+
+    await tester.tap(card('e7'));
+    await settle(tester);
+    await goBack(tester);
+    await settle(tester);
+
+    expect(position().pixels, before);
+    expect(card('e7'), findsOneWidget);
+    expect(api.listCalls.length, greaterThanOrEqualTo(4), reason: 'two pages loaded, then both fetched again');
+    await app.dispose(tester);
+  });
+
   testWidgets('pulling down refreshes the list', (tester) async {
     final api = sample();
     final app = await startEvents(tester, api);
