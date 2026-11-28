@@ -8,6 +8,8 @@ import 'package:summitmate/features/map/domain/map_logic.dart';
 import 'package:summitmate/features/map/providers.dart';
 
 import 'explore_test.dart' show FakeExploreApi, m, payloadOf;
+import 'package:summitmate/features/map/map_tab.dart';
+
 import 'harness.dart';
 
 class FakeLocation implements LocationService {
@@ -60,28 +62,43 @@ void main() {
       );
     }
 
-    testWidgets('the map has one control group, keeps the credit behind a button, and shows the mountains', (tester) async {
+    testWidgets('the map says which map it shows, folds the credit away, and keeps the rest in its settings', (tester) async {
       final app = await start(tester);
       await tapText(tester, '地圖');
       await settle(tester);
 
       expect(find.byType(FlutterMap), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const ValueKey('map-layers')), matching: find.text('政府底圖')), findsOneWidget);
       expect(find.byTooltip('我的位置'), findsOneWidget);
-      expect(find.byTooltip('放大'), findsOneWidget);
-      expect(find.byTooltip('縮小'), findsOneWidget);
-      expect(find.byTooltip('離線地圖'), findsOneWidget);
-      expect(find.textContaining('內政部國土測繪中心'), findsNothing, reason: 'the credit does not cover the map');
-      expect(find.byKey(const ValueKey('peak-yushan-main')), findsOneWidget);
-      await tester.tap(find.byTooltip('地圖資料來源'));
+      expect(find.byTooltip('放大'), findsNothing, reason: 'zooming is the two-finger gesture');
+      expect(find.byKey(const ValueKey('map-compass')), findsNothing, reason: 'north is up');
+      expect(find.byKey(const ValueKey('map-credit')), findsOneWidget, reason: 'the licences ask for it to be seen without doing anything');
+      expect(find.text('地圖：內政部國土測繪中心'), findsOneWidget);
+      await tester.pump(mapCreditDuration);
       await settle(tester);
-      expect(find.textContaining('內政部國土測繪中心'), findsOneWidget);
+      expect(find.byKey(const ValueKey('map-credit')), findsNothing, reason: 'then it makes room for the map');
+      expect(find.byKey(const ValueKey('peak-yushan-main')), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('map-layers')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('map-attribution')));
+      await settle(tester);
+      expect(find.textContaining('https://data.gov.tw/license'), findsOneWidget);
       await tapText(tester, '關閉');
 
-      // The three buttons share one column, so they cannot overlap each other.
-      final locate = tester.getRect(find.byTooltip('我的位置'));
-      final zoomIn = tester.getRect(find.byTooltip('放大'));
-      final zoomOut = tester.getRect(find.byTooltip('縮小'));
-      expect(locate.overlaps(zoomIn) || zoomIn.overlaps(zoomOut) || locate.overlaps(zoomOut), isFalse);
+      final layers = tester.getRect(find.byKey(const ValueKey('map-layers')));
+      expect(layers.overlaps(tester.getRect(find.byTooltip('我的位置'))), isFalse);
+      await app.dispose(tester);
+    });
+
+    testWidgets('touching the map controls folds the credit before its time is up', (tester) async {
+      final app = await start(tester);
+      await tapText(tester, '地圖');
+      await settle(tester);
+      expect(find.byKey(const ValueKey('map-credit')), findsOneWidget);
+      await tester.tap(find.byTooltip('我的位置'));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('map-credit')), findsNothing);
       await app.dispose(tester);
     });
 
@@ -136,7 +153,9 @@ void main() {
     testWidgets('the offline maps page is just the Rudy Map card', (tester) async {
       final app = await start(tester);
       await tapText(tester, '地圖');
-      await tester.tap(find.byTooltip('離線地圖'));
+      await tester.tap(find.byKey(const ValueKey('map-layers')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('map-offline')));
       await settle(tester);
 
       expect(find.byKey(const ValueKey('rudy-card')), findsOneWidget);

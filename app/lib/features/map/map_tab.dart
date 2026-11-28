@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +13,9 @@ import '../../app/router.dart';
 import '../trips/domain/trip_art.dart';
 import '../trips/domain/gpx_trip.dart';
 import '../trips/providers.dart';
+import 'ui/map_controls.dart';
 import 'ui/map_markers.dart';
+import '../../core/providers.dart';
 import '../../shared/open_link.dart';
 import '../explore/domain/mountain_models.dart';
 import '../explore/providers.dart';
@@ -25,8 +29,17 @@ import 'providers.dart';
 /// NLSC (內政部國土測繪中心) open-data e-map with contour lines, online only. Note the z/y/x order.
 const _nlscTileUrl = 'https://wmts.nlsc.gov.tw/wmts/EMAP5_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}';
 
-/// The credit the NLSC licence asks for.
-const nlscAttribution = '地圖：內政部國土測繪中心（政府資料開放授權條款第 1 版）';
+/// The credit the Open Government Data License asks for (its exhibit): provider, year, dataset, statement and link.
+/// Dataset: https://data.gov.tw/dataset/17214 (layer EMAP5_OPENDATA, updated irregularly; year checked 2026-11-28).
+const nlscAttribution =
+    '內政部國土測繪中心　2026　臺灣通用電子地圖（套疊等高線，比例尺小於一萬八千分之一）\n\n'
+    '此開放資料依政府資料開放授權條款（第 1 版）進行公眾釋出，使用者於遵守本條款各項規定之前提下，得利用之。\n\n'
+    '政府資料開放授權條款：https://data.gov.tw/license';
+
+const _nlscShortCredit = '地圖：內政部國土測繪中心';
+
+/// How long the short credit stays before it folds into the info button, as the OpenStreetMap guideline allows.
+const mapCreditDuration = Duration(seconds: 5);
 
 /// "地圖": the topographic map with the mountains, the person's position; the Rudy Map when it is installed.
 class MapTab extends ConsumerStatefulWidget {
@@ -44,20 +57,32 @@ class _MapTabState extends ConsumerState<MapTab> {
   bool _usingRudy = false;
   bool _farView = true; // zoomed out: peaks are dots
   String? _shownRoute; // what the map on screen has already drawn and framed
+  final _north = ValueNotifier<double>(0); // of the government map; the Rudy Map keeps its own
+  bool _creditOpen = false; // the short credit is on the map
+  bool? _creditedRudy; // the map it was last shown for
+  Timer? _creditTimer;
 
   @override
   void dispose() {
+    _creditTimer?.cancel();
+    _north.dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  void _zoom(double delta) {
-    if (_usingRudy) {
-      _rudy?.zoomBy(delta * 0.5); // half a level per press: finer than the raster map, which has no sub-levels
-      return;
-    }
-    final cam = _controller.camera;
-    _controller.move(cam.center, (cam.zoom + delta).clamp(6, 18));
+  /// Shows the short credit when a map comes on screen for the first time, or when the base map changes.
+  void _creditFor(bool rudy) {
+    if (_creditedRudy == rudy) return;
+    _creditedRudy = rudy;
+    _creditOpen = true;
+    _creditTimer?.cancel();
+    _creditTimer = Timer(mapCreditDuration, _foldCredit);
+  }
+
+  /// Touching the map or its controls folds the credit away early.
+  void _foldCredit() {
+    _creditTimer?.cancel();
+    if (_creditOpen && mounted) setState(() => _creditOpen = false);
   }
 
   Future<void> _locate() async {
@@ -94,8 +119,9 @@ class _MapTabState extends ConsumerState<MapTab> {
     };
     final scheme = Theme.of(context).colorScheme;
     final source = ref.watch(mapSourceProvider);
-    ref.watch(rudyReadyProvider); // keep it loaded so the menu knows whether the files are there
-    final rudyStyle = source == MapSource.rudy ? ref.watch(rudyStyleProvider).value : null;
+    final installed = ref.watch(rudyReadyProvider).value; // unknown until the files have been looked for
+    final online = ref.watch(onlineProvider);
+    final rudyStyle = ref.watch(shownMapProvider) == MapSource.rudy ? ref.watch(rudyStyleProvider).value : null;
     _usingRudy = rudyStyle != null;
     if (!_usingRudy) {
       _rudy = null;
@@ -106,161 +132,175 @@ class _MapTabState extends ConsumerState<MapTab> {
     final route = [for (final p in decodeTrack(routeTrip?.track)) (lat: p.lat, lng: p.lng)];
     _drawRoute(routeTrip == null ? null : '${routeTrip.id}:${routeTrip.track.hashCode}', route);
 
-    // The map fills the screen; its title and controls float over it. The map picture is light in both themes.
+    _creditFor(_usingRudy);
+
+    // The map fills the screen; its controls float over it. The map picture is light in both themes.
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: Stack(
           children: [
-            if (rudyStyle != null)
-              ref.watch(rudyMapBuilderProvider)(context, rudyStyle, mountains, _onPeaksTapped, (h) {
-                _rudy = h;
-                h.setMe(_me?.latitude, _me?.longitude);
-                if (route.length >= 2) h.setRoute(route);
-              })
-            else
-              FlutterMap(
-                mapController: _controller,
-                options: MapOptions(
-                  initialCenter: const LatLng(23.7, 121.0),
-                  initialZoom: 7.5,
-                  minZoom: 6,
-                  maxZoom: 18,
-                  // Peaks are small dots while the whole island is in view and become mountains once you zoom in.
-                  onPositionChanged: (camera, _) {
-                    final far = camera.zoom < 10;
-                    if (far != _farView) setState(() => _farView = far);
-                  },
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: _nlscTileUrl,
-                    userAgentPackageName: 'com.declab.summitmate',
-                    maxNativeZoom: 15, // z16 of the NLSC layer is only an enlarged z15
-                    tileProvider: ref.watch(mapTileProviderProvider),
+            Listener(
+              onPointerDown: (_) => _foldCredit(),
+              child: rudyStyle != null
+                ? ref.watch(rudyMapBuilderProvider)(context, rudyStyle, mountains, _onPeaksTapped, (h) {
+                  _rudy = h;
+                  // the compass follows this map from now on
+                  WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? setState(() {}) : null);
+                  h.setMe(_me?.latitude, _me?.longitude);
+                  if (route.length >= 2) h.setRoute(route);
+                })
+                : FlutterMap(
+                  mapController: _controller,
+                  options: MapOptions(
+                    initialCenter: const LatLng(23.7, 121.0),
+                    initialZoom: 7.5,
+                    minZoom: 6,
+                    maxZoom: 18,
+                    // Peaks are small dots while the whole island is in view and become mountains once you zoom in.
+                    onPositionChanged: (camera, _) {
+                      _north.value = camera.rotation;
+                      final far = camera.zoom < 10;
+                      if (far != _farView) setState(() => _farView = far);
+                    },
                   ),
-                  if (route.length >= 2)
-                    PolylineLayer(
-                      key: const ValueKey('map-route'),
-                      polylines: [
-                        Polyline(
-                          points: [for (final p in route) LatLng(p.lat, p.lng)],
-                          color: const Color(0xFFB9532F),
-                          strokeWidth: 4,
-                          borderColor: Colors.white,
-                          borderStrokeWidth: 1.5,
-                        ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: _nlscTileUrl,
+                      userAgentPackageName: 'com.declab.summitmate',
+                      maxNativeZoom: 15, // z16 of the NLSC layer is only an enlarged z15
+                      tileProvider: ref.watch(mapTileProviderProvider),
+                    ),
+                    if (route.length >= 2)
+                      PolylineLayer(
+                        key: const ValueKey('map-route'),
+                        polylines: [
+                          Polyline(
+                            points: [for (final p in route) LatLng(p.lat, p.lng)],
+                            color: const Color(0xFFB9532F),
+                            strokeWidth: 4,
+                            borderColor: Colors.white,
+                            borderStrokeWidth: 1.5,
+                          ),
+                        ],
+                      ),
+                    MarkerLayer(
+                      markers: [
+                        for (final m in mountains)
+                          Marker(
+                            key: ValueKey('peak-${m.id}'),
+                            point: LatLng(m.latitude, m.longitude),
+                            width: 32,
+                            height: 32,
+                            child: GestureDetector(
+                              onTap: () => _onPeakTap(m, mountains),
+                              child: PeakMarker(far: _farView),
+                            ),
+                          ),
+                        if (_me != null)
+                          Marker(key: const ValueKey('me'), point: _me!, width: 24, height: 24, child: const MeMarker()),
                       ],
                     ),
-                  MarkerLayer(
-                    markers: [
-                      for (final m in mountains)
-                        Marker(
-                          key: ValueKey('peak-${m.id}'),
-                          point: LatLng(m.latitude, m.longitude),
-                          width: 32,
-                          height: 32,
-                          child: GestureDetector(
-                            onTap: () => _onPeakTap(m, mountains),
-                            child: PeakMarker(far: _farView),
-                          ),
-                        ),
-                      if (_me != null)
-                        Marker(key: const ValueKey('me'), point: _me!, width: 24, height: 24, child: const MeMarker()),
-                    ],
+                  ],
+                ),
+            ),
+            // top left: what is drawn on the map
+            if (routeTrip != null && route.length >= 2)
+              Positioned(
+                left: 12,
+                right: 150,
+                top: MediaQuery.paddingOf(context).top + 8,
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: InputChip(
+                    key: const ValueKey('map-route-chip'),
+                    avatar: const Icon(Icons.route_outlined, size: 18),
+                    label: Text('路線：${routeTrip.name}', overflow: TextOverflow.ellipsis),
+                    deleteButtonTooltipMessage: '不顯示路線',
+                    onDeleted: () => ref.read(mapRouteProvider.notifier).clear(),
+                  ),
+                ),
+              ),
+            // top right: which map, then the compass
+            Positioned(
+              right: 12,
+              top: MediaQuery.paddingOf(context).top + 8,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  MapLayerButton(
+                    // "離線": standing in for the government map, which was chosen but needs a connection
+                    label: !_usingRudy ? '政府底圖' : (source == MapSource.nlsc ? '魯地圖・離線' : '魯地圖'),
+                    onPressed: () {
+                      _foldCredit();
+                      showMapSettings(context, onChoose: _chooseSource, onOfflineMaps: () => context.push(Routes.offlineMaps), onCredit: _showCredit);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  MapCompass(
+                    north: _usingRudy ? (_rudy?.north ?? _north) : _north,
+                    onPressed: () {
+                      _foldCredit();
+                      if (_usingRudy) {
+                        _rudy?.resetNorth();
+                      } else {
+                        _controller.rotate(0);
+                      }
+                    },
                   ),
                 ],
               ),
-            Positioned(
-              left: 16,
-              right: 16,
-              top: MediaQuery.paddingOf(context).top + 8,
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _TitleCard(
-                      sourceName: _usingRudy ? '魯地圖・登山地形圖' : '政府底圖・需要網路',
-                      onOfflineMaps: () => context.push(Routes.offlineMaps),
-                    ),
-                    if (routeTrip != null && route.length >= 2)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: InputChip(
-                          key: const ValueKey('map-route-chip'),
-                          avatar: const Icon(Icons.route_outlined, size: 18),
-                          label: Text('路線：${routeTrip.name}', overflow: TextOverflow.ellipsis),
-                          deleteButtonTooltipMessage: '不顯示路線',
-                          onDeleted: () => ref.read(mapRouteProvider.notifier).clear(),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
             ),
-            // Credit required by the data licence, one tap away so it does not cover the map.
+            // bottom: the credit and "where am I", over the offer to download the Rudy Map
             Positioned(
               left: 12,
-              bottom: 12 + MediaQuery.paddingOf(context).bottom,
-              child: IconButton(
-                key: const ValueKey('map-attribution'),
-                tooltip: '地圖資料來源',
-                style: IconButton.styleFrom(
-                  backgroundColor: scheme.surfaceContainerLowest.withValues(alpha: 0.9),
-                  foregroundColor: scheme.onSurfaceVariant,
-                  minimumSize: const Size(44, 44),
-                ),
-                onPressed: _showCredit,
-                icon: const Icon(Icons.info_outline, size: 20),
-              ),
-            ),
-            // One control group so the buttons can never overlap each other or the info button.
-            Positioned(
               right: 12,
-              bottom: 32 + MediaQuery.paddingOf(context).bottom,
-              child: Material(
-                elevation: 3,
-                shadowColor: Colors.black38,
-                color: scheme.surfaceContainerLowest,
-                shape: StadiumBorder(side: BorderSide(color: scheme.outlineVariant)),
-                child: SizedBox(
-                  width: 50,
-                  child: IconButtonTheme(
-                    data: IconButtonThemeData(
-                      style: IconButton.styleFrom(foregroundColor: scheme.primary, minimumSize: const Size(48, 48)),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          tooltip: '我的位置',
-                          onPressed: _locate,
-                          icon: _locating
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : const Icon(Icons.my_location),
+              bottom: 12 + MediaQuery.paddingOf(context).bottom,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          // Credit required by the data licences: a short line when the map appears, afterwards in
+                          // the map settings.
+                          child: _creditOpen
+                              ? ActionChip(
+                                  key: const ValueKey('map-credit'),
+                                  backgroundColor: scheme.surfaceContainerLowest.withValues(alpha: 0.92),
+                                  label: Text(_usingRudy ? rudyShortCredit : _nlscShortCredit, style: Theme.of(context).textTheme.labelSmall),
+                                  onPressed: _showCredit,
+                                )
+                              : const SizedBox.shrink(),
                         ),
-                        const Divider(height: 1),
-                        IconButton(tooltip: '放大', onPressed: () => _zoom(1), icon: const Icon(Icons.add)),
-                        const Divider(height: 1),
-                        IconButton(tooltip: '縮小', onPressed: () => _zoom(-1), icon: const Icon(Icons.remove)),
-                        const Divider(height: 1),
-                        PopupMenuButton<MapSource>(
-                          key: const ValueKey('map-source'),
-                          tooltip: '底圖',
-                          icon: Icon(Icons.layers_outlined, color: scheme.primary),
-                          initialValue: source,
-                          onSelected: _chooseSource,
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(value: MapSource.nlsc, child: Text('政府底圖（國土測繪中心）')),
-                            PopupMenuItem(value: MapSource.rudy, child: Text('魯地圖（登山地形圖）')),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      MapRoundButton(
+                        tooltip: '我的位置',
+                        onPressed: () {
+                          _foldCredit();
+                          _locate();
+                        },
+                        icon: _locating
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.my_location),
+                      ),
+                    ],
                   ),
-                ),
+                  if (source == MapSource.rudy && installed == false)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: RudyPrompt(
+                        offline: !online,
+                        onDownload: () => context.push(Routes.offlineMaps),
+                        onDecline: () => ref.read(mapSourceProvider.notifier).choose(MapSource.nlsc),
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -283,7 +323,7 @@ class _MapTabState extends ConsumerState<MapTab> {
         _controller.fitCamera(
           CameraFit.coordinates(
             coordinates: [for (final p in route) LatLng(p.lat, p.lng)],
-            padding: const EdgeInsets.fromLTRB(48, 160, 80, 140),
+            padding: const EdgeInsets.fromLTRB(48, 120, 48, 140),
             maxZoom: 15,
           ),
         );
@@ -292,18 +332,26 @@ class _MapTabState extends ConsumerState<MapTab> {
   }
 
   void _showCredit() {
+    _foldCredit();
     final rudy = _usingRudy;
+    Widget link(String key, String label, String url) => TextButton(
+      key: ValueKey(key),
+      onPressed: () => ref.read(linkOpenerProvider)(Uri.parse(url)),
+      child: Text(label),
+    );
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('地圖資料來源'),
-        content: Text(rudy ? rudyAttribution : nlscAttribution),
+        content: SingleChildScrollView(child: Text(rudy ? rudyAttribution : nlscAttribution)),
         actions: [
-          TextButton(
-            key: const ValueKey('map-attribution-link'),
-            onPressed: () => ref.read(linkOpenerProvider)(Uri.parse(rudy ? rudyHomeUrl : 'https://maps.nlsc.gov.tw')),
-            child: const Text('開啟網站'),
-          ),
+          if (rudy) ...[
+            link('map-attribution-link', '魯地圖官網', rudyHomeUrl),
+            link('map-osm-link', 'OpenStreetMap 授權', osmCopyrightUrl),
+          ] else ...[
+            link('map-attribution-link', '圖資網站', 'https://maps.nlsc.gov.tw'),
+            link('map-licence-link', '授權條款', 'https://data.gov.tw/license'),
+          ],
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('關閉')),
         ],
       ),
@@ -311,12 +359,14 @@ class _MapTabState extends ConsumerState<MapTab> {
   }
 
   Future<void> _chooseSource(MapSource s) async {
-    if (s == MapSource.rudy && !(ref.read(rudyReadyProvider).value ?? false)) {
+    final installed = ref.read(rudyReadyProvider).value ?? false;
+    if (s == MapSource.rudy && !installed) {
       // Needs a download first: the offline maps page has it.
-      _say('魯地圖需要先下載，請在「離線地圖」頁下載。');
-      context.push(Routes.offlineMaps);
+      await ref.read(mapSourceProvider.notifier).choose(s);
+      if (mounted) context.push(Routes.offlineMaps);
       return;
     }
+    if (s == MapSource.nlsc && installed && !ref.read(onlineProvider)) _say('沒有網路，暫時顯示魯地圖。');
     await ref.read(mapSourceProvider.notifier).choose(s);
   }
 
@@ -391,58 +441,6 @@ class _MapTabState extends ConsumerState<MapTab> {
                 context.go(Routes.mountain(m.id));
               },
               child: const Text('查看山岳資料'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// The floating title: which base map is on screen, and the way to the offline maps.
-class _TitleCard extends StatelessWidget {
-  const _TitleCard({required this.sourceName, required this.onOfflineMaps});
-  final String sourceName;
-  final VoidCallback onOfflineMaps;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Material(
-      elevation: 3,
-      shadowColor: Colors.black38,
-      color: scheme.surfaceContainerLowest,
-      shape: StadiumBorder(side: BorderSide(color: scheme.outlineVariant)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 6, 8, 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '地圖',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1),
-                  ),
-                  Text(
-                    sourceName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            IconButton(
-              tooltip: '離線地圖',
-              style: IconButton.styleFrom(foregroundColor: scheme.primary, minimumSize: const Size(48, 48)),
-              onPressed: onOfflineMaps,
-              icon: const Icon(Icons.download_for_offline_outlined),
             ),
           ],
         ),

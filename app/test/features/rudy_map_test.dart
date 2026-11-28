@@ -26,7 +26,7 @@ void main() {
     late FakeMapHandle handle;
     late FakeLocation location;
 
-    Future<AppHarness> start(WidgetTester tester, {bool installed = false, String? saved}) async {
+    Future<AppHarness> start(WidgetTester tester, {bool installed = false, String? saved, bool online = true}) async {
       tester.view.physicalSize = const Size(800, 2600);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -40,6 +40,7 @@ void main() {
         mapHandle: handle,
         overrides: [
           locationServiceProvider.overrideWithValue(location),
+          if (!online) onlineProvider.overrideWithValue(false),
           exploreApiProvider.overrideWithValue(FakeExploreApi(payloadOf([m('yushan-main', '玉山', 3952), m('xueshan-main', '雪山', 3885)]))),
         ],
       );
@@ -47,11 +48,17 @@ void main() {
       return app;
     }
 
+    Future<void> openOfflineMaps(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('map-layers')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('map-offline')));
+      await settle(tester);
+    }
+
     testWidgets('the card offers the download, shows progress, and the switch appears when it is done', (tester) async {
       final app = await start(tester);
       await tapText(tester, '地圖');
-      await tester.tap(find.byTooltip('離線地圖'));
-      await settle(tester);
+      await openOfflineMaps(tester);
 
       expect(find.byKey(const ValueKey('rudy-card')), findsOneWidget);
       expect(find.byKey(const ValueKey('rudy-use')), findsNothing, reason: 'nothing to use before it is downloaded');
@@ -81,8 +88,7 @@ void main() {
     testWidgets('deleting the downloaded map brings the download button back', (tester) async {
       final app = await start(tester, installed: true, saved: 'rudy');
       await tapText(tester, '地圖');
-      await tester.tap(find.byTooltip('離線地圖'));
-      await settle(tester);
+      await openOfflineMaps(tester);
       expect(find.byKey(const ValueKey('rudy-use')), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('rudy-remove')));
@@ -99,8 +105,7 @@ void main() {
     testWidgets('when the file is not offered yet the card says so and offers a retry', (tester) async {
       final app = await start(tester);
       await tapText(tester, '地圖');
-      await tester.tap(find.byTooltip('離線地圖'));
-      await settle(tester);
+      await openOfflineMaps(tester);
       installer.emit(const RudyInstallState(RudyInstallPhase.unavailable, error: '魯地圖檔案目前還沒有開放下載'));
       await settle(tester);
       expect(find.textContaining('還沒有開放下載'), findsOneWidget);
@@ -108,36 +113,69 @@ void main() {
       await app.dispose(tester);
     });
 
-    testWidgets('choosing the Rudy Map before it is downloaded sends the person to the download', (tester) async {
+    testWidgets('without the files the government map is shown with an offer to download the Rudy Map', (tester) async {
       final app = await start(tester);
       await tapText(tester, '地圖');
-      await tester.tap(find.byKey(const ValueKey('map-source')));
       await settle(tester);
-      await tapText(tester, '魯地圖（登山地形圖）');
+      expect(find.byKey(fakeRudyMapKey), findsNothing);
+      expect(find.byKey(const ValueKey('rudy-prompt')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('rudy-prompt-download')));
+      await settle(tester);
       expect(find.byKey(const ValueKey('rudy-card')), findsOneWidget, reason: 'landed on the offline maps page');
-      expect(app.container.read(mapSourceProvider), MapSource.nlsc);
       await app.dispose(tester);
     });
 
-    testWidgets('with the files installed the map switches to the Rudy Map and its controls work', (tester) async {
+    testWidgets('declining the offer keeps the government map and stops asking', (tester) async {
+      final app = await start(tester);
+      await tapText(tester, '地圖');
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('rudy-prompt-decline')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('rudy-prompt')), findsNothing);
+      expect(app.container.read(mapSourceProvider), MapSource.nlsc);
+
+      // Choosing it later in the settings leads to the download.
+      await tester.tap(find.byKey(const ValueKey('map-layers')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('base-rudy')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('rudy-card')), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('with no connection the installed Rudy Map stands in for the government map', (tester) async {
+      final app = await start(tester, installed: true, saved: 'nlsc', online: false);
+      await tapText(tester, '地圖');
+      await settle(tester);
+      expect(find.byKey(fakeRudyMapKey), findsOneWidget);
+      expect(find.text('魯地圖・離線'), findsOneWidget);
+      expect(app.container.read(mapSourceProvider), MapSource.nlsc, reason: 'the choice is kept for when there is a connection');
+      await app.dispose(tester);
+    });
+
+    testWidgets('with the files installed the Rudy Map is shown first, with a compass when turned', (tester) async {
       final app = await start(tester, installed: true);
       await tapText(tester, '地圖');
-      await tester.tap(find.byKey(const ValueKey('map-source')));
       await settle(tester);
-      await tapText(tester, '魯地圖（登山地形圖）');
-      await settle(tester);
-      expect(app.container.read(mapSourceProvider), MapSource.rudy);
       expect(find.byKey(fakeRudyMapKey), findsOneWidget);
-      await tester.tap(find.byTooltip('地圖資料來源'));
+      expect(find.descendant(of: find.byKey(const ValueKey('map-layers')), matching: find.text('魯地圖')), findsOneWidget);
+      expect(find.byKey(const ValueKey('rudy-prompt')), findsNothing);
+      expect(find.textContaining('© OpenStreetMap contributors'), findsOneWidget, reason: 'seen as soon as the map appears');
+      await tester.tap(find.byKey(const ValueKey('map-credit')));
       await settle(tester);
-      expect(find.textContaining('魯地圖 Rudy Map'), findsOneWidget, reason: 'the required credit is one tap away');
-      expect(find.textContaining('內政部國土測繪中心（政府資料'), findsNothing);
+      expect(find.textContaining('魯地圖 Rudy Map'), findsOneWidget, reason: 'the full credit');
+      expect(find.byKey(const ValueKey('map-osm-link')), findsOneWidget);
       await tapText(tester, '關閉');
 
-      await tester.tap(find.byTooltip('放大'));
+      handle.northValue.value = 40;
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('map-compass')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('map-compass')), findsNothing);
+
       await tester.tap(find.byTooltip('我的位置'));
       await settle(tester);
-      expect(handle.calls, containsAll(['zoom:0.5', 'me', 'move']));
+      expect(handle.calls, containsAll(['north', 'me', 'move']));
 
       // Tapping on the map offers the mountains near the tap (give the mountain list time to load first).
       await real(tester, () => Future<void>.delayed(const Duration(milliseconds: 300)));
@@ -153,9 +191,8 @@ void main() {
       await tapText(tester, '地圖');
       await settle(tester);
       expect(find.byKey(fakeRudyMapKey), findsNothing, reason: 'chosen but not installed: fall back instead of a blank map');
-      await tester.tap(find.byTooltip('地圖資料來源'));
-      await settle(tester);
-      expect(find.textContaining('內政部國土測繪中心'), findsOneWidget);
+      expect(find.text('地圖：內政部國土測繪中心'), findsOneWidget);
+      expect(find.byKey(const ValueKey('rudy-prompt')), findsOneWidget);
       await app.dispose(tester);
     });
   });

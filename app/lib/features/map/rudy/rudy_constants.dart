@@ -27,6 +27,12 @@ const rudyStyleZipFile = 'MOI_OSM_Taiwan_TOPO_Rudy_pmtiles_style.zip';
 /// Placeholder: glyphs are not published on the mirrors yet.
 const rudyGlyphsZipFile = 'MOI_OSM_Taiwan_TOPO_Rudy_glyphs.zip';
 
+/// The line on the map itself; the full credit is in [rudyAttribution].
+const rudyShortCredit = '© OpenStreetMap contributors · 魯地圖';
+
+/// Where OpenStreetMap explains its licence; its attribution guideline asks for a link to it.
+const osmCopyrightUrl = 'https://www.openstreetmap.org/copyright';
+
 const rudyAttribution =
     '地圖：魯地圖 Rudy Map（https://rudymap.tw）｜資料 © OpenStreetMap contributors (ODbL)'
     '｜等高線與 DEM：內政部 20 公尺 DTM｜樣式基於 OpenAndroMaps Elevate（Tobias Kühn）';

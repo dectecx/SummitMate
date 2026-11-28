@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -9,7 +10,10 @@ import '../domain/map_logic.dart';
 /// What the map tab needs from a map implementation, so the controls work the same on both maps.
 abstract interface class MapHandle {
   double get zoom;
-  Future<void> zoomBy(double delta);
+
+  /// Where north points on screen, in degrees clockwise from straight up.
+  ValueListenable<double> get north;
+  Future<void> resetNorth();
   Future<void> moveTo(double lat, double lng, {double? minZoom});
   Future<void> setMe(double? lat, double? lng);
 
@@ -51,10 +55,18 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
   @override
   double get zoom => _c?.cameraPosition?.zoom ?? 7.5;
 
+  final _north = ValueNotifier<double>(0);
+
   @override
-  Future<void> zoomBy(double delta) async {
-    await _c?.animateCamera(CameraUpdate.zoomTo((zoom + delta).clamp(5, 20)));
+  ValueListenable<double> get north => _north;
+
+  @override
+  Future<void> resetNorth() async {
+    await _c?.animateCamera(CameraUpdate.bearingTo(0));
   }
+
+  // The bearing is the direction at the top of the screen, so north sits the other way round.
+  void _onCamera() => _north.value = -(_c?.cameraPosition?.bearing ?? 0);
 
   @override
   Future<void> moveTo(double lat, double lng, {double? minZoom}) async {
@@ -169,6 +181,13 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
   }
 
   @override
+  void dispose() {
+    _c?.removeListener(_onCamera);
+    _north.dispose();
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(RudyMapView old) {
     super.didUpdateWidget(old);
     if (old.styleString != widget.styleString) {
@@ -194,15 +213,19 @@ class _RudyMapViewState extends State<RudyMapView> implements MapHandle {
       styleString: widget.styleString,
       initialCameraPosition: const CameraPosition(target: LatLng(23.7, 121.0), zoom: 7.5),
       minMaxZoomPreference: const MinMaxZoomPreference(5, 20),
-      trackCameraPosition: true, // the zoom buttons read the current zoom from the controller
+      trackCameraPosition: true, // zoom and bearing are read from the controller
       onMapCreated: (c) {
         _c = c;
+        c.addListener(_onCamera);
         widget.onCreated(this);
       },
       onStyleLoadedCallback: _addOverlays,
       onMapClick: _onClick,
       compassEnabled: false,
+      // The map page shows the credit itself (a short line, then in the map settings): the library's own button
+      // is moved out of sight.
       attributionButtonPosition: AttributionButtonPosition.topLeft,
+      attributionButtonMargins: const math.Point(-100, -100),
     );
   }
 }

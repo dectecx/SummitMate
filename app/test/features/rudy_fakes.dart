@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -51,8 +52,14 @@ class FakeMapHandle implements MapHandle {
   void Function(List<dynamic>)? onPeaks;
   @override
   double get zoom => zoomValue;
+  final northValue = ValueNotifier<double>(0);
   @override
-  Future<void> zoomBy(double delta) async => calls.add('zoom:$delta');
+  ValueListenable<double> get north => northValue;
+  @override
+  Future<void> resetNorth() async {
+    calls.add('north');
+    northValue.value = 0;
+  }
   @override
   Future<void> moveTo(double lat, double lng, {double? minZoom}) async => calls.add('move');
   @override

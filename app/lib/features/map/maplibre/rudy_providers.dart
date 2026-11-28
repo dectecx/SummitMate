@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers.dart';
 import '../../explore/domain/mountain_models.dart';
 import '../rudy/rudy_client.dart';
+import '../rudy/rudy_constants.dart';
 import '../rudy/rudy_installer.dart';
 import '../rudy/rudy_paths.dart';
 import 'rudy_map_view.dart';
@@ -31,12 +33,12 @@ class MapSourceController extends Notifier<MapSource> {
   @override
   MapSource build() {
     _load();
-    return MapSource.nlsc;
+    return MapSource.rudy; // the offline map, unless the person picked the government one
   }
 
   Future<void> _load() async {
     final v = await ref.read(settingsStoreProvider).get(mapSourceKey);
-    if (v == MapSource.rudy.name) state = MapSource.rudy;
+    if (v == MapSource.nlsc.name) state = MapSource.nlsc;
   }
 
   Future<void> choose(MapSource s) async {
@@ -49,10 +51,29 @@ final mapSourceProvider = NotifierProvider<MapSourceController, MapSource>(MapSo
 
 final rudyPathsProvider = FutureProvider<RudyPaths>((ref) => RudyPaths.open());
 
+/// Debug builds only: the development server's copy of the map files (`/dev/maps/` next to the API), or null when
+/// it has none. Using it spares the author's servers, and makes reinstalling quick.
+final rudyDevMirrorProvider = FutureProvider<Uri?>((ref) async {
+  if (!kDebugMode) return null;
+  final base = Uri.parse(ref.watch(apiBaseUrlProvider)).replace(path: '/dev/maps/');
+  try {
+    final dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 2), receiveTimeout: const Duration(seconds: 2)));
+    for (final file in [rudyPmtilesFile, 'noto-sans.zip']) {
+      await dio.headUri<void>(base.resolve(file));
+    }
+    return base;
+  } on DioException {
+    return null;
+  }
+});
+
 final rudyInstallerProvider = FutureProvider<RudyInstaller>((ref) async {
   final paths = await ref.watch(rudyPathsProvider.future);
+  final mirror = rudyDebugMapUrl.isEmpty ? await ref.watch(rudyDevMirrorProvider.future) : null;
+  final mapUrl = rudyDebugMapUrl.isNotEmpty ? rudyDebugMapUrl : mirror?.resolve(rudyPmtilesFile).toString();
+  final fonts = rudyDebugFontsUrl.isNotEmpty ? Uri.parse(rudyDebugFontsUrl) : mirror?.resolve('noto-sans.zip');
   final client = RudyClient(Dio(BaseOptions(connectTimeout: const Duration(seconds: 15), receiveTimeout: const Duration(seconds: 30))), appVersion: rudyAppVersion, contactUrl: rudyContactUrl);
-  return BackgroundRudyInstaller(paths, client, debugMapUrlOverride: rudyDebugMapUrl.isEmpty ? null : rudyDebugMapUrl, fontsUrl: rudyDebugFontsUrl.isEmpty ? null : Uri.parse(rudyDebugFontsUrl));
+  return BackgroundRudyInstaller(paths, client, debugMapUrlOverride: mapUrl, fontsUrl: fonts);
 });
 
 /// Progress of the Rudy Map download; the first value is the current state.
@@ -67,6 +88,14 @@ final rudyReadyProvider = FutureProvider<bool>((ref) async {
   final paths = await ref.watch(rudyPathsProvider.future);
   ref.watch(rudyInstallStateProvider.select((s) => s.value?.phase)); // re-check when a download ends or the files are removed
   return paths.isInstalled;
+});
+
+/// The map actually on screen: the Rudy Map when it is installed and either chosen or there is no connection (the
+/// government map cannot load then); otherwise the government map.
+final shownMapProvider = Provider<MapSource>((ref) {
+  final installed = ref.watch(rudyReadyProvider).value ?? false;
+  final wanted = ref.watch(mapSourceProvider) == MapSource.rudy || !ref.watch(onlineProvider);
+  return installed && wanted ? MapSource.rudy : MapSource.nlsc;
 });
 
 /// The MapLibre style for the installed files, or null when they are not installed.
